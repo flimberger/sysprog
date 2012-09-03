@@ -1,0 +1,74 @@
+.TH BUFFER 3 2012-09-03 "IB 321" "Systemnahes Programmieren"
+.SH NAME
+makebuf, initbuf, openbuf, closebuf, termbuf, freebuf, flushbuf
+\- buffered I/O
+.SH SYNOPSIS
+.B #include <buffer.h>
+.PP
+.BI "Buffer *makebuf(size_t " size );
+.PP
+.BI "int initbuf(Buffer *" buf ", int " fd ", int " mode );
+.PP
+.BI "Buffer *openbuf(char *" name ", int " mode );
+.PP
+.BI "int closebuf(Buffer *" buf );
+.PP
+.BI "int termbuf(Buffer *" buf );
+.PP
+.BI "void freebuf(Buffer *" buf );
+.PP
+.BI "int flushbuf(Buffer *" buf );
+.PP
+.SH DESCRIPTION
+These routines implement buffered I/O.
+.PP
+.BI makebuf
+uses
+.BR malloc (3)
+to allocate a
+.I Buffer
+structure and then
+.BR posix_memalign (2)
+to acquire an aligned buffer suitable for I/O with
+.B O_DIRECT
+\&.
+.PP
+.BI initbuf
+initializes
+.I buf
+with
+.I file ,
+which must already be opened with
+.B O_RDONLY
+or
+.B O_WRONLY
+\&.
+.PP
+.B openbuf
+opens the file specified by
+.I name ,
+then calls
+.BI makebuf
+and
+.BI initbuf
+to allocate a buffer and associate the file with it.
+.PP
+.BI closebuf
+close file, termbuf & freebuf
+.PP
+.BI termbuf
+flushes
+.I buf
+and disassociates the file from it.
+.PP
+.BI freebuf
+frees the memory allocated for the buffer.
+.SH SEE ALSO
+.BR malloc (3),
+.BR posix_memalign (3),
+.BR open (2),
+.BR close (2),
+.BR free (3)
+.SH BUGS
+There are for shure.
+

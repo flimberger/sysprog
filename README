@@ -6,3 +6,10 @@ Systemnahes Programmieren Wintersemester 2012
 
 This is a simple compiler from the "Systemnahes Programmieren"-course.
 
+The projects structure is as follows:
+The root folder contains the directories doc, include, man and src.
+doc contains all further documentation than the manual files, which are in man.
+include contains all include files from the libraries, which are in lib.
+Binaries are in bin.
+In src is the source of all libraries and binaries.
+

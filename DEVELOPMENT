@@ -1,0 +1,17 @@
+Coding conventions
+==================
+
+Group includes like this, ordered alphabetically:
+#include <sys/types.h> /* system includes */
+
+#include <stdlib.h" /* standard library includes */
+
+#include "defs.h" /* project local includes */
+
+#include "file.h" /* header for current file */
+
+Use local include files in the submodules, these include src/sp.mak after the
+definition of relative paths to ROOT and the include and library paths (INCP
+and LIBP). sp.mak contains all important settings for the compiler etc.
+
+general information (identation style etc): http://www.openbsd.org/cgi-bin/man.cgi?query=style&sektion=9&apropos=0&manpath=OpenBSD+Current&arch=i386

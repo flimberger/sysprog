@@ -1,1 +1,10 @@
 *.o
+*.a
+*.so
+
+lib/*
+bin/*
+
+test.c
+a.out
+
