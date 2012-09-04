@@ -1,7 +1,7 @@
 #include "buffer.h"
 
 int
-flushbuf(Buffer *buf)
+bflush(Buffer *buf)
 {
 	buf->nc = NULL;
 	return 0;

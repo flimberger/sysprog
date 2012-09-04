@@ -30,7 +30,7 @@ makebuf(size_t size)
 	if ((bp = (Buffer *) malloc(sizeof(Buffer))) == NULL)
 		return NULL; /* errno set by malloc() */
 
-	if ((r = posix_memalign((void **) &bp->mem, Blocksize, size * 2)) != 0) {
+	if ((r = posix_memalign(&bp->mem, Blocksize, size * 2)) != 0) {
 		free(bp);
 		errno = r;
 		return NULL;
@@ -57,11 +57,11 @@ initbuf(Buffer *buf, int fd, int mode)
 		return EOB;
 	}
 
-	buf->nc = buf->bpb;
 	buf->bpb = buf->mem;
 	buf->epb = buf->bpb + buf->size - 1;
 	buf->bsb = buf->bpb + buf->size;
 	buf->esb = buf->bsb + buf->size;
+	buf->nc = buf->bpb;
 	buf->fd = fd;
 
 	return 0;
@@ -109,7 +109,7 @@ termbuf(Buffer *buf)
 {
 	int r;
 
-	r = flushbuf(buf);
+	r = bflush(buf);
 	buf->nc = NULL;
 	buf->fd = -1;
 	buf->flags = 0;
@@ -130,7 +130,7 @@ closebuf(Buffer *buf)
 {
 	int r;
 
-	if ((r = flushbuf(buf)) == EOB)
+	if ((r = bflush(buf)) == EOB)
 		return r; /* TODO: error handling! */
 	if ((r = close(buf->fd)) == -1)
 		return r; /* errno is set by close() */

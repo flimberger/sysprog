@@ -26,7 +26,7 @@ typedef struct {
 	uchar *epb;	/* pointer to end of primary buffer */
 	uchar *bsb;	/* pointer to beginning of secondary buffer */
 	uchar *esb;	/* pointer to end of secondary buffer */
-	uchar *mem;	/* pointer to (aligned) memory */
+	void *mem;	/* pointer to (aligned) memory */
 	size_t size;	/* size of buffers */
 	int fd;		/* file descriptor */
 	uint flags;	/* flags indicating state of buffer */
@@ -38,7 +38,7 @@ Buffer *openbuf(char *name, int mode);
 int closebuf(Buffer *buf);
 int termbuf(Buffer *buf);
 void freebuf(Buffer *buf);
-int flushbuf(Buffer *buf);
+int bflush(Buffer *buf);
 
 #endif /* _BUFFER_H_ */
 
