@@ -1,12 +1,14 @@
-NAME=libbuffer
+NAME=buffer
 
 ROOT=../../..
 INCP=$(ROOT)/include
 LIBP=$(ROOT)/lib
 
-HDR=$(INCP)/buffer.h
+HDR=$(INCP)/$(NAME).h
 SRC=makebuf.c bflush.c bgetchar.c fillbuf.c
 OBJ=$(SRC:.c=.o)
+
+AROBJ=lib$(NAME).a
 
 INC=-I$(INCP)
 
@@ -14,17 +16,17 @@ include ../../sp.mak
 
 .PHONY: all clean install
 
-all: libbuffer
+all: $(AROBJ)
 
 .c.o: $(HDR)
 	$(CC) $(CFLAGS) -c $<
 
-$(NAME): $(HDR) $(OBJ)
-	ar rs $(NAME).a $(OBJ)
+$(AROBJ): $(OBJ)
+	ar rs $@ $(OBJ)
 
 clean:
-	rm -f $(OBJ) $(NAME).a
+	rm -f $(OBJ) $(AROBJ)
 
 install: all
-	cp $(NAME) $(LIBP)
+	cp $(AROBJ) $(LIBP)
 
