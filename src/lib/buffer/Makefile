@@ -5,7 +5,7 @@ INCP=$(ROOT)/include
 LIBP=$(ROOT)/lib
 
 HDR=$(INCP)/buffer.h
-SRC=makebuf.c flushbuf.c
+SRC=makebuf.c bflush.c bgetchar.c fillbuf.c
 OBJ=$(SRC:.c=.o)
 
 INC=-I$(INCP)

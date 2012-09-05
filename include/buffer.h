@@ -7,6 +7,10 @@
 
 #include "defs.h"
 
+#ifndef EOF
+#define EOF (-1)
+#endif
+
 enum {
 	Blocksize	= 512,
 	Bufsize		= 4 * 1024,
@@ -39,6 +43,8 @@ int termbuf(Buffer *buf);
 void freebuf(Buffer *buf);
 int bflush(Buffer *buf);
 int bgetchar(Buffer *buf);
+int bungetchar(Buffer *buf);
+int fillbuf(Buffer *buf);
 
 #endif /* _BUFFER_H_ */
 
