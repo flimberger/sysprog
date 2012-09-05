@@ -63,8 +63,8 @@ initbuf(Buffer *buf, int fd, int mode)
 	buf->epb = buf->bpb + buf->size - 1;
 	buf->bsb = buf->bpb + buf->size;
 	buf->esb = buf->bsb + buf->size - 1;
-	buf->nc = buf->bpb;
-	buf->flags |= Active & Clean;
+	buf->nc = buf->bsb;
+	buf->flags |= Active | Clean;
 	buf->fd = fd;
 
 	return 0;
@@ -74,7 +74,7 @@ Buffer *
 bopen(char *name, int mode)
 {
 	Buffer *bp;
-	int fd, oflags;
+	int oflags;
 
 	/* TODO: append etc? */
 	switch (mode) {
@@ -90,18 +90,15 @@ bopen(char *name, int mode)
 	if ((bp = makebuf(Bufsize)) == NULL)
 		return NULL; /* errno set by makebuf() */
 
-	/* TODO: get rid of annoying gcc warning for uninitialized fd */
-	fd = 0;
-
-	/* TODO: file creation if no file exists */
+	/* TODO: file creation if no file exists, and opened for writing */
 	if ((bp->fd = open(name, oflags)) == -1) {
 		freebuf(bp);
 		return NULL; /* errno is set by open() */
 	}
 
-	if (initbuf(bp, fd, mode) == EOF) {
+	if (initbuf(bp, bp->fd, mode) == EOF) {
 		freebuf(bp);
-		close(fd);
+		close(bp->fd);
 		return NULL; /* errno is set by initbuf() */
 	}
 
