@@ -60,7 +60,7 @@ bungetchar(Buffer *buf)
 
 	if ((buf->flags & Clean) == 0) {
 		swtch(buf);
-		buf->nc = buf->bpb;
+		buf->nc = buf->epb;
 		return 0;
 	}
 
