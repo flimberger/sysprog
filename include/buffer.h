@@ -11,13 +11,12 @@ enum {
 	Blocksize	= 512,
 	Bufsize		= 4 * 1024,
 	Bungetsize	= 4,
-	EOB		= -2,
 
-	Readbuf		= 1 << 0,	/* status flags */
+	Readbuf		= 1 << 0,	/* status flags positions */
 	Writebuf	= 1 << 1,
 
-	Clean		= 1 << 8,
-	Dirty		= 1 << 9
+	Active		= 1 << 8,	/* active if set */
+	Clean		= 1 << 9,	/* second buf is clean if set */
 };
 
 typedef struct {
@@ -32,13 +31,14 @@ typedef struct {
 	uint flags;	/* flags indicating state of buffer */
 } Buffer;
 
-Buffer *makebuf(size_t size); /* todo: args */
-int initbuf(Buffer *buf, int fd, int mode); /* todo: args */
-Buffer *openbuf(char *name, int mode);
-int closebuf(Buffer *buf);
+Buffer *makebuf(size_t size);
+int initbuf(Buffer *buf, int fd, int mode);
+Buffer *bopen(char *name, int mode);
+int bclose(Buffer *buf);
 int termbuf(Buffer *buf);
 void freebuf(Buffer *buf);
 int bflush(Buffer *buf);
+int bgetchar(Buffer *buf);
 
 #endif /* _BUFFER_H_ */
 

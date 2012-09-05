@@ -49,30 +49,34 @@ initbuf(Buffer *buf, int fd, int mode)
 	/* TODO: state handling */
 	switch (mode) {
 	case O_RDONLY:
+		buf->flags = Readbuf;
 		break;
 	case O_WRONLY:
+		buf->flags = Writebuf;
 		break;
 	default:
 		errno = EINVAL;
-		return EOB;
+		return EOF;
 	}
 
 	buf->bpb = buf->mem;
 	buf->epb = buf->bpb + buf->size - 1;
 	buf->bsb = buf->bpb + buf->size;
-	buf->esb = buf->bsb + buf->size;
+	buf->esb = buf->bsb + buf->size - 1;
 	buf->nc = buf->bpb;
+	buf->flags |= Active & Clean;
 	buf->fd = fd;
 
 	return 0;
 }
 
 Buffer *
-openbuf(char *name, int mode)
+bopen(char *name, int mode)
 {
 	Buffer *bp;
 	int fd, oflags;
 
+	/* TODO: append etc? */
 	switch (mode) {
 	case O_RDONLY:
 	case O_WRONLY:
@@ -95,7 +99,7 @@ openbuf(char *name, int mode)
 		return NULL; /* errno is set by open() */
 	}
 
-	if (initbuf(bp, fd, mode) == EOB) {
+	if (initbuf(bp, fd, mode) == EOF) {
 		freebuf(bp);
 		close(fd);
 		return NULL; /* errno is set by initbuf() */
@@ -126,11 +130,11 @@ freebuf(Buffer *buf)
 }
 
 int
-closebuf(Buffer *buf)
+bclose(Buffer *buf)
 {
 	int r;
 
-	if ((r = bflush(buf)) == EOB)
+	if ((r = bflush(buf)) == EOF)
 		return r; /* TODO: error handling! */
 	if ((r = close(buf->fd)) == -1)
 		return r; /* errno is set by close() */
