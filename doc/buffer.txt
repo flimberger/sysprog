@@ -1,0 +1,35 @@
+Pufferstatus:
+	Clean: Puffer kann gefahrlos überschrieben werden.
+	Dirty: Es befinden sich noch nicht gelesene oder geschriebene
+		Daten im Puffer.
+
+bgetchar:
+	Wenn der nächste Character vor dem Ende des Primärbuffers steht,
+	wird dieser zurückgegeben und der Zeiger inkrementiert.
+
+	Wenn der nächste Character hinter dem Ende des Primärbuffers steht,
+	wird geprüft, ob der Pufferstatus "Clean" ist. Ist dies der Fall,
+	wird der Sekundärpuffer neu befüllt. Schlägt diese Aktion fehl,
+	wird "EOF" zurückgegeben.
+	Danach wird überprüft, ob der Abstand zwischen Beginn und Ende des
+	Sekundärpuffers größer ist als Bungetsize. Ist dies nicht der Fall,
+	dann werden Bungetsize Bytes vom Ende des Primärpuffers an dessen
+	Anfang kopiert und dahinter der Inhalt des Sekundärpuffers.
+	Das Ende des Primärpuffers wird auf die letzte Position der
+	kopierten Daten gesetzt.
+	Der Status wird darauf hin wieder auf Clean gesetzt, da der
+	Sekundärpuffer wieder überschrieben werden kann.
+	Ansonsten werden die Zeiger auf Beginn und Ende von Primär- und
+	Sekundärpuffer ausgetauscht.
+	In jedem Fall wird der Zeiger auf das Nächste Zeichen auf den
+	Beginn des Primärpuffers gesetzt und ein Sprung an den Beginn
+	der Routine gemacht, damit das nächste Zeichen zurückgegeben wird.
+
+bungetchar:
+	Wenn das nächste Zeichen hinter dem Beginn des Primärpuffers steht,
+	wird lediglich der Zeiger darauf dekrementiert.
+	Ist dies nicht der Fall, aber der Status des Puffers ist nicht "Clean",
+	dann werden die Pufferzeiger getauscht und der Zeiger für das nächste
+	Zeichen wird auf das Ende des (neuen) Primärpuffers gesetzt.
+	In anderen Fällen wird "EOF" zurückgegeben, um einen Misserfolg zu
+	signalisieren.
