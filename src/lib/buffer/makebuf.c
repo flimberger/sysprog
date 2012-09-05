@@ -46,7 +46,7 @@ makebuf(size_t size)
 int
 initbuf(Buffer *buf, int fd, int mode)
 {
-	/* TODO: state handling */
+	/* TODO: append etc? */
 	switch (mode) {
 	case O_RDONLY:
 		buf->flags = Readbuf;
