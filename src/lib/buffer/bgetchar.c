@@ -24,28 +24,35 @@ bgetchar(Buffer *buf)
 
 getchar:
 	if (buf->nc <= buf->epb) {
+		if (buf->nc > buf->bpb + Bungetsize)
+			buf->state = Clean;
 		c = *buf->nc++;
 		return c;
 	}
 
+	if ((buf->flags & Active) == 0)
+		return EOF;
+
 	if (buf->nc > buf->epb) {
-		if ((buf->flags & Clean) != 0)
+		if (buf->state == Clean)
 			if (fillbuf(buf) == EOF)
-				return EOF;
+				return EOF; /* errno is set by read() */
 
 		if ((d = buf->esb - buf->bsb) <= Bungetsize) {
 			memcpy(buf->bpb, buf->epb - Bungetsize, Bungetsize);
-			memcpy(buf->bpb + Bungetsize, buf->bsb, d);
+			memcpy(buf->bpb + Bungetsize, buf->bsb, d + 1);
 			buf->epb = buf->bpb + Bungetsize + d;
-			buf->flags |= Clean;
+			buf->nc = buf->bpb + Bungetsize;
+			buf->state = Clean;
 		} else {
 			swtch(buf);
+			buf->nc = buf->bpb;
 		}
 
-		buf->nc = buf->bpb;
 		goto getchar;
 	}
 
+	buf->nc = buf->bsb;
 	buf->flags &= ~Active;
 	return EOF;
 }
@@ -58,7 +65,7 @@ bungetchar(Buffer *buf)
 		return 0;
 	}
 
-	if ((buf->flags & Clean) == 0) {
+	if (buf->state == Dirty) {
 		swtch(buf);
 		buf->nc = buf->epb;
 		return 0;

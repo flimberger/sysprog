@@ -64,7 +64,8 @@ initbuf(Buffer *buf, int fd, int mode)
 	buf->bsb = buf->bpb + buf->size;
 	buf->esb = buf->bsb + buf->size - 1;
 	buf->nc = buf->bsb;
-	buf->flags |= Active | Clean;
+	buf->flags |= Active;
+	buf->state = Clean;
 	buf->fd = fd;
 
 	return 0;

@@ -18,9 +18,10 @@ enum {
 
 	Readbuf		= 1 << 0,	/* status flags positions */
 	Writebuf	= 1 << 1,
+	Active		= 1 << 2,	/* active if set */
 
-	Active		= 1 << 8,	/* active if set */
-	Clean		= 1 << 9,	/* second buf is clean if set */
+	Dirty		= 0,		/* stae of second buffer */
+	Clean
 };
 
 typedef struct {
@@ -32,6 +33,7 @@ typedef struct {
 	void *mem;	/* pointer to (aligned) memory */
 	size_t size;	/* size of buffers */
 	int fd;		/* file descriptor */
+	int state;	/* state of second buffer: Clean or Dirty */
 	uint flags;	/* flags indicating state of buffer */
 } Buffer;
 
