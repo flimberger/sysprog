@@ -3,6 +3,37 @@ Pufferstatus:
 	Dirty: Es befinden sich noch nicht gelesene oder geschriebene
 		Daten im Puffer.
 
+makebuf:
+	Reserviert eine Buffer-Struktur mittels malloc und ein Speichersegment
+	mittels posix_memalign. Setzt die Speichergröße in der Buffer-Struktur.
+	Der Dateideskriptor auf -1 gesetzt und das flags-Wort auf 0, damit der
+	leere Puffer nicht verwendet wird. Gibt einen Zeiger auf den
+	reservierten Puffer zurück.
+
+initbuf:
+	Verbindet einen bereits bestehenden Puffer mit einem bereits geöffneten
+	Dateideskriptor. Damit können bereits reservierte Puffer
+	wiederverwendet werden. Setzt die flags entsprechend dem Dateimodus,
+	setzt die Zeiger entsprechend der Puffergröße und markiert den Puffer
+	als aktiv und überschreibbar.
+
+bopen:
+	Gibt einen fertigen Puffer für eine Datei zurück. Der Puffer wird
+	mittels makebuf alloziert, wobei die Standard-Puffergröße verwendet
+	wird. Die Datei wird im angegebenen Modus geöffnet und mit initbuf
+	dem Puffer zugeordnet.
+
+termbuf:
+	Flusht den Buffer und deaktiviert ihn, indem der Dateideskriptor auf
+	-1 und die Flags auf 0 gesetzt werden.
+
+freebuf:
+	Gibt den Speicherplatz des Puffers frei.
+
+bclose:
+	flusht den Puffer und schließt die Datei, danach wird der Speicher
+	freigegeben.
+
 bgetchar:
 	Wenn der nächste Character vor dem Ende des Primärbuffers steht,
 	wird dieser zurückgegeben und der Zeiger inkrementiert.
@@ -33,3 +64,13 @@ bungetchar:
 	Zeichen wird auf das Ende des (neuen) Primärpuffers gesetzt.
 	In anderen Fällen wird "EOF" zurückgegeben, um einen Misserfolg zu
 	signalisieren.
+
+fillbuf:
+	Füllt den sekundären Puffer, wenn der Status Clean ist.
+	Setzt den Endezeiger auf das aktuelle Ende der validen Daten.
+	Wenn ein Lesefehler auftritt, oder der Status Dirty ist, wird
+	EOF zurückgegeben, ansonsten 0.
+
+bflus:
+	stub
+

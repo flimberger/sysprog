@@ -38,38 +38,49 @@ structure and then
 .BR posix_memalign (2)
 to acquire an aligned buffer suitable for I/O with
 .B O_DIRECT
-\&.
+\&. It returns
+.I NULL
+on failure, while
+.I errno
+is set.
 .PP
 .BI initbuf
 initializes
 .I buf
 with
-.I file ,
-which must already be opened with
+.I file
+\&, which must already be opened with
 .B O_RDONLY
 or
 .B O_WRONLY
-\&.
+\&. On success,
+.I 0
+is returned,
+.I EOF
+otherwise and
+.I errno
+is set.
 .PP
 .B bopen
 opens the file specified by
-.I name ,
-then calls
+.I name
+\&, then calls
 .BI makebuf
 and
 .BI initbuf
 to allocate a buffer and associate the file with it.
-.PP
-.BI bclose
-close file,
-.BI termbuf
-and
-.BI freebuf .
+A pointer to the buffer is returned, or
+.I NULL
+and errno is set if an error occured.
 .PP
 .BI termbuf
 flushes
 .I buf
 and disassociates the file from it.
+The file is not closed.
+It returns the result from
+.BI bflush
+\&.
 .PP
 .BI freebuf
 frees the memory allocated for the buffer.
@@ -77,13 +88,20 @@ frees the memory allocated for the buffer.
 .BI bflush
 flushes the buffer.
 .PP
+.BI bclose
+flushes the buffer and closes the file associated with
+.I buf
+\&, then calls
+.BI freebuf
+\&.
+.PP
 .BI bgetchar
 returns the next character from
 .I buf
 or
 .I EOF
 if at end of file or an error occured.
-In this case,
+In the latter case,
 .I errno
 is set.
 .PP
@@ -102,7 +120,8 @@ is returned, 0 otherwise, and
 .I errno
 is set appropriately.
 If the end of file is reached,
-.I errno is not set.
+.I errno
+is not set.
 .PP
 .SH SEE ALSO
 .BR malloc (3),
