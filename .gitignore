@@ -4,6 +4,8 @@
 
 lib/*
 bin/*
+test/*test
+testdata.txt
 
 test.c
 a.out
