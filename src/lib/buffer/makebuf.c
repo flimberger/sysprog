@@ -21,6 +21,54 @@
 #include "defs.h"
 #include "buffer.h"
 
+static Buffer	*writereg[NBuf];
+static int 	registered;
+
+static void
+flushregister(void)
+{
+	Buffer *bp;
+	int i;
+
+	for (i = 0; i < NBuf; ++i) {
+		bp = writereg[i];
+		if (bp != 0) {
+			bflush(bp);
+			writereg[i] = 0;
+		}
+	}
+}
+
+static void
+unregisterbuf(Buffer *buf)
+{
+	int i;
+
+	for (i = 0; i < NBuf; ++i)
+		if (writereg[i] == buf)
+			writereg[i] = 0;
+}
+
+static int
+registerbuf(Buffer *buf)
+{
+	int i;
+
+	unregisterbuf(buf);
+	for (i = 0; i < NBuf; ++i)
+		if (writereg[i] == 0) {
+			writereg[i] = buf;
+			if (registered == 0) {
+				registered = 1;
+				atexit(flushregister);
+			}
+			return 0;
+		}
+
+	errno = EMFILE;
+	return EOF;
+}
+
 Buffer *
 makebuf(size_t size)
 {
@@ -53,6 +101,8 @@ initbuf(Buffer *buf, int fd, int mode)
 		break;
 	case O_WRONLY:
 		buf->flags = Writebuf;
+		if (registerbuf(buf) == EOF)
+			return EOF;
 		break;
 	default:
 		errno = EINVAL;
@@ -112,6 +162,8 @@ termbuf(Buffer *buf)
 	int r;
 
 	r = bflush(buf);
+	if (buf->flags & Writebuf)
+		unregisterbuf(buf);
 	buf->nc = NULL;
 	buf->fd = -1;
 	buf->flags = 0;
@@ -130,12 +182,10 @@ freebuf(Buffer *buf)
 int
 bclose(Buffer *buf)
 {
-	int r;
-
-	if ((r = bflush(buf)) == EOF)
-		return r; /* TODO: error handling! */
-	if ((r = close(buf->fd)) == -1)
-		return r; /* errno is set by close() */
+	if (bflush(buf) == EOF)
+		return EOF; /* TODO: error handling! */
+	if (close(buf->fd) == -1)
+		return EOF; /* errno is set by close() */
 	freebuf(buf);
 
 	return 0;

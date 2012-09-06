@@ -33,7 +33,9 @@ bungetchar, fillbuf
 .BI "int vbprintf(Buffer *" buf ", uchar *" fmt ", va_list " args );
 .PP
 .SH DESCRIPTION
-These routines implement buffered I/O.
+These routines implement buffered I/O. Writebuffers are flushed at
+.BI exit (3)
+\&. Up to 8 Writebuffers per process are possible.
 .PP
 .BI makebuf
 uses

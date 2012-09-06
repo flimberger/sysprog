@@ -16,6 +16,7 @@ enum {
 	Blocksize	= 512,
 	Bufsize		= 4 * 1024,
 	Bungetsize	= 4,
+	NBuf		= 8,		/* # of buffers/process */
 
 	Readbuf		= 1 << 0,	/* status flags positions */
 	Writebuf	= 1 << 1,
