@@ -24,7 +24,13 @@ bungetchar, fillbuf
 .PP
 .BI "int bungetchar(Buffer *" buf );
 .PP
-.BI "int fillbuf(Buffer *" buf);
+.BI "int fillbuf(Buffer *" buf );
+.PP
+.BI "int bputchar(Buffer *" buf ", uchar " c  );
+.PP
+.BI "int bprintf(Buffer *" buf ", uchar *" fmt ", " ... );
+.PP
+.BI "int vbprintf(Buffer *" buf ", uchar *" fmt ", va_list " args );
 .PP
 .SH DESCRIPTION
 These routines implement buffered I/O.
@@ -87,6 +93,13 @@ frees the memory allocated for the buffer.
 .PP
 .BI bflush
 flushes the buffer.
+On success,
+.I 0
+is returned,
+.I EOF
+otherwise and
+.I errno
+is set.
 .PP
 .BI bclose
 flushes the buffer and closes the file associated with
@@ -123,6 +136,21 @@ If the end of file is reached,
 .I errno
 is not set.
 .PP
+.BI bputchar
+puts
+.I c
+into
+.I buf
+\&.
+.PP
+.BI bprintf
+and
+.BI vbprintf
+act like
+.BI printf (3)
+and
+.BI vprintf (3)
+respectively.
 .SH SEE ALSO
 .BR malloc (3),
 .BR posix_memalign (3),
@@ -135,4 +163,9 @@ File opening is currently only possible with
 and
 .B O_WRONLY
 without any flags.
+.PP
+.BI bprintf
+and
+.BI bvprintf
+produce holes in files.
 

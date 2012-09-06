@@ -3,6 +3,7 @@
 #ifndef _BUFFER_H_
 #define _BUFFER_H_
 
+#include <stdarg.h>
 #include <stddef.h>
 
 #include "defs.h"
@@ -47,6 +48,9 @@ int bflush(Buffer *buf);
 int bgetchar(Buffer *buf);
 int bungetchar(Buffer *buf);
 int fillbuf(Buffer *buf);
+int bputchar(Buffer *buf, uchar c);
+int bprintf(Buffer *buf, char *fmt, ...);
+int vbprintf(Buffer *buf, char *fmt, va_list args);
 
 #endif /* _BUFFER_H_ */
 

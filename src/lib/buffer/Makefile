@@ -5,7 +5,7 @@ INCP=$(ROOT)/include
 LIBP=$(ROOT)/lib
 
 HDR=$(INCP)/$(NAME).h
-SRC=makebuf.c bflush.c bgetchar.c fillbuf.c
+SRC=makebuf.c bflush.c bgetchar.c fillbuf.c bputchar.c bprintf.c vbprintf.c
 OBJ=$(SRC:.c=.o)
 
 AROBJ=lib$(NAME).a
