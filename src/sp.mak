@@ -7,7 +7,7 @@ LIBS=$(LIB) -lc
 # compiler and linker options
 CDBG=-g -O0
 CPPFLAGS=-D_GNU_SOURCE -D_POSIX_C_SOURCE=200112L
-CFLAGS=-Wall -Wextra -Werror -std=c99 -pedantic $(CDBG) $(INC) $(CPPFLAGS)
+CFLAGS=-Wall -Wextra -Werror -std=c99 -pedantic $(CDBG) $(INC) $(CPPFLAGS) -fstrict-aliasing
 
 LDBG=-g
 LDFLAGS=$(LIBS)
@@ -15,4 +15,3 @@ LDFLAGS=$(LIBS)
 # compiler and linker
 CC=gcc
 LD=gcc
-

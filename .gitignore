@@ -10,3 +10,4 @@ testdata.txt
 test.c
 a.out
 
+*.sublime-project
