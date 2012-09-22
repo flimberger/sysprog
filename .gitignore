@@ -11,3 +11,4 @@ test.c
 a.out
 
 *.sublime-project
+*.sublime-workspace
