@@ -9,8 +9,13 @@ bputchar(Buffer *buf, uchar c)
 			return c;
 		}
 
-		if (bflush(buf) == EOF)
-			return EOF;
+		if (buf->state == Dirty)
+			if (bflush(buf) == EOF)
+				return EOF;
+
+		swtchbuf(buf);
+
+		buf->state = Dirty;
+		buf->nc = buf->bpb;
 	}
 }
-

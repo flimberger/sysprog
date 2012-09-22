@@ -52,9 +52,12 @@ bopen(char *name, int mode)
 int
 bclose(Buffer *buf)
 {
-	if (bflush(buf) == EOF)
+	int fd;
+
+	fd = buf->fd;
+	if (termbuf(buf) == EOF)
 		return EOF; /* TODO: error handling! */
-	if (close(buf->fd) == -1)
+	if (close(fd) == -1)
 		return EOF; /* errno is set by close() */
 	freebuf(buf);
 

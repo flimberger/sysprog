@@ -21,7 +21,7 @@ flushregister(void)
 	for (i = 0; i < NBuf; ++i) {
 		bp = writereg[i];
 		if (bp != 0) {
-			bflush(bp);
+			bbflush(bp);
 			writereg[i] = 0;
 		}
 	}
@@ -82,29 +82,32 @@ makebuf(size_t size)
 int
 initbuf(Buffer *buf, int fd, int mode)
 {
+
+	buf->bpb = buf->mem;
+	buf->epb = buf->bpb + buf->size - 1;
+	buf->bsb = buf->bpb + buf->size;
+	buf->esb = buf->bsb + buf->size - 1;
+	buf->state = Clean;
+	buf->fd = fd;
+
 	/* TODO: append etc? */
 	switch (mode) {
 	case O_RDONLY:
 		buf->flags = Readbuf;
+		buf->nc = buf->bsb;
 		break;
 	case O_WRONLY:
-		buf->flags = Writebuf;
 		if (registerbuf(buf) == EOF)
 			return EOF;
+		buf->flags = Writebuf;
+		buf->nc = buf->bpb;
 		break;
 	default:
 		errno = EINVAL;
 		return EOF;
 	}
 
-	buf->bpb = buf->mem;
-	buf->epb = buf->bpb + buf->size - 1;
-	buf->bsb = buf->bpb + buf->size;
-	buf->esb = buf->bsb + buf->size - 1;
-	buf->nc = buf->bsb;
 	buf->flags |= Active;
-	buf->state = Clean;
-	buf->fd = fd;
 
 	return 0;
 }
@@ -114,9 +117,11 @@ termbuf(Buffer *buf)
 {
 	int r;
 
-	r = bflush(buf);
-	if (buf->flags & Writebuf)
+	r = 0;
+	if (buf->flags & Writebuf) {
+		r = bbflush(buf);
 		unregisterbuf(buf);
+	}
 	buf->nc = NULL;
 	buf->fd = -1;
 	buf->flags = 0;
@@ -131,4 +136,3 @@ freebuf(Buffer *buf)
 	free(buf);
 	buf = NULL;
 }
-

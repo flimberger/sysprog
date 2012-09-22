@@ -22,7 +22,7 @@ enum {
 	Writebuf	= 1 << 1,
 	Active		= 1 << 2,	/* active if set */
 
-	Dirty		= 0,		/* stae of second buffer */
+	Dirty		= 0,		/* state of second buffer */
 	Clean
 };
 
@@ -39,6 +39,20 @@ typedef struct {
 	uint flags;	/* flags indicating state of buffer */
 } Buffer;
 
+static inline void
+swtchbuf(Buffer *buf)
+{
+	uchar *bp;
+
+	bp = buf->bpb;
+	buf->bpb = buf->bsb;
+	buf->bsb = bp;
+
+	bp = buf->epb;
+	buf->epb = buf->esb;
+	buf->esb = bp;
+}
+
 Buffer *makebuf(size_t size);
 int initbuf(Buffer *buf, int fd, int mode);
 Buffer *bopen(char *name, int mode);
@@ -46,6 +60,7 @@ int bclose(Buffer *buf);
 int termbuf(Buffer *buf);
 void freebuf(Buffer *buf);
 int bflush(Buffer *buf);
+int bbflush(Buffer *buf);
 int bgetchar(Buffer *buf);
 int bungetchar(Buffer *buf);
 int fillbuf(Buffer *buf);
@@ -54,4 +69,3 @@ int bprintf(Buffer *buf, char *fmt, ...);
 int vbprintf(Buffer *buf, char *fmt, va_list args);
 
 #endif /* _BUFFER_H_ */
-
