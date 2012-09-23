@@ -4,11 +4,10 @@
 
 lib/*
 bin/*
-test/*test
 testdata.txt
 
-test.c
 a.out
+*test
 
 *.sublime-project
 *.sublime-workspace
