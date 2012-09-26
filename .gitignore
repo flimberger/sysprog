@@ -7,7 +7,7 @@ bin/*
 testdata.txt
 
 a.out
-*test
+?*test
 
 *.sublime-project
 *.sublime-workspace
