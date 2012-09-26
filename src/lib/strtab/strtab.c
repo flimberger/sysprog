@@ -1,67 +1,114 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "strtab.h"
 
-strtab_elem *
-strtab_new(size_t size)
+static
+struct strtab_elem *
+newelem(size_t size)
 {
-	strtab_elem *tab;
+	struct strtab_elem *p;
 
-	if (size == 0)
-		size = STRTAB_SIZE;
-
-	if ((tab = malloc(sizeof(strtab_elem))) == NULL)
+	if ((p = malloc(sizeof(struct strtab_elem))) == NULL)
 		return NULL;
-	if ((tab->data = calloc(sizeof(char), size)) == NULL) {
+	if ((p->data = calloc(sizeof(char), size)) == NULL) {
+		free(p);
+		return NULL;
+	}
+	return p;
+}
+
+static
+void
+freeelem(struct strtab_elem *list)
+{
+	free(list->data);
+	free(list);
+}
+
+static
+struct strtab_elem *
+addfront(struct strtab_elem *restrict list, struct strtab_elem *restrict elem)
+{
+	elem->next = list;
+	return elem;
+}
+
+static
+struct strtab_elem *
+addend(struct strtab_elem *restrict list, struct strtab_elem *restrict elem)
+{
+	struct strtab_elem *p;
+
+	if (list == NULL)
+		return elem;
+	for (p = list; p->next != NULL; p = p->next)
+		;
+	p->next = elem;
+	return list;
+}
+
+static
+void
+freeall(struct strtab_elem *list)
+{
+	struct strtab_elem *p;
+
+	while (list != 0) {
+		p = list->next;
+		freeelem(list);
+		list = p;
+	}
+}
+
+Strtab *
+strtab_new(void)
+{
+	Strtab *tab;
+
+	if ((tab = malloc(sizeof(Strtab))) == NULL)
+		return NULL;
+	if ((tab->list = newelem(STRTAB_SIZE)) == NULL) {
 		free(tab);
 		return NULL;
 	}
-	tab->nextelem = NULL;
-	tab->nextstr = tab->data;
-	tab->size = size;
-
+	tab->fptr = tab->list->data;
+	tab->fsiz = STRTAB_SIZE;
 	return tab;
 }
 
 void
-strtab_free(strtab_elem *tab)
+strtab_free(Strtab *tab)
 {
-	strtab_elem *p;
-
-	while (tab->nextelem != NULL) {
-		p = tab->nextelem;
-		free(tab);
-		tab = p;
-	}
+	freeall(tab->list);
+	free(tab);
 }
 
 const char *
-strtab_insert(strtab_elem *restrict tab, const char *const restrict str)
+strtab_insert(Strtab *restrict tab, const char *const restrict str)
 {
-	strtab_elem *p;
-	ssize_t sl;
+	struct strtab_elem *p;
+	size_t sl;
 	char *rs;
 
 	sl = strlen(str) + 1;
-	if (sl > ((tab->data + tab->size) - tab->nextstr)) {
-		fprintf(stderr, "creating new strtab_elem with size %ld\n", sl);
+	if (sl > tab->fsiz) {
 		if (sl > STRTAB_SIZE) {
-			p = strtab_new(sl);
+			if ((p = newelem(sl)) == NULL)
+				return NULL;
+			tab->list = addend(tab->list, p);
+			return strncpy(p->data, str, sl);
 		}
 		else {
-			p = strtab_new(STRTAB_SIZE);
+			if ((p = newelem(STRTAB_SIZE)) == NULL)
+				return NULL;
+			tab->list = addfront(tab->list, p);
+			tab->fptr = tab->list->data;
+			tab->fsiz = STRTAB_SIZE;
 		}
-		if (p == NULL)
-			return NULL;
-		fprintf(stderr, "new elem: %p; old elem: %p\n", (void *) p, (void *) tab);
-		p->nextelem = tab;
-		tab = p;
-		fprintf(stderr, "new elem: %p; old elem: %p\n", (void *) p, (void *) tab);
 	}
-	rs = strncpy(tab->nextstr, str, sl);
-	tab->nextstr += sl;
-
+	rs = strncpy(tab->fptr, str, sl);
+	tab->fptr += sl;
+	tab->fsiz -= sl;
 	return rs;
 }

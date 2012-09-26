@@ -3,18 +3,23 @@
 
 #include <stddef.h>
 
-#define STRTAB_SIZE (4 * 1024)
-
-typedef struct strtab_elem strtab_elem;
-struct strtab_elem {
-	strtab_elem *nextelem;
-	char *nextstr;
-	char *data;
-	size_t size;
+enum {
+	STRTAB_SIZE = (4 * 1024)
 };
 
-strtab_elem *strtab_new(size_t size);
-void strtab_free(strtab_elem *tab);
-const char *strtab_insert(strtab_elem *restrict tab, const char *const restrict str);
+struct strtab_elem {
+	struct strtab_elem *next;
+	char *data;
+};
+
+typedef struct {
+	struct strtab_elem *list;
+	char *fptr;	/* pointer at free space */
+	size_t fsiz;	/* size of free space */
+} Strtab;
+
+Strtab *strtab_new(void);
+void strtab_free(Strtab *tab);
+const char *strtab_insert(Strtab *restrict tab, const char *const restrict str);
 
 #endif /* _STRTAB_H_ */
