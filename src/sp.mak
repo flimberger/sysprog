@@ -2,7 +2,7 @@
 # $(INC) and $(LIB)
 
 # directories
-LIBS=$(LIB) -lc
+LIBS=-lc $(LIB)
 
 # compiler and linker options
 CDBG=-g -O0
