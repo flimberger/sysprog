@@ -20,10 +20,12 @@ bopen(char *name, int mode)
 	int oflags;
 
 	/* TODO: append etc? */
+	oflags = mode;
 	switch (mode) {
 	case O_RDONLY:
+		oflags |= O_DIRECT;
+		break;
 	case O_WRONLY:
-		oflags = mode | O_DIRECT;
 		break;
 	default:
 		errno = EINVAL;
