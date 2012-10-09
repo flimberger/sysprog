@@ -1,0 +1,14 @@
+#! /opt/plan9/bin/rc
+
+testout=test.out
+testdata=../data/king_james_bible.ascii.txt
+testprog=./bputtest
+
+rm -f $testout
+touch $testout
+
+$testprog $testdata $testout
+if (cmp $testdata $testout)
+	echo test passed
+if not
+	echo test failed

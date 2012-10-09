@@ -6,7 +6,7 @@ lib/*
 bin/*
 testdata.txt
 
-a.out
+*.out
 ?*test
 spc
 
