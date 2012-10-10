@@ -17,7 +17,7 @@ struct Symbol {
 
 Symbol **makesymtab(size_t size);
 void freesymtab(Symbol **tab, size_t size);
-Symbol *storesym(Symbol **tab, char *lexem);
-Symbol *findsym(Symbol **tab, char *lexem);
+Symbol *storesym(Symbol **restrict tab, const char *restrict const lexem);
+Symbol *findsym(Symbol **restrict tab, const char *restrict const lexem);
 
 #endif /* _SYMTAB_H_ */

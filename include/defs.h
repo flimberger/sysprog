@@ -11,15 +11,15 @@ typedef long long      vlong;
 typedef unsigned long long uvlong;
 
 typedef enum {
-	sign,
-	integer,
-	identifier,
-	print,
-	read
+	SIGN,
+	INTEGER,
+	IDENTIFIER,
+	PRINT,
+	READ
 } Symboltype;
 
 typedef struct {
-	char *lexem;
+	const char *lexem;
 	Symboltype type;
 } Lexerinfo;
 

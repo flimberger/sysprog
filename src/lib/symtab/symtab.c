@@ -9,7 +9,7 @@ enum {
 };
 
 static uint
-hash(char *str)
+hash(const char *str)
 {
 	uint h;
 	uchar *p;
@@ -21,9 +21,9 @@ hash(char *str)
 }
 
 static Symbol *
-process(Symbol **tab, char *lexem, bool create)
+process(Symbol **restrict tab, const char *restrict const lexem, bool create)
 {
-	int h;
+	uint h;
 	Symbol *entry;
 
 	h = hash(lexem);
@@ -35,6 +35,7 @@ process(Symbol **tab, char *lexem, bool create)
 			return NULL;
 		if ((entry->info = malloc(sizeof(Lexerinfo))) == NULL) {
 			free(entry);
+			return NULL;
 		}
 		entry->info->lexem = lexem;
 		entry->next = tab[h];
@@ -44,13 +45,13 @@ process(Symbol **tab, char *lexem, bool create)
 }
 
 Symbol *
-storesym(Symbol **tab, char *lexem)
+storesym(Symbol **restrict tab, const char *restrict const lexem)
 {
 	return process(tab, lexem, true);
 }
 
 Symbol *
-findsym(Symbol **tab, char *lexem)
+findsym(Symbol **restrict tab, const char *restrict const lexem)
 {
 	return process(tab, lexem, false);
 }
