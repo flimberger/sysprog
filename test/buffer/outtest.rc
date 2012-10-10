@@ -1,8 +1,8 @@
 #! /opt/plan9/bin/rc
 
 testout=test.out
-testdata=../data/king_james_bible.ascii.txt
-testprog=./bputtest
+testdata=../data/king_james_bible.514.txt
+testprog=./bprintftest
 
 rm -f $testout
 touch $testout
