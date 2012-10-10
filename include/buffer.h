@@ -17,6 +17,7 @@ enum {
 	Bufsize		= 4 * 1024,
 	Bungetsize	= 4,
 	NBuf		= 8,		/* # of buffers/process */
+	Bfmtstrlen	= 512,		/* Maximum guaranteed len of fmtstr */
 
 	Readbuf		= 1 << 0,	/* status flags positions */
 	Writebuf	= 1 << 1,
