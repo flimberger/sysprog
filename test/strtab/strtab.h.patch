@@ -1,0 +1,17 @@
+--- strtab.h	2012-09-26 17:55:29.250000132 +0200
++++ strtab-debug.h	2012-09-26 18:05:46.058000143 +0200
+@@ -4,12 +4,13 @@
+ #include <stddef.h>
+ 
+ enum {
+-	STRTAB_SIZE = (4 * 1024)
++	STRTAB_SIZE = 8
+ };
+ 
+ struct strtab_elem {
+ 	struct strtab_elem *next;
+ 	char *data;
++	size_t size;
+ };
+ 
+ typedef struct {
