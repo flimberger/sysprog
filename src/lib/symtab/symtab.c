@@ -75,6 +75,7 @@ freesymtab(Symbol **tab, size_t size)
 	for (i = 0; i < size; i++) {
 		for (entry = tab[i]; entry != NULL; entry = next) {
 			next = entry->next;
+			free(entry->info);
 			free(entry);
 		}
 	}
