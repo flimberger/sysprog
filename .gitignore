@@ -8,7 +8,9 @@ testdata.txt
 
 *.out
 ?*test
-spc
+spc$
+
+*.pdf
 
 *.sublime-project
 *.sublime-workspace
