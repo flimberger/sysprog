@@ -34,6 +34,7 @@ typedef enum {
 	OBRCL,	/* ] */
 	CMMNT,
 	CMEND,
+	CUNEQ,
 	ENDTK,
 	NXTTK,
 	ERTOK,
@@ -202,6 +203,16 @@ getchar(void)
 	return c;
 }
 
+static void
+ungetchar(void)
+{
+	if (c == '\n')
+		row--;
+	else
+		col--;
+	bungetchar(src);
+}
+
 static State
 nwlex(void)
 {
@@ -323,6 +334,8 @@ oless(void)
 	last = OLESS;
 	if ((c = getchar()) == EOF)
 		return ENDLX;
+	if (c == '!')
+		return CUNEQ;
 	return NXTTK;
 }
 
@@ -453,6 +466,18 @@ cmend(void)
 }
 
 static State
+cuneq(void)
+{
+	last = CUNEQ;
+	if ((c = getchar()) != '>') {
+		ungetchar();
+		ungetchar();
+		return NXTTK;
+	}
+	return OUNEQ;
+}
+
+static State
 endtk(void)
 {
 	buf[--i] = '\0';
@@ -465,11 +490,7 @@ static State
 nxttk(void)
 {
 	buf[--i] = '\0';
-	if (c == '\n')
-		row--;
-	else
-		col--;
-	bungetchar(src);
+	ungetchar();
 	maketoken();
 	i = 0;
 	return NWLEX;
@@ -506,6 +527,7 @@ State (*acceptor[])(void) = {
 	obrcl,
 	cmmnt,
 	cmend,
+	cuneq,
 	endtk,
 	nxttk,
 	error
