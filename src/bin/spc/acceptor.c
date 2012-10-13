@@ -58,20 +58,22 @@ printtoken(Token *tk)
 		bprintf(out, "ERROR at char %d line %d\n", tk->col, tk->row);
 		break;
 	case IDENTIFIER:
-		bprintf(out, "Token IDENTIFIER char %d line %d Lexem %s\n", tk->col, tk->row, tk->data.sym->info->lexem);
+		bprintf(out, "Token IDENTIFIER char %4d line %3d Lexem %s\n", tk->col, tk->row, tk->data.sym->info->lexem);
 		break;
 	case INTEGER:
-		bprintf(out, "Token INTEGER char %d line %d Value %ld\n", tk->col, tk->row, tk->data.val);
+		bprintf(out, "Token INTEGER    char %4d line %3d Value %ld\n", tk->col, tk->row, tk->data.val);
 		break;
 	case PRINT:
-		bprintf(out, "Token PRINT char %d line %d Lexem %s\n", tk->col, tk->row, tk->data.sym);
+		bprintf(out, "Token PRINT      char %4d line %3d Lexem %s\n", tk->col, tk->row, tk->data.sym);
 		break;
 	case READ:
-		bprintf(out, "Token READ char %d line %d Lexem %s\n", tk->col, tk->row, tk->data.sym);
+		bprintf(out, "Token READ       char %4d line %3d Lexem %s\n", tk->col, tk->row, tk->data.sym);
 		break;
 	case SIGN:
-		bprintf(out, "Token SIGN char %d line %d Sign %s\n", tk->col, tk->row, tk->data.sign);
+		bprintf(out, "Token SIGN       char %4d line %3d Sign %s\n", tk->col, tk->row, tk->data.sign);
 		break;
+	default:
+		bprintf(out, "Unknown Token    char %4d line %3d\n");
 	}
 }
 
@@ -95,36 +97,68 @@ maketoken(void)
 		break;
 	case OPADD:	/* + */
 		tk.data.sign = "+";
+		tk.type = SIGN;
+		break;
 	case OPSUB:	/* - */
 		tk.data.sign = "-";
+		tk.type = SIGN;
+		break;
 	case OPDIV:	/* / */
 		tk.data.sign = "/";
+		tk.type = SIGN;
+		break;
 	case OPMUL:	/* * */
 		tk.data.sign = "*";
+		tk.type = SIGN;
+		break;
 	case OLESS:	/* < */
 		tk.data.sign = "<";
+		tk.type = SIGN;
+		break;
 	case OGRTR:	/* > */
 		tk.data.sign = ">";
+		tk.type = SIGN;
+		break;
 	case OASGN:	/* = */
 		tk.data.sign = "=";
+		tk.type = SIGN;
+		break;
 	case OUNEQ:	/* <!> */
 		tk.data.sign = "<!>";
+		tk.type = SIGN;
+		break;
 	case OPNOT:	/* ! */
 		tk.data.sign = "!";
+		tk.type = SIGN;
+		break;
 	case OPAND:	/* & */
 		tk.data.sign = "&";
+		tk.type = SIGN;
+		break;
 	case OTERM:	/* ; */
 		tk.data.sign = ";";
+		tk.type = SIGN;
+		break;
 	case OPAOP:	/* ( */
 		tk.data.sign = "(";
+		tk.type = SIGN;
+		break;
 	case OPACL:	/* ) */
 		tk.data.sign = ")";
+		tk.type = SIGN;
+		break;
 	case OCBOP:	/* { */
 		tk.data.sign = "{";
+		tk.type = SIGN;
+		break;
 	case OCBCL:	/* } */
 		tk.data.sign = "}";
+		tk.type = SIGN;
+		break;
 	case OBROP:	/* [ */
 		tk.data.sign = "[";
+		tk.type = SIGN;
+		break;
 	case OBRCL:	/* ] */
 		tk.data.sign = "]";
 		tk.type = SIGN;
@@ -206,7 +240,7 @@ nwlex(void)
 		return OTERM;
 	case '(':
 		return OPAOP;
-	case ':':
+	case ')':
 		return OPACL;
 	case '{':
 		return OCBOP;
@@ -421,19 +455,20 @@ cmend(void)
 static State
 endtk(void)
 {
-	if ((c = getchar()) != EOF) {
-		buf[--i] = '\0';
-		maketoken();
-		i = 0;
-		return NWLEX;
-	}
-	return ERTOK;
+	buf[--i] = '\0';
+	maketoken();
+	i = 0;
+	return NWLEX;
 }
 
 static State
 nxttk(void)
 {
 	buf[--i] = '\0';
+	if (c == '\n')
+		row--;
+	else
+		col--;
 	bungetchar(src);
 	maketoken();
 	i = 0;
