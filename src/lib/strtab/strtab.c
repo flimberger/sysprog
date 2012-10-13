@@ -11,7 +11,7 @@ newelem(size_t size)
 
 	if ((p = malloc(sizeof(struct strtab_elem))) == NULL)
 		return NULL;
-	if ((p->data = calloc(sizeof(char), size)) == NULL) {
+	if ((p->data = calloc(size, sizeof(char))) == NULL) {
 		free(p);
 		return NULL;
 	}
@@ -54,7 +54,7 @@ freeall(struct strtab_elem *list)
 {
 	struct strtab_elem *p;
 
-	while (list != 0) {
+	while (list != NULL) {
 		p = list->next;
 		freeelem(list);
 		list = p;
