@@ -11,11 +11,12 @@ typedef long long      vlong;
 typedef unsigned long long uvlong;
 
 typedef enum {
-	SIGN,
-	INTEGER,
+	ERROR,
 	IDENTIFIER,
+	INTEGER,
 	PRINT,
-	READ
+	READ,
+	SIGN
 } Symboltype;
 
 typedef struct {

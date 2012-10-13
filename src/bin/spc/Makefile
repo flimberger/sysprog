@@ -6,11 +6,11 @@ LIBP=$(ROOT)/lib
 BINP=$(ROOT)/bin
 
 HDR=$(NAME).h
-SRC=lexer.c symtab.c
+SRC=spc.c acceptor.c
 OBJ=$(SRC:.c=.o)
 
 INC=-I$(INCP)
-ARS=$(LIBP)/liberror.a $(LIBP)/libbuffer.a
+ARS=$(LIBP)/liberror.a $(LIBP)/libbuffer.a $(LIBP)/libstrtab.a $(LIBP)/libsymtab.a
 
 include ../../sp.mak
 
@@ -21,7 +21,7 @@ all: $(NAME)
 .c.o: $(HDR) $(INCP)/defs.h
 	$(CC) $(CFLAGS) -c $<
 
-$(NAME): $(HDR) $(OBJ)
+$(NAME): $(HDR) $(OBJ) $(ARS)
 	$(LD) $(LDFLAGS) $(OBJ) $(ARS) -o $(NAME)
 
 clean:
