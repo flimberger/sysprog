@@ -56,7 +56,7 @@ printtoken(Token *tk)
 		return;
 	switch (tk->type) {
 	case ERROR:
-		bprintf(out, "ERROR at char %d line %d\n", tk->col, tk->row);
+		bprintf(out, "Token ERROR   at char %4d line %3d; last char: %c\n", tk->col, tk->row, c);
 		break;
 	case IDENTIFIER:
 		bprintf(out, "Token IDENTIFIER char %4d line %3d Lexem %s\n", tk->col, tk->row, tk->data.sym->info->lexem);
@@ -166,7 +166,6 @@ maketoken(void)
 		break;
 	case CMMNT:
 	case CMEND:
-		bprintf(out, "ERTOK: comments should be ignored!\n");
 	case ENDTK:
 	case NXTTK:
 	case ERTOK:
@@ -508,8 +507,7 @@ static State
 error(void)
 {
 	last = ERTOK;
-	maketoken();
-	return ENDLX;
+	return ENDTK;
 }
 
 State (*acceptor[])(void) = {
