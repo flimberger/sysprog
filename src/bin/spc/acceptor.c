@@ -316,6 +316,8 @@ opdiv(void)
 	last = OPDIV;
 	if ((c = getchar()) == EOF)
 		return ENDLX;
+	if (c == '*')
+		return CMMNT;
 	return NXTTK;
 }
 
@@ -453,7 +455,9 @@ cmmnt(void)
 	last = CMMNT;
 	if ((c = getchar()) == EOF)
 		return ENDLX;
-	return NXTTK;
+	if (c == '*')
+		return CMEND;
+	return CMMNT;
 }
 
 static State
@@ -462,7 +466,11 @@ cmend(void)
 	last = CMEND;
 	if ((c = getchar()) == EOF)
 		return ENDLX;
-	return NXTTK;
+	if (c == '/') {
+		i = 0;
+		return NWLEX;
+	}
+	return CMMNT;
 }
 
 static State
@@ -544,4 +552,6 @@ lex(Buffer *restrict ibuf, Buffer *restrict obuf)
 	s = NWLEX;
 	while ((s = (*acceptor[s])()) != ENDLX)
 		;
+	buf[i] = '\0';
+	maketoken();
 }
