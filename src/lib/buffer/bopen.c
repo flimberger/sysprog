@@ -13,40 +13,37 @@
 
 #include "buffer.h"
 
+#define PERM (S_IRUSR | S_IWUSR | S_IRGRP)
+
 Buffer *
 bopen(char *name, int mode)
 {
 	Buffer *bp;
-	int oflags;
 
-	/* TODO: append etc? */
-	oflags = mode;
+	if ((bp = makebuf(Bufsize)) == NULL)
+		return NULL; /* errno set by makebuf() */
 	switch (mode) {
 	case O_RDONLY:
-		oflags |= O_DIRECT;
+		if ((bp->fd = open(name, O_RDONLY | O_DIRECT)) == -1) {
+			freebuf(bp);
+			return NULL; /* errno is set by open() */
+		}
 		break;
 	case O_WRONLY:
+		if ((bp->fd = creat(name, PERM)) == -1) {
+			freebuf(bp);
+			return NULL; /* errno is set by open() */
+		}
 		break;
 	default:
 		errno = EINVAL;
 		return NULL;
 	}
-
-	if ((bp = makebuf(Bufsize)) == NULL)
-		return NULL; /* errno set by makebuf() */
-
-	/* TODO: file creation if no file exists, and opened for writing */
-	if ((bp->fd = open(name, oflags)) == -1) {
-		freebuf(bp);
-		return NULL; /* errno is set by open() */
-	}
-
 	if (initbuf(bp, bp->fd, mode) == EOF) {
 		freebuf(bp);
 		close(bp->fd);
 		return NULL; /* errno is set by initbuf() */
 	}
-
 	return bp;
 }
 
