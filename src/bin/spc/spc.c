@@ -16,11 +16,18 @@ Symbol **symtab;
 int
 main(int argc, char *argv[])
 {
+	char *infile, *outfile;
+
 	pname = argv[0];
 	if (argc < 2)
 		die(1, "usage: %s OPTIONS file", pname);
+	infile = argv[1];
+	if (argc < 3)
+		outfile = "sp.out";
+	else
+		outfile = argv[2];
 	syminit();
-	compile(argv[1], argv[2]);
+	compile(infile, outfile);
 	return 0;
 }
 
