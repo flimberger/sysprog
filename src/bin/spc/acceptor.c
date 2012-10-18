@@ -12,7 +12,7 @@ enum {
 };
 
 typedef enum {
-	NWLEX,
+	NEWLX,
 	IDENT,
 	INTEG,
 	OPADD,	/* + */
@@ -35,150 +35,20 @@ typedef enum {
 	CMMNT,
 	CMEND,
 	CUNEQ,
-	ENDTK,
-	NXTTK,
-	ERTOK,
-	ENDLX
+	LXERR,
+	MKTOK,
+	LXEOF,
+	LXEND
 } State;
 
+extern Buffer *src, *out;
 extern Strtab *strtab;
 extern Symbol **symtab;
 
 static char buf[LEXLEN], c;
 static size_t col, i, tkcol, tkrow, row;
-static Buffer *src, *out;
 static State last;
-
-static void
-printtoken(Token *tk)
-{
-	if (tk == NULL)
-		return;
-	switch (tk->type) {
-	case ERROR:
-		bprintf(out, "Token ERROR   at char %4d line %3d; last char: %c\n", tk->col, tk->row, c);
-		break;
-	case IDENTIFIER:
-		bprintf(out, "Token IDENTIFIER char %4d line %3d Lexem %s\n", tk->col, tk->row, tk->data.sym->info->lexem);
-		break;
-	case INTEGER:
-		bprintf(out, "Token INTEGER    char %4d line %3d Value %ld\n", tk->col, tk->row, tk->data.val);
-		break;
-	case PRINT:
-		bprintf(out, "Token PRINT      char %4d line %3d Lexem %s\n", tk->col, tk->row, tk->data.sym);
-		break;
-	case READ:
-		bprintf(out, "Token READ       char %4d line %3d Lexem %s\n", tk->col, tk->row, tk->data.sym);
-		break;
-	case SIGN:
-		bprintf(out, "Token SIGN       char %4d line %3d Sign %s\n", tk->col, tk->row, tk->data.sign);
-		break;
-	default:
-		bprintf(out, "Unknown Token    char %4d line %3d\n");
-	}
-}
-
-static void
-maketoken(void)
-{
-	Token tk;
-	const char *lex;
-
-	tk.row = tkrow;
-	tk.col = tkcol;
-	switch (last) {
-	case IDENT:
-		tk.type = IDENTIFIER;
-		lex = strtab_insert(strtab, buf);
-		tk.data.sym = storesym(symtab, lex);
-		break;
-	case INTEG:
-		tk.type = INTEGER;
-		tk.data.val = atol(buf);
-		break;
-	case OPADD:	/* + */
-		tk.data.sign = "+";
-		tk.type = SIGN;
-		break;
-	case OPSUB:	/* - */
-		tk.data.sign = "-";
-		tk.type = SIGN;
-		break;
-	case OPDIV:	/* / */
-		tk.data.sign = "/";
-		tk.type = SIGN;
-		break;
-	case OPMUL:	/* * */
-		tk.data.sign = "*";
-		tk.type = SIGN;
-		break;
-	case OLESS:	/* < */
-		tk.data.sign = "<";
-		tk.type = SIGN;
-		break;
-	case OGRTR:	/* > */
-		tk.data.sign = ">";
-		tk.type = SIGN;
-		break;
-	case OASGN:	/* = */
-		tk.data.sign = "=";
-		tk.type = SIGN;
-		break;
-	case OUNEQ:	/* <!> */
-		tk.data.sign = "<!>";
-		tk.type = SIGN;
-		break;
-	case OPNOT:	/* ! */
-		tk.data.sign = "!";
-		tk.type = SIGN;
-		break;
-	case OPAND:	/* & */
-		tk.data.sign = "&";
-		tk.type = SIGN;
-		break;
-	case OTERM:	/* ; */
-		tk.data.sign = ";";
-		tk.type = SIGN;
-		break;
-	case OPAOP:	/* ( */
-		tk.data.sign = "(";
-		tk.type = SIGN;
-		break;
-	case OPACL:	/* ) */
-		tk.data.sign = ")";
-		tk.type = SIGN;
-		break;
-	case OCBOP:	/* { */
-		tk.data.sign = "{";
-		tk.type = SIGN;
-		break;
-	case OCBCL:	/* } */
-		tk.data.sign = "}";
-		tk.type = SIGN;
-		break;
-	case OBROP:	/* [ */
-		tk.data.sign = "[";
-		tk.type = SIGN;
-		break;
-	case OBRCL:	/* ] */
-		tk.data.sign = "]";
-		tk.type = SIGN;
-		break;
-	case CMMNT:
-	case CMEND:
-	case ENDTK:
-	case NXTTK:
-	case ERTOK:
-		tk.type = ERROR;
-		break;
-	case ENDLX:
-	case NWLEX:
-	default:
-		bprintf(out, "not yet handled\n");
-		tk.type = ERROR;
-	}
-	printtoken(&tk);
-}
+static Token token;
 
 static int
 getchar(void)
@@ -209,6 +79,7 @@ ungetchar(void)
 		row--;
 	else
 		col--;
+	i--;
 	bungetchar(src);
 }
 
@@ -216,10 +87,10 @@ static State
 nwlex(void)
 {
 	if ((c = getchar()) == EOF)
-		return ENDLX;
+		return LXEOF;
 	if (isspace(c)) {
 		i--;
-		return NWLEX;
+		return NEWLX;
 	}
 	tkrow = row;
 	tkcol = col;
@@ -261,7 +132,7 @@ nwlex(void)
 	case ']':
 		return OBRCL;
 	default:
-		return ERTOK;
+		return LXERR;
 	}
 }
 
@@ -270,12 +141,13 @@ ident(void)
 {
 	last = IDENT;
 	if ((c = getchar()) == EOF)
-		return ENDLX;
+		return MKTOK;
 	if (isalnum(c))
 		return IDENT;
 	else if (isspace(c))
-		return ENDTK;
-	return NXTTK;
+		return MKTOK;
+	ungetchar();
+	return MKTOK;
 }
 
 static State
@@ -283,30 +155,27 @@ integ(void)
 {
 	last = INTEG;
 	if ((c = getchar()) == EOF)
-		return ENDLX;
+		return MKTOK;
 	if (isdigit(c))
 		return INTEG;
 	else if (isspace(c))
-		return ENDTK;
-	return NXTTK;
+		return MKTOK;
+	ungetchar();
+	return MKTOK;
 }
 
 static State
 opadd(void)
 {
 	last = OPADD;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 opsub(void)
 {
 	last = OPSUB;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
@@ -314,19 +183,18 @@ opdiv(void)
 {
 	last = OPDIV;
 	if ((c = getchar()) == EOF)
-		return ENDLX;
+		return MKTOK;
 	if (c == '*')
 		return CMMNT;
-	return NXTTK;
+	ungetchar();
+	return MKTOK;
 }
 
 static State
 opmul(void)
 {
 	last = OPMUL;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
@@ -334,118 +202,95 @@ oless(void)
 {
 	last = OLESS;
 	if ((c = getchar()) == EOF)
-		return ENDLX;
+		return MKTOK;
 	if (c == '!')
 		return CUNEQ;
-	return NXTTK;
+	ungetchar();
+	return MKTOK;
 }
 
 static State
 ogrtr(void)
 {
 	last = OGRTR;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 oasgn(void)
 {
 	last = OASGN;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 ouneq(void)
 {
 	last = OUNEQ;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 opnot(void)
 {
 	last = OPNOT;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 opand(void)
 {
 	last = OPAND;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 oterm(void)
 {
 	last = OTERM;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 opaop(void)
 {
 	last = OPAOP;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 opacl(void)
 {
 	last = OPACL;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 ocbop(void)
 {
 	last = OCBOP;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 ocbcl(void)
 {
 	last = OCBCL;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 obrop(void)
 {
 	last = OBROP;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
 obrcl(void)
 {
 	last = OBRCL;
-	if ((c = getchar()) == EOF)
-		return ENDLX;
-	return NXTTK;
+	return MKTOK;
 }
 
 static State
@@ -453,7 +298,7 @@ cmmnt(void)
 {
 	last = CMMNT;
 	if ((c = getchar()) == EOF)
-		return ENDLX;
+		return LXEOF;
 	if (c == '*')
 		return CMEND;
 	return CMMNT;
@@ -464,10 +309,10 @@ cmend(void)
 {
 	last = CMEND;
 	if ((c = getchar()) == EOF)
-		return ENDLX;
+		return LXEOF;
 	if (c == '/') {
 		i = 0;
-		return NWLEX;
+		return NEWLX;
 	}
 	return CMMNT;
 }
@@ -479,35 +324,142 @@ cuneq(void)
 	if ((c = getchar()) != '>') {
 		ungetchar();
 		ungetchar();
-		return NXTTK;
+		ungetchar();
+		return MKTOK;
 	}
 	return OUNEQ;
 }
 
 static State
-endtk(void)
-{
-	buf[--i] = '\0';
-	maketoken();
-	i = 0;
-	return NWLEX;
-}
-
-static State
-nxttk(void)
-{
-	buf[--i] = '\0';
-	ungetchar();
-	maketoken();
-	i = 0;
-	return NWLEX;
-}
-
-static State
 error(void)
 {
-	last = ERTOK;
-	return ENDTK;
+	last = ERROR;
+	return MKTOK;
+}
+
+static State
+mktok(void)
+{
+	const char *lex;
+
+	buf[i] = '\0';
+	i = 0;
+	token.row = tkrow;
+	token.col = tkcol;
+	switch (last) {
+	case IDENT:
+		token.type = IDENTIFIER;
+		lex = strtab_insert(strtab, buf);
+		token.data.sym = storesym(symtab, lex);
+		break;
+	case INTEG:
+		token.type = INTEGER;
+		token.data.val = atol(buf);
+		break;
+	case OPADD:	/* + */
+		token.data.sign = "+";
+		token.type = SIGN;
+		break;
+	case OPSUB:	/* - */
+		token.data.sign = "-";
+		token.type = SIGN;
+		break;
+	case OPDIV:	/* / */
+		token.data.sign = "/";
+		token.type = SIGN;
+		break;
+	case OPMUL:	/* * */
+		token.data.sign = "*";
+		token.type = SIGN;
+		break;
+	case OLESS:	/* < */
+		token.data.sign = "<";
+		token.type = SIGN;
+		break;
+	case OGRTR:	/* > */
+		token.data.sign = ">";
+		token.type = SIGN;
+		break;
+	case OASGN:	/* = */
+		token.data.sign = "=";
+		token.type = SIGN;
+		break;
+	case OUNEQ:	/* <!> */
+		token.data.sign = "<!>";
+		token.type = SIGN;
+		break;
+	case OPNOT:	/* ! */
+		token.data.sign = "!";
+		token.type = SIGN;
+		break;
+		return NEWLX;
+	case OPAND:	/* & */
+		token.data.sign = "&";
+		token.type = SIGN;
+		break;
+	case OTERM:	/* ; */
+		token.data.sign = ";";
+		token.type = SIGN;
+		break;
+	case OPAOP:	/* ( */
+		token.data.sign = "(";
+		token.type = SIGN;
+		break;
+	case OPACL:	/* ) */
+		token.data.sign = ")";
+		token.type = SIGN;
+		break;
+	case OCBOP:	/* { */
+		token.data.sign = "{";
+		token.type = SIGN;
+		break;
+	case OCBCL:	/* } */
+		token.data.sign = "}";
+		token.type = SIGN;
+		break;
+	case OBROP:	/* [ */
+		token.data.sign = "[";
+		token.type = SIGN;
+		break;
+	case OBRCL:	/* ] */
+		token.data.sign = "]";
+		token.type = SIGN;
+		break;
+	case LXERR:
+		/*lex = strtab_insert(strtab, buf);
+		token.data.sign = lex; */
+		token.data.sign = "error";
+		token.type = ERROR;
+		break;
+	case LXEOF:
+		token.type = END;
+		break;
+	case MKTOK:
+	case CMMNT:
+	case CMEND:
+		die(1, "acceptor encountered unexpected state");
+	case LXEND:
+	case NEWLX:
+	default:
+		bprintf(out, "not yet handled\n");
+		token.type = ERROR;
+	}
+	return LXEND;
+
+}
+
+static State
+lxeof(void)
+{
+	last = LXEOF;
+	return MKTOK;
+}
+
+static State
+lxend(void)
+{
+	die(1, "acceptor tried to execute LXEND");
+	return LXEND;
 }
 
 State (*acceptor[])(void) = {
@@ -534,22 +486,20 @@ State (*acceptor[])(void) = {
 	cmmnt,
 	cmend,
 	cuneq,
-	endtk,
-	nxttk,
-	error
+	error,
+	mktok,
+	lxeof,
+	lxend
 };
 
-void
-lex(Buffer *restrict ibuf, Buffer *restrict obuf)
+Token *
+gettoken(void)
 {
 	State s;
 
-	src = ibuf;
-	out = obuf;
 	row = 1;
-	s = NWLEX;
-	while ((s = (*acceptor[s])()) != ENDLX)
+	s = NEWLX;
+	while ((s = (*acceptor[s])()) != LXEND)
 		;
-	buf[i] = '\0';
-	maketoken();
+	return &token;
 }

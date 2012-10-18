@@ -8,8 +8,8 @@
 typedef struct {
 	union {
 		long long val;
-		Symbol	*sym;
-		char	*sign;
+		const Symbol *sym;
+		const char *sign;
 	} data;
 	uint	row;
 	uint	col;
@@ -17,7 +17,8 @@ typedef struct {
 } Token;
 
 int compile(char *restrict infile, char *restrict outfile);
-void lex(Buffer *restrict ibuf, Buffer *restrict obuf);
+Token *gettoken(void);
+void printtoken(Token *tp);
 void syminit(void);
 void symterm(void);
 
