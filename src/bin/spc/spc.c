@@ -86,6 +86,9 @@ printtoken(Token *tp)
 	if (tp == NULL)
 		return;
 	switch (tp->type) {
+	case END:
+		bprintf(out, "End of file reached.");
+		break;
 	case ERROR:
 	/*	bprintf(out, "Token ERROR   at char %4d line %3d; last char: %s\n", tp->col, tp->row, tp->data.sign);
 	*/
@@ -104,7 +107,7 @@ printtoken(Token *tp)
 		bprintf(out, "Token READ       char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym);
 		break;
 	case SIGN:
-		bprintf(out, "Token SIGN       char %4d line %3d Sign %s\n", tp->col, tp->row, tp->data.sign);
+		bprintf(out, "Token SIGN       char %4d line %3d Sign  %s\n", tp->col, tp->row, tp->data.sign);
 		break;
 	default:
 		bprintf(out, "Unknown Token    char %4d line %3d\n");
