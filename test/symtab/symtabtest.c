@@ -22,47 +22,47 @@ main(int argc, char *argv[])
 
 	if ((sym = storesym(symtab, "foo")) == NULL)
 		die(1, "%s: failed to insert lexem \"foo\":", argv[0]);
-	sym->info->type = IDENTIFIER;
+	sym->type = IDENTIFIER;
 
 	if ((sym = storesym(symtab, "bar")) == NULL)
 		die(1, "%s: failed to insert lexem \"bar\":", argv[0]);
-	sym->info->type = IDENTIFIER;
+	sym->type = IDENTIFIER;
 
 	if ((sym = storesym(symtab, "baz")) == NULL)
 		die(1, "%s: failed to insert lexem \"baz\":", argv[0]);
-	sym->info->type = IDENTIFIER;
+	sym->type = IDENTIFIER;
 
 	if ((sym = findsym(symtab, "foo")) == NULL)
 		die(1, "%s: couldn't find lexem \"foo\":", argv[0]);
-	if (sym->info->type != IDENTIFIER)
+	if (sym->type != IDENTIFIER)
 		die(1, "%s: type of \"foo\" is not IDENTIFIER", argv[0]);
-	sym->info->type = INTEGER;
+	sym->type = INTEGER;
 
 	if ((sym = findsym(symtab, "bar")) == NULL)
 		die(1, "%s: couldn't find lexem \"bar\":", argv[0]);
-	if (sym->info->type != IDENTIFIER)
+	if (sym->type != IDENTIFIER)
 		die(1, "%s: type of \"bar\" is not IDENTIFIER", argv[0]);
-	sym->info->type = INTEGER;
+	sym->type = INTEGER;
 
 	if ((sym = findsym(symtab, "baz")) == NULL)
 		die(1, "%s: couldn't find lexem \"baz\":", argv[0]);
-	if (sym->info->type != IDENTIFIER)
+	if (sym->type != IDENTIFIER)
 		die(1, "%s: type of \"bar\" is not IDENTIFIER", argv[0]);
-	sym->info->type = INTEGER;
+	sym->type = INTEGER;
 
 	if ((sym = findsym(symtab, "foo")) == NULL)
 		die(1, "%s: couldn't find lexem \"foo\":", argv[0]);
-	if (sym->info->type != INTEGER)
+	if (sym->type != INTEGER)
 		die(1, "%s: type of \"foo\" is not INTEGER", argv[0]);
 
 	if ((sym = findsym(symtab, "bar")) == NULL)
 		die(1, "%s: couldn't find lexem \"bar\":", argv[0]);
-	if (sym->info->type != INTEGER)
+	if (sym->type != INTEGER)
 		die(1, "%s: type of \"bar\" is not INTEGER", argv[0]);
 
 	if ((sym = findsym(symtab, "baz")) == NULL)
 		die(1, "%s: couldn't find lexem \"baz\":", argv[0]);
-	if (sym->info->type != INTEGER)
+	if (sym->type != INTEGER)
 		die(1, "%s: type of \"bar\" is not INTEGER", argv[0]);
 
 	freesymtab(symtab, 0);

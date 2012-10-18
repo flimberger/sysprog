@@ -19,9 +19,4 @@ typedef enum {
 	SIGN
 } Symboltype;
 
-typedef struct {
-	const char *lexem;
-	Symboltype type;
-} Lexerinfo;
-
 #endif /* _DEFS_H_ */

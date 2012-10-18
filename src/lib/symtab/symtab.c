@@ -28,16 +28,12 @@ process(Symbol **restrict tab, const char *restrict const lexem, bool create)
 
 	h = hash(lexem);
 	for (entry = tab[h]; entry != NULL; entry = entry->next)
-		if (strcmp(lexem, entry->info->lexem) == 0)
+		if (strcmp(lexem, entry->lexem) == 0)
 			return entry;
 	if (create == true) {
 		if ((entry = malloc(sizeof(Symbol))) == NULL)
 			return NULL;
-		if ((entry->info = malloc(sizeof(Lexerinfo))) == NULL) {
-			free(entry);
-			return NULL;
-		}
-		entry->info->lexem = lexem;
+		entry->lexem = lexem;
 		entry->next = tab[h];
 		tab[h] = entry;
 	}
@@ -75,7 +71,6 @@ freesymtab(Symbol **tab, size_t size)
 	for (i = 0; i < size; i++) {
 		for (entry = tab[i]; entry != NULL; entry = next) {
 			next = entry->next;
-			free(entry->info);
 			free(entry);
 		}
 	}

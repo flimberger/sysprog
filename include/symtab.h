@@ -12,7 +12,8 @@ enum {
 typedef struct Symbol Symbol;
 struct Symbol {
 	Symbol *next;
-	Lexerinfo *info;
+	const char *lexem;
+	Symboltype type;
 };
 
 Symbol **makesymtab(size_t size);
