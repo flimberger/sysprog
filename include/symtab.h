@@ -6,7 +6,7 @@
 #include "defs.h"
 
 enum {
-	SYMTABSIZE = 32
+	SYMTABSIZE = 4096
 };
 
 typedef struct Symbol Symbol;
