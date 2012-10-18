@@ -11,6 +11,7 @@ typedef long long      vlong;
 typedef unsigned long long uvlong;
 
 typedef enum {
+	END,
 	ERROR,
 	IDENTIFIER,
 	INTEGER,
