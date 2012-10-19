@@ -46,7 +46,7 @@ extern Strtab *strtab;
 extern Symbol **symtab;
 
 static char buf[LEXLEN], c;
-static size_t col, i, tkcol, tkrow, row;
+static size_t col, i, tkcol, tkrow, row = 1;
 static State last;
 static Token token;
 
@@ -429,7 +429,6 @@ mktok(void)
 	case LXERR:
 		lex = strtab_insert(strtab, &c);
 		token.data.sign = lex;
-		/* token.data.sign = "error"; */
 		token.type = ERROR;
 		break;
 	case LXEOF:
@@ -438,15 +437,17 @@ mktok(void)
 	case MKTOK:
 	case CMMNT:
 	case CMEND:
-		die(1, "acceptor encountered unexpected state");
 	case LXEND:
+		die(1, "acceptor encountered unexpected state");
+
 	case LXNEW:
 	default:
 		bprintf(out, "not yet handled\n");
+		lex = strtab_insert(strtab, &c);
+		token.data.sign = lex;
 		token.type = ERROR;
 	}
 	return LXEND;
-
 }
 
 static State
@@ -498,7 +499,6 @@ gettoken(void)
 {
 	State s;
 
-	row = 1;
 	s = LXNEW;
 	while ((s = (*acceptor[s])()) != LXEND)
 		;
