@@ -42,8 +42,9 @@ compile(char *restrict infile, char *restrict outfile)
 		die(1, "%s: failed to allocate input buffer:", pname);
 	if ((out = bopen(outfile, O_WRONLY)) == NULL)
 		die(1, "%s: failed to allocate output buffer:", pname);
-	for (; t->type != ERROR && t->type != END; t = gettoken())
+	for (t = gettoken(); t->type != ERROR && t->type != END; t = gettoken())
 		printtoken(t);
+	printtoken(t);
 	bclose(out);
 	bclose(src);
 	return 0;
@@ -90,9 +91,9 @@ printtoken(Token *tp)
 		bprintf(out, "End of file reached.");
 		break;
 	case ERROR:
-	/*	bprintf(out, "Token ERROR   at char %4d line %3d; last char: %s\n", tp->col, tp->row, tp->data.sign);
+		bprintf(out, "Token ERROR   at char %4d line %3d Char  %s\n", tp->col, tp->row, tp->data.sign);
+	/*	bprintf(out, "Token ERROR   at char %4d line %3d\n",  tp->col, tp->row);
 	*/
-		bprintf(out, "Token ERROR   at char %4d line %3d\n",  tp->col, tp->row);
 		break;
 	case IDENTIFIER:
 		bprintf(out, "Token IDENTIFIER char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym->lexem);
@@ -110,6 +111,6 @@ printtoken(Token *tp)
 		bprintf(out, "Token SIGN       char %4d line %3d Sign  %s\n", tp->col, tp->row, tp->data.sign);
 		break;
 	default:
-		bprintf(out, "Unknown Token    char %4d line %3d\n");
+		bprintf(out, "Unknown Token    char %4d line %3d Value %x\n", tp->col, tp->row, tp->type);
 	}
 }

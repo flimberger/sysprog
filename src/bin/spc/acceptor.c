@@ -12,7 +12,7 @@ enum {
 };
 
 typedef enum {
-	NEWLX,
+	LXNEW,
 	IDENT,
 	INTEG,
 	OPADD,	/* + */
@@ -57,7 +57,7 @@ getchar(void)
 		if (errno != 0)
 			die(1, "read error:");
 	} else {
-		if (i > LEXLEN)
+		if (i >= LEXLEN)
 			die(2, "lexem too long");
 		buf[i++] = c;
 		switch (c) {
@@ -86,11 +86,12 @@ ungetchar(void)
 static State
 nwlex(void)
 {
+	last = LXNEW;
 	if ((c = getchar()) == EOF)
 		return LXEOF;
 	if (isspace(c)) {
 		i--;
-		return NEWLX;
+		return LXNEW;
 	}
 	tkrow = row;
 	tkcol = col;
@@ -312,7 +313,7 @@ cmend(void)
 		return LXEOF;
 	if (c == '/') {
 		i = 0;
-		return NEWLX;
+		return LXNEW;
 	}
 	return CMMNT;
 }
@@ -331,9 +332,9 @@ cuneq(void)
 }
 
 static State
-error(void)
+lxerr(void)
 {
-	last = ERROR;
+	last = LXERR;
 	return MKTOK;
 }
 
@@ -392,7 +393,7 @@ mktok(void)
 		token.data.sign = "!";
 		token.type = SIGN;
 		break;
-		return NEWLX;
+		return LXNEW;
 	case OPAND:	/* & */
 		token.data.sign = "&";
 		token.type = SIGN;
@@ -426,9 +427,9 @@ mktok(void)
 		token.type = SIGN;
 		break;
 	case LXERR:
-		/*lex = strtab_insert(strtab, buf);
-		token.data.sign = lex; */
-		token.data.sign = "error";
+		lex = strtab_insert(strtab, &c);
+		token.data.sign = lex;
+		/* token.data.sign = "error"; */
 		token.type = ERROR;
 		break;
 	case LXEOF:
@@ -439,7 +440,7 @@ mktok(void)
 	case CMEND:
 		die(1, "acceptor encountered unexpected state");
 	case LXEND:
-	case NEWLX:
+	case LXNEW:
 	default:
 		bprintf(out, "not yet handled\n");
 		token.type = ERROR;
@@ -486,7 +487,7 @@ State (*acceptor[])(void) = {
 	cmmnt,
 	cmend,
 	cuneq,
-	error,
+	lxerr,
 	mktok,
 	lxeof,
 	lxend
@@ -498,7 +499,7 @@ gettoken(void)
 	State s;
 
 	row = 1;
-	s = NEWLX;
+	s = LXNEW;
 	while ((s = (*acceptor[s])()) != LXEND)
 		;
 	return &token;
