@@ -1,7 +1,7 @@
 #include <fcntl.h>
 
 #include <ctype.h>
-/* #include <stdio.h> */
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "buffer.h"
@@ -9,6 +9,8 @@
 #include "spc.h"
 #include "strtab.h"
 #include "symtab.h"
+
+#define STDOUTFILE	"sp.out"
 
 Buffer *src, *out;
 char *pname;
@@ -19,15 +21,20 @@ int
 main(int argc, char *argv[])
 {
 	char *infile, *outfile;
+	int i;
 
+	infile = outfile = NULL;
 	pname = argv[0];
 	if (argc < 2)
 		die(1, "usage: %s OPTIONS file", pname);
-	infile = argv[1];
-	if (argc < 3)
-		outfile = "sp.out";
-	else
-		outfile = argv[2];
+	for (i = 1; i < argc; i++)
+		if (argv[i][0] == '-') {
+			if (argv[i][1] == 'o')
+				outfile = argv[++i];
+		} else
+			infile = argv[i];
+	if (outfile == NULL)
+		outfile = STDOUTFILE;
 	syminit();
 	compile(infile, outfile);
 	return 0;
