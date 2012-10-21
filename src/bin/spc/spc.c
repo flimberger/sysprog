@@ -59,10 +59,16 @@ compile(char *restrict infile, char *restrict outfile)
 void
 syminit(void)
 {
+	Symbol *s;
+
 	if ((strtab = strtab_new()) == NULL)
 		die(1, "%s: failed to allocate string table", pname);
 	if ((symtab = makesymtab(SYMTABSIZE)) == NULL)
 		die(1, "%s: failed to allocate symbol table", pname);
+	s = storesym(symtab, strtab_insert(strtab, "print"));
+	s->type = PRINT;
+	s = storesym(symtab, strtab_insert(strtab, "read"));
+	s->type = READ;
 	atexit(symterm);
 }
 
@@ -91,10 +97,10 @@ printtoken(Token *tp)
 		bprintf(out, "Token INTEGER    char %4d line %3d Value %ld\n", tp->col, tp->row, tp->data.val);
 		break;
 	case PRINT:
-		bprintf(out, "Token PRINT      char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym);
+		bprintf(out, "Token PRINT      char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym->lexem);
 		break;
 	case READ:
-		bprintf(out, "Token READ       char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym);
+		bprintf(out, "Token READ       char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym->lexem);
 		break;
 	case SIGN:
 		bprintf(out, "Token SIGN       char %4d line %3d Sign  %s\n", tp->col, tp->row, tp->data.sign);

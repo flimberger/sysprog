@@ -79,7 +79,6 @@ ungetchar(void)
 		row--;
 	else
 		col--;
-	i--;
 	bungetchar(src);
 }
 
@@ -325,7 +324,7 @@ cuneq(void)
 	if ((c = getchar()) != '>') {
 		ungetchar();
 		ungetchar();
-		ungetchar();
+		last = OLESS;
 		return MKTOK;
 	}
 	return OUNEQ;
@@ -343,15 +342,17 @@ mktok(void)
 {
 	const char *lex;
 
-	buf[i] = '\0';
+	buf[i - 1] = '\0';
 	i = 0;
 	token.row = tkrow;
 	token.col = tkcol;
 	switch (last) {
 	case IDENT:
-		token.type = IDENTIFIER;
 		lex = strtab_insert(strtab, buf);
 		token.data.sym = storesym(symtab, lex);
+		if (token.data.sym->type == 0)
+			token.data.sym->type = IDENTIFIER;
+		token.type = token.data.sym->type;
 		break;
 	case INTEG:
 		token.type = INTEGER;
@@ -434,18 +435,8 @@ mktok(void)
 	case LXEOF:
 		token.type = END;
 		break;
-	case MKTOK:
-	case CMMNT:
-	case CMEND:
-	case LXEND:
-		die(1, "acceptor encountered unexpected state");
-
-	case LXNEW:
 	default:
-		bprintf(out, "not yet handled\n");
-		lex = strtab_insert(strtab, &c);
-		token.data.sign = lex;
-		token.type = ERROR;
+		die(1, "acceptor ended up in an unexpected state");
 	}
 	return LXEND;
 }

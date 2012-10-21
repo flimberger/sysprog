@@ -8,7 +8,7 @@
 typedef struct {
 	union {
 		long long val;
-		const Symbol *sym;
+		Symbol *sym;
 		const char *sign;
 	} data;
 	uint	row;
