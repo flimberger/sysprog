@@ -1,7 +1,6 @@
 #include <fcntl.h>
 
 #include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "buffer.h"
@@ -70,20 +69,6 @@ syminit(void)
 void
 symterm(void)
 {
-/*
-	size_t i, c[SYMTABSIZE];
-	Symbol *s;
-
-	for (i = 0; i < SYMTABSIZE; i++) {
-		s = symtab[i];
-		c[i] = 0;
-		while (s != NULL) {
-			c[i]++;
-			s = s->next;
-		}
-		fprintf(stderr, "%lu\n", c[i]);
-	}
-*/
 	freesymtab(symtab, 0);
 	strtab_free(strtab);
 }
@@ -95,12 +80,9 @@ printtoken(Token *tp)
 		return;
 	switch (tp->type) {
 	case END:
-		bprintf(out, "End of file reached.");
 		break;
 	case ERROR:
 		bprintf(out, "Token ERROR   at char %4d line %3d Char  %s\n", tp->col, tp->row, tp->data.sign);
-	/*	bprintf(out, "Token ERROR   at char %4d line %3d\n",  tp->col, tp->row);
-	*/
 		break;
 	case IDENTIFIER:
 		bprintf(out, "Token IDENTIFIER char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym->lexem);
