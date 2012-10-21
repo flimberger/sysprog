@@ -14,7 +14,7 @@ ARS=$(LIBP)/liberror.a $(LIBP)/libbuffer.a $(LIBP)/libstrtab.a $(LIBP)/libsymtab
 
 include ../../sp.mak
 
-.PHONY: all clean install
+.PHONY: all install clean nuke
 
 all: $(NAME)
 
@@ -24,8 +24,11 @@ all: $(NAME)
 $(NAME): $(HDR) $(OBJ) $(ARS)
 	$(LD) $(LDFLAGS) $(OBJ) $(ARS) -o $(NAME)
 
+install: all
+	cp $(NAME) $(BINP)
+
 clean:
 	rm -f $(OBJ) $(NAME)
 
-install: all
-	cp $(NAME) $(BINP)
+nuke: clean
+	rm -f $(BINP)/spc

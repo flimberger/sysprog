@@ -14,7 +14,7 @@ INC=-I$(INCP)
 
 include ../../sp.mak
 
-.PHONY: all clean install
+.PHONY: all install clean nuke
 
 all: $(AROBJ)
 
@@ -24,9 +24,11 @@ all: $(AROBJ)
 $(AROBJ): $(OBJ)
 	ar rs $@ $(OBJ)
 
-clean:
-	rm -f $(OBJ) $(AROBJ)
-
 install: all
 	cp $(AROBJ) $(LIBP)
 
+clean:
+	rm -f $(OBJ) $(AROBJ)
+
+nuke: clean
+	rm -f $(LIBP)/$(AROBJ)
