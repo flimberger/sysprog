@@ -13,3 +13,12 @@ spc$
 
 *.sublime-project
 *.sublime-workspace
+
+# all executables, fuck you git!
+src/bin/spc/spc
+test/buffer/bungettest
+test/buffer/bgettest
+test/buffer/bprintftest
+test/buffer/bputtest
+test/symtab/symtabtest
+test/strtab/strtabtest
