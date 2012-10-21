@@ -35,6 +35,7 @@ process(Symbol **restrict tab, const char *restrict const lexem, bool create)
 			return NULL;
 		entry->lexem = lexem;
 		entry->next = tab[h];
+		entry->type = 0;
 		tab[h] = entry;
 	}
 	return entry;
