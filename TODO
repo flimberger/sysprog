@@ -1,1 +1,2 @@
-Recognise keywords as such and not as lexems.
+read and print keywords get unneccessarily written into the strtab: use strtab internally in symtab
+use pname in error library
