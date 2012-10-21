@@ -1,0 +1,2 @@
+Set maximum lexem length to 4096 chars
+Recognise keywords as such and not as lexems.
