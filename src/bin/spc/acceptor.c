@@ -8,7 +8,7 @@
 #include "symtab.h"
 
 enum {
-	LEXLEN = 1024
+	LEXLEN = 1024 * 4
 };
 
 typedef enum {
