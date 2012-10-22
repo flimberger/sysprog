@@ -47,6 +47,15 @@ determines the exit status.
 also prints the given error message,
 but if ulimit is set accordingly,
 it additionally performs a core dump.
+.SH NOTES
+This library was heavily inspired by the
+.I eprintf
+family of functions shown in
+.I "The Practice of Programming"
+by Brian W. Kernighan and Rob Pike,
+and by the error functions from
+.I "Advanced Programming in the UNIX Environment"
+by W. Richard Stevens and Stephen A. Rago.
 .SH SEE ALSO
 .BR exit(3),
 .BR abort(3)
