@@ -18,11 +18,12 @@ main(int argc, char *argv[])
 	Strtab *tab;
 	struct strtab_elem *p;
 
+	setpname(argv[0]);
 	if (argc > 1)
-		fprintf(stderr, "%s: unused arguments\n", argv[0]);
+		fprintf(stderr, "%s: unused arguments\n", getpname());
 
 	if ((tab = strtab_new()) == NULL)
-		die(1, "%s: allocating strtab failed:", argv[0]);
+		die(1, "allocating strtab failed:");
 
 	foo = strtab_insert(tab, "foo");
 	bar = strtab_insert(tab, "bar");
@@ -33,28 +34,28 @@ main(int argc, char *argv[])
 	f = 0;
 	if (strcmp(foo, "foo") != 0) {
 		f++;
-		fprintf(stderr, "%s: %d. failure: pointer to \"foo\" failed\n", argv[0], f);
+		fprintf(stderr, "%d. failure: pointer to \"foo\" failed\n", f);
 	}
 
 	if (strcmp(bar, "bar") != 0) {
 		f++;
-		fprintf(stderr, "%s: %d. failure: pointer to \"bar\" failed\n", argv[0], f);
+		fprintf(stderr, "%d. failure: pointer to \"bar\" failed\n", f);
 	}
 
 	if (strcmp(mf, "motherfucking") != 0) {
 		f++;
-		fprintf(stderr, "%s: %d. failure: pointer to \"motherfucking\" failed\n", argv[0], f);
+		fprintf(stderr, "%d. failure: pointer to \"motherfucking\" failed\n", f);
 	}
 
 	if (strcmp(baz, "baz") != 0) {
 		f++;
-		fprintf(stderr, "%s: %d. failure: pointer to \"baz\" failed\n", argv[0], f);
+		fprintf(stderr, "%d. failure: pointer to \"baz\" failed\n", f);
 	}
 
 	if (f != 0)
-		fprintf(stderr, "%s: %d pointer comparisions failed.\n", argv[0], f);
+		fprintf(stderr, "%d pointer comparisions failed.\n", f);
 	else
-		fprintf(stderr, "%s: all pointer comparisons successful\n", argv[0]);
+		fprintf(stderr, "all pointer comparisons successful\n");
 
 	p = tab->list;
 	l = 1;

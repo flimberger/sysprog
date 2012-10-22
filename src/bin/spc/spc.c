@@ -23,9 +23,9 @@ main(int argc, char *argv[])
 	int i;
 
 	infile = outfile = NULL;
-	pname = argv[0];
+	setpname(argv[0]);
 	if (argc < 2)
-		die(1, "usage: %s OPTIONS file", pname);
+		die(1, "usage: %s OPTIONS file", getpname());
 	for (i = 1; i < argc; i++)
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 'o')
@@ -45,9 +45,9 @@ compile(char *restrict infile, char *restrict outfile)
 	Token *t;
 
 	if ((src = bopen(infile, O_RDONLY)) == NULL)
-		die(1, "%s: failed to allocate input buffer:", pname);
+		die(1, "failed to allocate input buffer:");
 	if ((out = bopen(outfile, O_WRONLY)) == NULL)
-		die(1, "%s: failed to allocate output buffer:", pname);
+		die(1, "failed to allocate output buffer:");
 	for (t = gettoken(); t->type != ERROR && t->type != END; t = gettoken())
 		printtoken(t);
 	printtoken(t);
@@ -62,9 +62,9 @@ syminit(void)
 	Symbol *s;
 
 	if ((strtab = strtab_new()) == NULL)
-		die(1, "%s: failed to allocate string table", pname);
+		die(1, "failed to allocate string table");
 	if ((symtab = makesymtab(SYMTABSIZE)) == NULL)
-		die(1, "%s: failed to allocate symbol table", pname);
+		die(1, "failed to allocate symbol table");
 	s = storesym(symtab, strtab_insert(strtab, "print"));
 	s->type = PRINT;
 	s = storesym(symtab, strtab_insert(strtab, "read"));
