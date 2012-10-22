@@ -1,4 +1,4 @@
-.TH BUFFER 3 2012-09-03 "IB 321" "Systemnahes Programmieren"
+.TH BUFFER 3 2012-10-22 "IB 321" "Systemnahes Programmieren"
 .SH NAME
 makebuf, initbuf, bopen, bclose, termbuf, freebuf, bflush, bbflush, bgetchar,
 bungetchar, fillbuf, bputchar, bprintf, vbprintf
@@ -31,7 +31,7 @@ bungetchar, fillbuf, bputchar, bprintf, vbprintf
 .PP
 .BI "int bputchar(Buffer *" buf ", uchar " c  );
 .PP
-.BI "int bprintf(Buffer *" buf ", uchar *" fmt ", " ... );
+.BI "int bprintf(Buffer *" buf ", uchar *" fmt ", ... );"
 .PP
 .BI "int vbprintf(Buffer *" buf ", uchar *" fmt ", va_list " args );
 .PP
@@ -167,4 +167,7 @@ File opening is currently only possible with
 and
 .B O_WRONLY
 without any flags.
-
+If you find other bugs, please report them to
+.I <flo@snakeoilproductions.net>
+or directly at
+.IR https://github.com/flimberger/sysprog/issues .
