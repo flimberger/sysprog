@@ -18,8 +18,8 @@ typedef struct {
 	size_t fsiz;	/* size of free space */
 } Strtab;
 
-Strtab *strtab_new(void);
-void strtab_free(Strtab *tab);
-const char *strtab_insert(Strtab *restrict tab, const char *const restrict str);
+Strtab *makestrtab(void);
+void freestrtab(Strtab *tab);
+const char *storestr(Strtab *restrict tab, const char *const restrict str);
 
 #endif /* _STRTAB_H_ */

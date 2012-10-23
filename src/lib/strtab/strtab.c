@@ -62,7 +62,7 @@ freeall(struct strtab_elem *list)
 }
 
 Strtab *
-strtab_new(void)
+makestrtab(void)
 {
 	Strtab *tab;
 
@@ -78,14 +78,14 @@ strtab_new(void)
 }
 
 void
-strtab_free(Strtab *tab)
+freestrtab(Strtab *tab)
 {
 	freeall(tab->list);
 	free(tab);
 }
 
 const char *
-strtab_insert(Strtab *restrict tab, const char *const restrict str)
+storestr(Strtab *restrict tab, const char *const restrict str)
 {
 	struct strtab_elem *p;
 	size_t sl;

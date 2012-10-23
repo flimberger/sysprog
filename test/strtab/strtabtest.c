@@ -22,14 +22,14 @@ main(int argc, char *argv[])
 	if (argc > 1)
 		fprintf(stderr, "%s: unused arguments\n", getpname());
 
-	if ((tab = strtab_new()) == NULL)
+	if ((tab = makestrtab()) == NULL)
 		die(1, "allocating strtab failed:");
 
-	foo = strtab_insert(tab, "foo");
-	bar = strtab_insert(tab, "bar");
-	bat = strtab_insert(tab, "bat");
-	mf = strtab_insert(tab, "motherfucking");
-	baz = strtab_insert(tab, "baz");
+	foo = storestr(tab, "foo");
+	bar = storestr(tab, "bar");
+	bat = storestr(tab, "bat");
+	mf = storestr(tab, "motherfucking");
+	baz = storestr(tab, "baz");
 
 	f = 0;
 	if (strcmp(foo, "foo") != 0) {
@@ -77,7 +77,7 @@ main(int argc, char *argv[])
 		putchar('\n');
 	}
 
-	strtab_free(tab);
+	freestrtab(tab);
 
 	return 0;
 }

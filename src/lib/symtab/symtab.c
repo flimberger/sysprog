@@ -34,7 +34,7 @@ process(Symtab *restrict tab, const char *restrict const lexem, bool create)
 	if (create == true) {
 		if ((entry = malloc(sizeof(Symbol))) == NULL)
 			return NULL;
-		if ((entry->lexem = strtab_insert(tab->strtab, lexem)) == NULL) {
+		if ((entry->lexem = storestr(tab->strtab, lexem)) == NULL) {
 			free(entry);
 			return NULL;
 		}
@@ -70,7 +70,7 @@ makesymtab(size_t size)
 			free(symtab);
 			return NULL;
 		}
-		if ((symtab->strtab = strtab_new()) == NULL) {
+		if ((symtab->strtab = makestrtab()) == NULL) {
 			free(symtab->symbols);
 			free(symtab);
 			return NULL;
@@ -92,6 +92,6 @@ freesymtab(Symtab *tab)
 		}
 	}
 	free(tab->symbols);
-	strtab_free(tab->strtab);
+	freestrtab(tab->strtab);
 	free(tab);
 }
