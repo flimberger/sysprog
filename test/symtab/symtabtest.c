@@ -5,10 +5,6 @@
 #include "error.h"
 #include "symtab.h"
 
-/*
- * This test needs a special patched version of the stringtab library, where
- * STRTAB_SIZE is 8 and the strtab_elem struct has a size_t size element.
- */
 int
 main(int argc, char *argv[])
 {
