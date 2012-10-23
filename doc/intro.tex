@@ -1,0 +1,82 @@
+\chapter{Einführung}
+\label{chap:intro}
+
+\section{Einordnung}
+\label{sec:category}
+Die Aufgabe in der Laborveranstaltung ``Systemnahes Programmieren'' der
+Hochschule Karlsruhe ist es,
+einen einfachen Compiler zu erstellen.
+
+Im folgenden wird die Lösung des ersten Aufgabenteils,
+dem Erstellen des Scanners,
+dokumentiert.
+
+Die API-Dokumentation der einzelnen Komponenten liegt in Form von Manual-Pages
+im Verzeichnis \texttt{doc/man/} innerhalb des Projektverzeichnisses vor.
+Wie unter den meisten unixoiden Betriebssystemen üblich,
+sind diese in verschiedene Sektionen geteilt,
+wobei Programme in Sektion 1 und Bibliotheken in Sektion 2 angesiedelt sind.
+
+\section{Übersicht}
+\label{sec:overview}
+Das erste Kapitel, die Einführung,
+beinhaltet die thematische Einordnung,
+diese Übersicht sowie eine Beschreibung der Aufgabe.
+Das zweite Kapitel befasst sich mit der Implementierung der
+Ein-/Ausgabebibliothek,
+welche die Pufferung der Daten bereitstellt.
+Das nächste Kapitel widmet sich kurz der kleinen Fehlerbibliothek,
+welche in allen Programmen verwendet wird.
+In den darauffolgenden Kapiteln werden die Symboltabelle und die von dieser
+verwendeten Stringtabelle vorgestellt,
+womit die Grundlagen für das letzte Kapitel gelegt werden,
+welches den Scanner beschreibt.
+Dieser Teil baut auf die vorrausgehenden Kapitel auf,
+da er alle zuvor beschriebenen Komponenten verwendet.
+
+\section{Aufgabenstellung}
+\label{sec:description}
+Die Zielplattform für des zu erstellenden Compilers ist Linux.
+Die zu verwendende Sprache ist C++,
+zum Buildmanagement wird GNU Make verwendet.
+Diese Vorgaben wurden in dieser Implementierung insofern abgewandelt,
+dass sowohl Code als auch Makefiles weitestgehend portabel gehalten sind
+und anstatt C++ reines C verwendet wird.
+Volle Portabilität ist jedoch nicht möglich,
+da in der Aufgabenstellung die Verwendung des \texttt{O\_DIRECT}-Flags beim
+Öffnen der Lesepuffer vorgeschrieben wird.
+Dies steht lediglich unter Linux zur Verfügung.
+
+Zur Umsetzung sollen die einzelnen Komponenten dem Hauptprogramm als
+Programmbibliotheken zur Verfügung gestellt werden.
+
+\subsection{Sprache des Compilers}
+\label{sec:language}
+Die durch den Compiler zu verarbeitende Sprache ist eine einfache reguläre
+Sprache,
+deren im folgenden beschrieben wird.
+
+Die Grundmenge der Sprache sind die Ziffern von 0 bis 9,
+die Groß- und Kleinbuchstaben des lateinischen Alphabets sowie einige Sonderzeichen.
+Daraus ergeben sich folgende Token:
+\begin{itemize}
+\item \emph{integer}: eine oder mehrere Ziffern
+\item \emph{identifier}: mindestens ein Buchstabe, eventuell gefolgt von weiteren Buchstaben oder Ziffern
+\item \emph{sign\ldots}: eines der zugelassenen Sonderzeichen, eventuell aus mehreren zusammengesetzt
+\item \emph{print}: die Zeichenkette ``print''
+\item \emph{read}: die Zeichenkette ``read''
+\end{itemize}
+
+Die resultierende Grammatik ist im folgenden tabellarisch dargestellt:
+
+\begin{tabular}{l c l}
+\hline \\
+letter & ::= & ``A'' \ldots ``B'' \textbar ``a'' \ldots ``b'' \\
+digit & ::= & ``0'' \ldots ``9'' \\
+sign\ldots & ::= & ``+'' \textbar ``-'' \textbar ``/'' \textbar ``*'' \textbar ``\textless'' \textbar ``\textgreater'' \textbar ``='' \textbar ``\textless!\textgreater'' \textbar ``!'' \textbar ``\&'' \textbar ``;'' \textbar ``('' \textbar ``)'' \textbar ``\{'' \textbar ``\}'' \textbar ``['' \textbar ``]'' \\
+integer & ::= & digit digit* \\
+identifier & ::= & letter (letter \textbar digit) \\
+print & ::= & ``print'' \\
+read & ::= & ``read'' \\
+\hline
+\end{tabular}

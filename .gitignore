@@ -10,6 +10,14 @@ bin/*
 spc$
 
 *.pdf
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.lof
+*.log
+*.out
+*.toc
 
 *.sublime-project
 *.sublime-workspace

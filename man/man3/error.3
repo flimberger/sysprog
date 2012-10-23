@@ -1,0 +1,67 @@
+.TH ERROR 3 2012-10-22 "IB 321" "Systemnahes Programmieren"
+.SH NAME
+setpname, getpname, warn, die, panic
+\- error handling
+.SH SYNOPSIS
+.B #include <error.h>
+.PP
+.BI "void setpname(char *" name );
+.PP
+.BI "char *getpname(void);
+.PP
+.BI "void warn(const char *" fmt ", ... );"
+.PP
+.BI "void die(int status , const char *" fmt ", ... );"
+.PP
+.BI "void panic(const char *" fmt ", ... );"
+.PP
+.SH DESCRIPTION
+These routines provide reasonable error management functionality.
+.PP
+.B setpname
+saves
+.I pname
+internally,
+so it can be used as a prefix for error output.
+.PP
+.B getpname
+returns the current value of this variable.
+.PP
+.B warn
+prints the error message specified by
+.I fmt
+to
+.IR stderr ,
+prefixed by the program name,
+if it was previously set with
+.BR setpname .
+.PP
+.B die
+prints the error message like
+.BR warn ,
+but also exits the whole program via
+.BR exit (3).
+.I status
+determines the exit status.
+.B panic
+also prints the given error message,
+but if ulimit is set accordingly,
+it additionally performs a core dump.
+.SH NOTES
+This library was heavily inspired by the
+.I eprintf
+family of functions shown in
+.I "The Practice of Programming"
+by Brian W. Kernighan and Rob Pike,
+and by the error functions from
+.I "Advanced Programming in the UNIX Environment"
+by W. Richard Stevens and Stephen A. Rago.
+.SH SEE ALSO
+.BR exit(3),
+.BR abort(3)
+.SH BUGS
+There are currently no known bugs.
+If you find some, please report them to
+.I <flo@snakeoilproductions.net>
+or at
+.IR https://github.com/flimberger/sysprog/issues .

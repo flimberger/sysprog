@@ -1,0 +1,34 @@
+.TH SPC 1 2012-10-22 "IB 321" "Systemnahes Programmieren"
+.SH NAME
+spc - simple programming language compiler
+.SH SYNOPSIS
+.BI "spc [OPTIONS] " file
+.SH DESCRIPTION
+This command compiles the named
+.I file
+into a list of tokens.
+.PP
+The options are:
+.TP
+.BR "-o " outfile
+Put output into file
+.IR outfile .
+Default is to strip the trailing
+.B .c
+and append an
+.BR .o .
+.SH NOTES
+This program is currently in an early testing stage,
+where it has little to no practical value.
+.SH SEE ALSO
+.BR cc (1),
+.BR gcc (1)
+.SH BUGS
+Currently, only one input file can be processed,
+and the default name is
+.B sp.out
+instead of the name of the input file.
+If you find other bugs, please report then to
+.I <flo@snakeoilproductions.net>
+or directly at
+.IR https://github.com/flimberger.sysprog/issures .

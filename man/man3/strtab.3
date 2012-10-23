@@ -1,0 +1,60 @@
+.TH ERROR 3 2012-10-22 "IB 321" "Systemnahes Programmieren"
+.SH NAME
+strtab_new, strtab_free, strtab_insert
+\- store strings in memory
+.SH SYNOPSIS
+.B #include <strtab.h>
+.PP
+.BI "Strtab *strtab_new(void);"
+.PP
+.BI "void strtab_free(Strtab *" tab );
+.PP
+.BI "const char *strtab_insert(Strtab *restrict " tab ", const char *const restrict " str );
+.PP
+.SH DESCRIPTION
+This library provides a way to store strings in central place.
+The strings are stored in lists of big character arrays,
+from where they can be referenced and used.
+.PP
+A new store is allocated with
+.BR strtab_new ,
+which allocates memory for a
+.B Strtab
+and a buffer and returns a pointer to it.
+.B strtab_free
+frees the memory associated with
+.I tab
+struct and the list of string buffers.
+.PP
+New strings are inserted into a store by calling
+.I strtab_insert
+with
+.I tab
+pointing to a valid
+.B Strtab
+and
+.I str
+to the string to store.
+This string is copied into the buffer by
+.BR strncpy (3),
+and therefore is always NULL terminated.
+.SH NOTES
+The default buffer size is 4096 characters.
+Longer strings are no problem,
+extra memory is reserved and appended at the end of the list.
+Currently, there is no way to remove strings from the store.
+This may be seen as a bug,
+but the intended usage is to provide a way to store strings for the whole
+execution time of a program.
+Aditionally, the structure is very simplistic,
+there is also no smart algorithm to use the memory most efficient.
+.SH SEE ALSO
+.BR calloc (3),
+.BR free (3),
+.BR strncpy (3)
+.SH BUGS
+There are currently no known Bugs.
+If you find some, please report them to
+.I <flo@snakeoilproductions.net>
+or directly at
+.IR https://github.com/flimberger/sysprog/issues .

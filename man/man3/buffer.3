@@ -1,9 +1,10 @@
-.TH BUFFER 3 2012-09-03 "IB 321" "Systemnahes Programmieren"
+.TH BUFFER 3 2012-10-22 "IB 321" "Systemnahes Programmieren"
 .SH NAME
-makebuf, initbuf, bopen, bclose, termbuf, freebuf, flushbuf, bgetchar,
-bungetchar, fillbuf
+makebuf, initbuf, bopen, bclose, termbuf, freebuf, bflush, bbflush, bgetchar,
+bungetchar, fillbuf, bputchar, bprintf, vbprintf
 \- buffered I/O
 .SH SYNOPSIS
+.B #include <fcntl.h>
 .B #include <buffer.h>
 .PP
 .BI "Buffer *makebuf(size_t " size );
@@ -20,6 +21,8 @@ bungetchar, fillbuf
 .PP
 .BI "int bflush(Buffer *" buf );
 .PP
+.BI "int bbflush(Buffer *" buf );
+.PP
 .BI "int bgetchar(Buffer *" buf );
 .PP
 .BI "int bungetchar(Buffer *" buf );
@@ -28,16 +31,16 @@ bungetchar, fillbuf
 .PP
 .BI "int bputchar(Buffer *" buf ", uchar " c  );
 .PP
-.BI "int bprintf(Buffer *" buf ", uchar *" fmt ", " ... );
+.BI "int bprintf(Buffer *" buf ", uchar *" fmt ", ... );"
 .PP
 .BI "int vbprintf(Buffer *" buf ", uchar *" fmt ", va_list " args );
 .PP
 .SH DESCRIPTION
 These routines implement buffered I/O. Writebuffers are flushed at
-.BI exit (3)
-\&. Up to 8 Writebuffers per process are possible.
+.BR exit (3).
+Up to 8 Writebuffers per process are possible.
 .PP
-.BI makebuf
+.B makebuf
 uses
 .BR malloc (3)
 to allocate a
@@ -45,114 +48,122 @@ to allocate a
 structure and then
 .BR posix_memalign (2)
 to acquire an aligned buffer suitable for I/O with
-.B O_DIRECT
-\&. It returns
-.I NULL
-on failure, while
+.BR O_DIRECT .
+It returns NULL on failure, while
 .I errno
 is set.
+The size of
+.I size
+must be a multiple of 512,
+if the buffer will be used as a read buffer,
+since the
+.B O_DIRECT
+flag needs aligned buffers and transfer sizes.
+See
+.BR open (2)
+for further information.
 .PP
-.BI initbuf
+.B initbuf
 initializes
 .I buf
 with
-.I file
-\&, which must already be opened with
+.IR file ,
+which must already be opened with
 .B O_RDONLY
 or
-.B O_WRONLY
-\&. On success,
-.I 0
-is returned,
-.I EOF
-otherwise and
+.BR O_WRONLY .
+On success, 0 is returned, EOF otherwise and
 .I errno
 is set.
 .PP
 .B bopen
 opens the file specified by
-.I name
-\&, then calls
-.BI makebuf
+.IR name ,
+then calls
+.B makebuf
 and
-.BI initbuf
+.B initbuf
 to allocate a buffer and associate the file with it.
-A pointer to the buffer is returned, or
-.I NULL
-and errno is set if an error occured.
+The file is opened with
+.B O_DIRECT
+if
+.I mode
+is
+.BR O_RDONLY .
+A pointer to the buffer is returned, or NULL
+and
+.I errno
+is set if an error occured.
 .PP
-.BI termbuf
+.B termbuf
 flushes
 .I buf
 and disassociates the file from it.
 The file is not closed.
 It returns the result from
-.BI bflush
-\&.
+.BR bflush .
 .PP
-.BI freebuf
+.B freebuf
 frees the memory allocated for the buffer.
 .PP
-.BI bflush
+.B bflush
 flushes the buffer.
-On success,
-.I 0
-is returned,
-.I EOF
-otherwise and
+On success, 0 is returned, EOF otherwise and
 .I errno
 is set.
 .PP
-.BI bclose
+.B bclose
 flushes the buffer and closes the file associated with
-.I buf
-\&, then calls
-.BI freebuf
-\&.
+.IR buf ,
+then calls
+.BR freebuf .
 .PP
-.BI bgetchar
+.B bgetchar
 returns the next character from
 .I buf
-or
-.I EOF
-if at end of file or an error occured.
+or EOF if at end of file or an error occured.
 In the latter case,
 .I errno
 is set.
 .PP
-.BI bungetchar
+.B bungetchar
 pushes the last last character back.
 This works up to 4 times.
-If the character cannot be pushed back,
-.I EOF
+If the character cannot be pushed back, EOF
 is returned, otherwise 0.
 .PP
-.BI fillbuf
+.B fillbuf
 reads another chunk from the associated file.
-If an error occurs,
-.I EOF
-is returned, 0 otherwise, and
+If an error occurs, EOF is returned, 0 otherwise, and
 .I errno
 is set appropriately.
 If the end of file is reached,
 .I errno
 is not set.
 .PP
-.BI bputchar
+.B bputchar
 puts
 .I c
-into
-.I buf
-\&.
+into the buffer
+.IR buf .
 .PP
-.BI bprintf
+.B bprintf
 and
-.BI vbprintf
+.B vbprintf
 act like
-.BI printf (3)
+.BR printf (3)
 and
-.BI vprintf (3)
+.BR vprintf (3)
 respectively.
+.SH NOTES
+The interface design of this library was heavily inspired by the
+.I Bio
+library from the
+.I Plan 9 From Bell Labs
+operating system.
+See
+.I http://plan9.bell-labs.com/plan9
+for further information.
 .SH SEE ALSO
 .BR malloc (3),
 .BR posix_memalign (3),
@@ -165,9 +176,7 @@ File opening is currently only possible with
 and
 .B O_WRONLY
 without any flags.
-.PP
-.BI bprintf
-and
-.BI bvprintf
-produce holes in files.
-
+If you find other bugs, please report them to
+.I <flo@snakeoilproductions.net>
+or directly at
+.IR https://github.com/flimberger/sysprog/issues .

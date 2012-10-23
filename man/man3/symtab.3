@@ -1,0 +1,76 @@
+.TH SYMTAB 3 2012-10-22 "IB 321" "Systemnahes Programmieren"
+.SH NAME
+makesymtab, freesymtab, storesym, findsym
+\-store lexems in a symbol table
+.SH SYNOPSIS
+.B #include <symtab.h>
+.PP
+.BI "Symbol **makesymtab(size_t " size );
+.PP
+.BI "void freesymtab(Synbol ** " size ", size_t " size );
+.PP
+.BI "Symbol *storesym(Symbol **restrict " tab ", const char *restrict const " lexem );
+.PP
+.BI "Symbol *findsym(Symbol **restrict " tab ", const char *restrict const "lexem );
+.SH DESCRIPTION
+This library provides a way to store lexems in a symbol table.
+.PP
+A new symbol table is created by calling
+.BR makesymtab .
+The parameter
+.I size
+determines the size of the table,
+which is set to 4096 if the parameter given is 0.
+.PP
+.B freesymtab
+frees the memory occupied by
+.IR tab ,
+but in order to free all lists,
+.I size
+must specify the correct size ot the table.
+Like in
+.BR makesymtab ,
+if
+.I size
+is set to 0,
+the default size of 4096 is used instead.
+.PP
+To insert a lexem into
+.IR tab ,
+.B storesym
+must be called.
+The second parameter
+.I lexem
+determines the identity of the symbol.
+If a symbol with the same lexem as
+.I lexem
+is found in the table,
+a pointer to the found
+.B Symbol
+is returned.
+In this case, no new
+.B Symbol
+is placed in the table.
+.PP
+.B findsym
+returns a pointer to the
+.B Symbol
+specified by
+.IR lexem .
+If no corresponding symbol is found,
+.B findsym
+return NULL.
+This routine never allocates memory.
+.SH NOTES
+The design of the symtable is heavily inspired by the hash table shown in
+.I "The Practice of Programming"
+by Brian W. Kernighan and Rob Pike.
+.SH SEE ALSO
+.BR strtab (3),
+.BR include/defs.h
+.SH BUGS
+There are currently no known bugs.
+If you find some, please report them to
+.I <flo@snakeoilproductions.net>
+or directly at
+.IR https://github.com/flimberger/sysprog/issues .

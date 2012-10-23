@@ -19,18 +19,19 @@ main(int argc, char *argv[])
 
 	errno = 0;
 
+	setpname(argv[0]);
 	if (argc < 2)
-		die(2, "usage: %s file", argv[0]);
+		die(2, "usage: %s file", getpname());
 
 	errno = 0;
 	if ((c = open(argv[1], O_RDONLY)) == -1)
-		die(1, "%s: failed to open file %s:", argv[0], argv[1]);
+		die(1, "failed to open file %s:", argv[1]);
 
 	if ((buf = makebuf(512)) == NULL)
-		die(1, "%s: allocating buffer failed:", argv[0]);
+		die(1, "allocating buffer failed:");
 
 	if (initbuf(buf, c, O_RDONLY) == EOF)
-		die(1, "%s: initializing buffer failed:", argv[0]);
+		die(1, "initializing buffer failed:");
 
 	i = 0;
 	while ((c = bgetchar(buf)) != EOF) {
@@ -39,10 +40,10 @@ main(int argc, char *argv[])
 		i++;
 	}
 	if (errno != 0)
-		die(1, "%s: bgetchar failed at char %lu:", argv[0], i);
+		die(1, "bgetchar failed at char %lu:", i);
 	
-	fprintf(stderr, "%s: reached end of input file %s\n", argv[0], argv[1]);
-	fprintf(stderr, "%s: %lu bytes read\n", argv[0], i);
+	fprintf(stderr, "reached end of input file %s\n", argv[1]);
+	fprintf(stderr, "%lu bytes read\n", i);
 	bclose(buf);
 
 	exit(0);
