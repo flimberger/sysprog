@@ -49,7 +49,7 @@ main(int argc, char *argv[])
 	if ((sym = findsym(symtab, "baz")) == NULL)
 		die(1, "couldn't find lexem \"baz\":");
 	if (sym->type != IDENTIFIER)
-		die(1, "type of \"bar\" is not IDENTIFIER");
+		die(1, "type of \"baz\" is not IDENTIFIER");
 	sym->type = INTEGER;
 
 	if ((sym = findsym(symtab, "foo")) == NULL)
@@ -65,7 +65,7 @@ main(int argc, char *argv[])
 	if ((sym = findsym(symtab, "baz")) == NULL)
 		die(1, "couldn't find lexem \"baz\":");
 	if (sym->type != INTEGER)
-		die(1, "type of \"bar\" is not INTEGER");
+		die(1, "type of \"baz\" is not INTEGER");
 
 	freesymtab(symtab);
 
