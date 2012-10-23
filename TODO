@@ -1,1 +1,1 @@
-read and print keywords get unneccessarily written into the strtab: use strtab internally in symtab
+Make default output name input name with .out extension.
