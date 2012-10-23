@@ -26,6 +26,7 @@ process(Symtab *restrict tab, const char *restrict const lexem, bool create)
 	uint h;
 	Symbol *entry;
 
+	entry = NULL;
 	h = hash(lexem);
 	for (entry = tab->symbols[h]; entry != NULL; entry = entry->next)
 		if (strcmp(lexem, entry->lexem) == 0)
@@ -33,7 +34,10 @@ process(Symtab *restrict tab, const char *restrict const lexem, bool create)
 	if (create == true) {
 		if ((entry = malloc(sizeof(Symbol))) == NULL)
 			return NULL;
-		entry->lexem = lexem;
+		if ((entry->lexem = strtab_insert(tab->strtab, lexem)) == NULL) {
+			free(entry);
+			return NULL;
+		}
 		entry->next = tab->symbols[h];
 		entry->type = 0;
 		tab->symbols[h] = entry;
