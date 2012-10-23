@@ -12,7 +12,8 @@
 int
 main(int argc, char *argv[])
 {
-	Symbol *sym, **symtab;
+	Symtab *symtab;
+	Symbol *sym;
 
 	if (argc > 1)
 		fprintf(stderr, "%s: unused arguments\n", argv[0]);
@@ -65,7 +66,7 @@ main(int argc, char *argv[])
 	if (sym->type != INTEGER)
 		die(1, "%s: type of \"bar\" is not INTEGER", argv[0]);
 
-	freesymtab(symtab, 0);
+	freesymtab(symtab);
 
 	return 0;
 }

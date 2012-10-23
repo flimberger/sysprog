@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "defs.h"
+#include "strtab.h"
 
 enum {
 	SYMTABSIZE = 4096
@@ -16,9 +17,15 @@ struct Symbol {
 	Symboltype type;
 };
 
-Symbol **makesymtab(size_t size);
-void freesymtab(Symbol **tab, size_t size);
-Symbol *storesym(Symbol **restrict tab, const char *restrict const lexem);
-Symbol *findsym(Symbol **restrict tab, const char *restrict const lexem);
+typedef struct {
+	Symbol **symbols;
+	Strtab *strtab;
+	size_t size;
+} Symtab;
+
+Symtab *makesymtab(size_t size);
+void freesymtab(Symtab *tab);
+Symbol *storesym(Symtab *restrict tab, const char *restrict const lexem);
+Symbol *findsym(Symtab *restrict tab, const char *restrict const lexem);
 
 #endif /* _SYMTAB_H_ */

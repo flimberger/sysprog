@@ -1,2 +1,6 @@
 read and print keywords get unneccessarily written into the strtab: use strtab internally in symtab
+symtab:
+ -> strtab anlegen
+ -> freesymtab: symbol und strtab befreien
+ ->
 use pname in error library

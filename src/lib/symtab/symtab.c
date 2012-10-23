@@ -21,59 +21,73 @@ hash(const char *str)
 }
 
 static Symbol *
-process(Symbol **restrict tab, const char *restrict const lexem, bool create)
+process(Symtab *restrict tab, const char *restrict const lexem, bool create)
 {
 	uint h;
 	Symbol *entry;
 
 	h = hash(lexem);
-	for (entry = tab[h]; entry != NULL; entry = entry->next)
+	for (entry = tab->symbols[h]; entry != NULL; entry = entry->next)
 		if (strcmp(lexem, entry->lexem) == 0)
 			return entry;
 	if (create == true) {
 		if ((entry = malloc(sizeof(Symbol))) == NULL)
 			return NULL;
 		entry->lexem = lexem;
-		entry->next = tab[h];
+		entry->next = tab->symbols[h];
 		entry->type = 0;
-		tab[h] = entry;
+		tab->symbols[h] = entry;
+
 	}
 	return entry;
 }
 
 Symbol *
-storesym(Symbol **restrict tab, const char *restrict const lexem)
+storesym(Symtab *restrict tab, const char *restrict const lexem)
 {
 	return process(tab, lexem, true);
 }
 
 Symbol *
-findsym(Symbol **restrict tab, const char *restrict const lexem)
+findsym(Symtab *restrict tab, const char *restrict const lexem)
 {
 	return process(tab, lexem, false);
 }
 
-Symbol **
+Symtab *
 makesymtab(size_t size)
 {
+	Symtab *symtab;
 	if (size == 0)
 		size = SYMTABSIZE;
-	return calloc(size, sizeof(Symbol *));
+	if ((symtab = malloc(sizeof(Symtab))) != NULL) {
+		symtab->size = size;
+		if ((symtab->symbols = calloc(size, sizeof(Symbol *))) == NULL) {
+			free(symtab);
+			return NULL;
+		}
+		if ((symtab->strtab = strtab_new()) == NULL) {
+			free(symtab->symbols);
+			free(symtab);
+			return NULL;
+		}
+	}
+	return symtab;
 }
 
 void
-freesymtab(Symbol **tab, size_t size)
+freesymtab(Symtab *tab)
 {
 	size_t i;
 	Symbol *entry, *next;
 
-	if (size == 0)
-		size = SYMTABSIZE;
-	for (i = 0; i < size; i++) {
-		for (entry = tab[i]; entry != NULL; entry = next) {
+	for (i = 0; i < tab->size; i++) {
+		for (entry = tab->symbols[i]; entry != NULL; entry = next) {
 			next = entry->next;
 			free(entry);
 		}
 	}
+	free(tab->symbols);
+	free(tab->strtab);
 	free(tab);
 }
