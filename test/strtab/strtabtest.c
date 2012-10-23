@@ -42,6 +42,11 @@ main(int argc, char *argv[])
 		fprintf(stderr, "%d. failure: pointer to \"bar\" failed\n", f);
 	}
 
+	if (strcmp(bat, "bat") != 0) {
+		f++;
+		fprintf(stderr, "%d. failure: pointer to \"bat\" failed\n", f);
+	}
+
 	if (strcmp(mf, "motherfucking") != 0) {
 		f++;
 		fprintf(stderr, "%d. failure: pointer to \"motherfucking\" failed\n", f);
