@@ -12,7 +12,7 @@
 
 Buffer *src, *out;
 char *pname;
-Symbol **symtab;
+Symtab *symtab;
 
 int
 main(int argc, char *argv[])
