@@ -4,7 +4,7 @@ Coding conventions
 Group includes like this, ordered alphabetically:
 #include <sys/types.h> /* system includes */
 
-#include <stdlib.h" /* standard library includes */
+#include <stdlib.h> /* standard library includes */
 
 #include "defs.h" /* project local includes */
 
