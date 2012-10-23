@@ -10,7 +10,7 @@ SRC=spc.c acceptor.c
 OBJ=$(SRC:.c=.o)
 
 INC=-I$(INCP)
-ARS=$(LIBP)/liberror.a $(LIBP)/libbuffer.a $(LIBP)/libstrtab.a $(LIBP)/libsymtab.a
+LIB=-static -L$(LIBP) -lerror -lbuffer -lsymtab -lstrtab
 
 include ../../sp.mak
 
@@ -21,8 +21,8 @@ all: $(NAME)
 .c.o: $(HDR) $(INCP)/defs.h
 	$(CC) $(CFLAGS) -c $<
 
-$(NAME): $(HDR) $(OBJ) $(ARS)
-	$(LD) $(LDFLAGS) $(OBJ) $(ARS) -o $(NAME)
+$(NAME): $(HDR) $(OBJ)
+	$(LD) $(LDFLAGS) $(OBJ) -o $(NAME) $(LIB)
 
 install: all
 	cp $(NAME) $(BINP)

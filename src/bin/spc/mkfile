@@ -1,0 +1,25 @@
+TARG=spc
+
+OFILES=\
+	symtab.o\
+	lexer.o
+
+HFILES=spc.h
+
+INC=-I../../../include
+LIB=-L../../../lib -lerror -lbuffer -lc
+
+CLEANFILES=$CLEANFILES $TARG
+NUKEFILES=$NUKEFILES ../../../bin/$TARG
+
+<../../sp.mk
+
+all:V: $TARG
+
+$TARG: $OFILES $LIB
+	$LD $LDFLAGS -o $target $prereq $LIB
+
+%.o: $HFILES
+
+install:V: $TARG
+	cp $TARG ../../../bin
