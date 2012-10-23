@@ -10,6 +10,7 @@ typedef struct {
 		long long val;
 		Symbol *sym;
 		const char *sign;
+		char lastchar;
 	} data;
 	uint	row;
 	uint	col;

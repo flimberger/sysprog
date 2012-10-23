@@ -6,14 +6,12 @@
 #include "buffer.h"
 #include "error.h"
 #include "spc.h"
-#include "strtab.h"
 #include "symtab.h"
 
 #define STDOUTFILE	"sp.out"
 
 Buffer *src, *out;
 char *pname;
-Strtab *strtab;
 Symbol **symtab;
 
 int
@@ -61,13 +59,11 @@ syminit(void)
 {
 	Symbol *s;
 
-	if ((strtab = strtab_new()) == NULL)
-		die(1, "failed to allocate string table");
 	if ((symtab = makesymtab(SYMTABSIZE)) == NULL)
 		die(1, "failed to allocate symbol table");
-	s = storesym(symtab, strtab_insert(strtab, "print"));
+	s = storesym(symtab, "print");
 	s->type = PRINT;
-	s = storesym(symtab, strtab_insert(strtab, "read"));
+	s = storesym(symtab, "read");
 	s->type = READ;
 	atexit(symterm);
 }
@@ -75,8 +71,7 @@ syminit(void)
 void
 symterm(void)
 {
-	freesymtab(symtab, 0);
-	strtab_free(strtab);
+	freesymtab(symtab);
 }
 
 void
@@ -88,7 +83,7 @@ printtoken(Token *tp)
 	case END:
 		break;
 	case ERROR:
-		bprintf(out, "Token ERROR   at char %4d line %3d Char  %s\n", tp->col, tp->row, tp->data.sign);
+		bprintf(out, "Token ERROR   at char %4d line %3d Char  %c\n", tp->col, tp->row, tp->data.lastchar);
 		break;
 	case IDENTIFIER:
 		bprintf(out, "Token IDENTIFIER char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym->lexem);

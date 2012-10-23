@@ -4,7 +4,6 @@
 
 #include "error.h"
 #include "spc.h"
-#include "strtab.h"
 #include "symtab.h"
 
 enum {
@@ -42,8 +41,7 @@ typedef enum {
 } State;
 
 extern Buffer *src, *out;
-extern Strtab *strtab;
-extern Symbol **symtab;
+extern Symtab *symtab;
 
 static char buf[LEXLEN], c;
 static size_t col, i, tkcol, tkrow, row = 1;
@@ -340,16 +338,13 @@ lxerr(void)
 static State
 mktok(void)
 {
-	const char *lex;
-
 	buf[i - 1] = '\0';
 	i = 0;
 	token.row = tkrow;
 	token.col = tkcol;
 	switch (last) {
 	case IDENT:
-		lex = strtab_insert(strtab, buf);
-		token.data.sym = storesym(symtab, lex);
+		token.data.sym = storesym(symtab, buf);
 		if (token.data.sym->type == 0)
 			token.data.sym->type = IDENTIFIER;
 		token.type = token.data.sym->type;
@@ -428,8 +423,7 @@ mktok(void)
 		token.type = SIGN;
 		break;
 	case LXERR:
-		lex = strtab_insert(strtab, &c);
-		token.data.sign = lex;
+		token.data.lastchar = c;
 		token.type = ERROR;
 		break;
 	case LXEOF:
