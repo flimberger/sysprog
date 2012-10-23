@@ -9,7 +9,7 @@ enum {
 };
 
 static uint
-hash(const char *str)
+hash(const Symtab *const restrict tab, const char *const restrict str)
 {
 	uint h;
 	uchar *p;
@@ -17,7 +17,7 @@ hash(const char *str)
 	h = 0;
 	for (p = (uchar *) str; *p != '\0'; p++)
 		h = MULTIPLIER * h + *p;
-	return h % SYMTABSIZE;
+	return h % tab->size;
 }
 
 static Symbol *
@@ -27,7 +27,7 @@ process(Symtab *restrict tab, const char *restrict const lexem, bool create)
 	Symbol *entry;
 
 	entry = NULL;
-	h = hash(lexem);
+	h = hash(tab, lexem);
 	for (entry = tab->symbols[h]; entry != NULL; entry = entry->next)
 		if (strcmp(lexem, entry->lexem) == 0)
 			return entry;
