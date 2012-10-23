@@ -88,6 +88,6 @@ freesymtab(Symtab *tab)
 		}
 	}
 	free(tab->symbols);
-	free(tab->strtab);
+	strtab_free(tab->strtab);
 	free(tab);
 }
