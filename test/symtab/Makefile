@@ -2,7 +2,7 @@ ROOT=../..
 INCP=$(ROOT)/include
 LIBP=$(ROOT)/lib
 
-STLIBS=$(LIBP)/libsymtab.a $(LIBP)/liberror.a
+STLIBS=$(LIBP)/libsymtab.a $(LIBP)/libstrtab.a $(LIBP)/liberror.a
 
 SRC=symtabtest.c
 OBJ=$(SRC:.c=.o)
