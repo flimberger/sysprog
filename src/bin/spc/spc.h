@@ -17,7 +17,11 @@ typedef struct {
 	Symboltype	type;
 } Token;
 
-int compile(char *restrict infile, char *restrict outfile);
+char *infile;
+Buffer *src, *out;
+Symtab *symtab;
+
+int compile(char *outfile);
 Token *gettoken(void);
 void printtoken(Token *tp);
 void syminit(void);

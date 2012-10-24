@@ -3,8 +3,9 @@
 #include <stdlib.h>
 
 #include "error.h"
-#include "spc.h"
 #include "symtab.h"
+
+#include "spc.h"
 
 enum {
 	LEXLEN = 1024 * 4
@@ -39,9 +40,6 @@ typedef enum {
 	LXEOF,
 	LXEND
 } State;
-
-extern Buffer *src, *out;
-extern Symtab *symtab;
 
 static char buf[LEXLEN], c;
 static size_t col, i, tkcol, tkrow, row = 1;

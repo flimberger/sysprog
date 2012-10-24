@@ -10,38 +10,36 @@
 
 #define STDOUTFILE	"sp.out"
 
-Buffer *src, *out;
-char *pname;
-Symtab *symtab;
-
 int
 main(int argc, char *argv[])
 {
-	char *infile, *outfile;
+	char *outfile;
 	int i;
 
-	infile = outfile = NULL;
 	setpname(argv[0]);
+	syminit();
+	infile = outfile = NULL;
 	if (argc < 2)
 		die(1, "usage: %s OPTIONS file", getpname());
 	for (i = 1; i < argc; i++)
 		if (argv[i][0] == '-') {
 			if (argv[i][1] == 'o')
 				outfile = argv[++i];
+			else
+				die(1, "unknown argument %s", argv[i]);
 		} else
 			infile = argv[i];
-	if (outfile == NULL)
-		outfile = STDOUTFILE;
-	syminit();
-	compile(infile, outfile);
+	compile(outfile);
 	return 0;
 }
 
 int
-compile(char *restrict infile, char *restrict outfile)
+compile(char *outfile)
 {
 	Token *t;
 
+	if (outfile == NULL)
+		outfile = STDOUTFILE;
 	if ((src = bopen(infile, O_RDONLY)) == NULL)
 		die(1, "failed to allocate input buffer:");
 	if ((out = bopen(outfile, O_WRONLY)) == NULL)
