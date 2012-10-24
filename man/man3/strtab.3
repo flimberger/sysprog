@@ -1,15 +1,15 @@
 .TH ERROR 3 2012-10-22 "IB 321" "Systemnahes Programmieren"
 .SH NAME
-strtab_new, strtab_free, strtab_insert
+makestrtab, freestrtab, storestr
 \- store strings in memory
 .SH SYNOPSIS
 .B #include <strtab.h>
 .PP
-.BI "Strtab *strtab_new(void);"
+.BI "Strtab *makestrtab(void);"
 .PP
-.BI "void strtab_free(Strtab *" tab );
+.BI "void freestrtab(Strtab *" tab );
 .PP
-.BI "const char *strtab_insert(Strtab *restrict " tab ", const char *const restrict " str );
+.BI "const char *storestr(Strtab *restrict " tab ", const char *const restrict " str );
 .PP
 .SH DESCRIPTION
 This library provides a way to store strings in central place.
@@ -17,17 +17,17 @@ The strings are stored in lists of big character arrays,
 from where they can be referenced and used.
 .PP
 A new store is allocated with
-.BR strtab_new ,
+.BR makestrtab ,
 which allocates memory for a
 .B Strtab
 and a buffer and returns a pointer to it.
-.B strtab_free
+.B freestrtab
 frees the memory associated with
 .I tab
 struct and the list of string buffers.
 .PP
 New strings are inserted into a store by calling
-.I strtab_insert
+.I storestr
 with
 .I tab
 pointing to a valid
