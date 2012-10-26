@@ -11,12 +11,16 @@
 #define STDOUTFILE	"sp.out"
 
 static const char *const tokennames[] = {
+	"ELSE",
 	"END",
 	"ERROR",
 	"IDENTIFIER",
+	"IF",
+	"INT",
 	"INTEGER",
 	"PRINT",
 	"READ",
+	"WHILE",
 	"SIGN_PLUS",
 	"SIGN_MINUS",
 	"SIGN_DIV",
@@ -85,10 +89,18 @@ syminit(void)
 
 	if ((symtab = makesymtab(SYMTABSIZE)) == NULL)
 		die(1, "failed to allocate symbol table");
+	s = storesym(symtab, "else");
+	s->type = ELSE;
+	s = storesym(symtab, "if");
+	s->type = IF;
+	s = storesym(symtab, "int");
+	s->type = INT;
 	s = storesym(symtab, "print");
 	s->type = PRINT;
 	s = storesym(symtab, "read");
 	s->type = READ;
+	s = storesym(symtab, "while");
+	s->type = WHILE;
 	atexit(symterm);
 }
 
@@ -112,9 +124,13 @@ printtoken(Token *tp)
 	case INTEGER:
 		bprintf(out, "Token %-10s char %4d line %3d Value %ld\n", tokennames[tp->type], tp->col, tp->row, tp->data.val);
 		break;
+	case ELSE:
+	case IF:
+	case INT:
 	case IDENTIFIER:
 	case PRINT:
 	case READ:
+	case WHILE:
 		bprintf(out, "Token %-10s char %4d line %3d Lexem %s\n", tokennames[tp->type], tp->col, tp->row, tp->data.sym->lexem);
 		break;
 	case SIGN_PLUS:
