@@ -10,6 +10,32 @@
 
 #define STDOUTFILE	"sp.out"
 
+static const char *const tokennames[] = {
+	"END",
+	"ERROR",
+	"IDENTIFIER",
+	"INTEGER",
+	"PRINT",
+	"READ",
+	"SIGN_PLUS",
+	"SIGN_MINUS",
+	"SIGN_DIV",
+	"SIGN_MULT",
+	"SIGN_LESS",
+	"SIGN_GRTR",
+	"SIGN_EQUAL",
+	"SIGN_UNEQL",
+	"SIGN_NOT",
+	"SIGN_AND",
+	"SIGN_TERM",
+	"SIGN_PAROP",
+	"SIGN_PARCL",
+	"SIGN_CBOP",
+	"SIGN_CBCL",
+	"SIGN_BROP",
+	"SIGN_BRCL"
+};
+
 int
 main(int argc, char *argv[])
 {
