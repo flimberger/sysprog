@@ -353,72 +353,71 @@ mktok(void)
 		break;
 	case OPADD:	/* + */
 		token.data.sign = "+";
-		token.type = SIGN;
+		token.type = SIGN_PLUS;
 		break;
 	case OPSUB:	/* - */
 		token.data.sign = "-";
-		token.type = SIGN;
+		token.type = SIGN_MINUS;
 		break;
 	case OPDIV:	/* / */
 		token.data.sign = "/";
-		token.type = SIGN;
+		token.type = SIGN_DIV;
 		break;
 	case OPMUL:	/* * */
 		token.data.sign = "*";
-		token.type = SIGN;
+		token.type = SIGN_MULT;
 		break;
 	case OLESS:	/* < */
 		token.data.sign = "<";
-		token.type = SIGN;
+		token.type = SIGN_LESS;
 		break;
 	case OGRTR:	/* > */
 		token.data.sign = ">";
-		token.type = SIGN;
+		token.type = SIGN_GRTR;
 		break;
 	case OASGN:	/* = */
 		token.data.sign = "=";
-		token.type = SIGN;
+		token.type = SIGN_EQUAL;
 		break;
 	case OUNEQ:	/* <!> */
 		token.data.sign = "<!>";
-		token.type = SIGN;
+		token.type = SIGN_UNEQL;
 		break;
 	case OPNOT:	/* ! */
 		token.data.sign = "!";
-		token.type = SIGN;
+		token.type = SIGN_NOT;
 		break;
-		return LXNEW;
 	case OPAND:	/* & */
 		token.data.sign = "&";
-		token.type = SIGN;
+		token.type = SIGN_AND;
 		break;
 	case OTERM:	/* ; */
 		token.data.sign = ";";
-		token.type = SIGN;
+		token.type = SIGN_TERM;
 		break;
 	case OPAOP:	/* ( */
 		token.data.sign = "(";
-		token.type = SIGN;
+		token.type = SIGN_PAROP;
 		break;
 	case OPACL:	/* ) */
 		token.data.sign = ")";
-		token.type = SIGN;
+		token.type = SIGN_PARCL;
 		break;
 	case OCBOP:	/* { */
 		token.data.sign = "{";
-		token.type = SIGN;
+		token.type = SIGN_CBOP;
 		break;
 	case OCBCL:	/* } */
 		token.data.sign = "}";
-		token.type = SIGN;
+		token.type = SIGN_CBCL;
 		break;
 	case OBROP:	/* [ */
 		token.data.sign = "[";
-		token.type = SIGN;
+		token.type = SIGN_BROP;
 		break;
 	case OBRCL:	/* ] */
 		token.data.sign = "]";
-		token.type = SIGN;
+		token.type = SIGN_BRCL;
 		break;
 	case LXERR:
 		token.data.lastchar = c;

@@ -81,22 +81,34 @@ printtoken(Token *tp)
 	case END:
 		break;
 	case ERROR:
-		bprintf(out, "Token ERROR   at char %4d line %3d Char  %c\n", tp->col, tp->row, tp->data.lastchar);
-		break;
-	case IDENTIFIER:
-		bprintf(out, "Token IDENTIFIER char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym->lexem);
+		bprintf(out, "Token %-10s char %4d line %3d Char  %c\n", tokennames[tp->type], tp->col, tp->row, tp->data.lastchar);
 		break;
 	case INTEGER:
-		bprintf(out, "Token INTEGER    char %4d line %3d Value %ld\n", tp->col, tp->row, tp->data.val);
+		bprintf(out, "Token %-10s char %4d line %3d Value %ld\n", tokennames[tp->type], tp->col, tp->row, tp->data.val);
 		break;
+	case IDENTIFIER:
 	case PRINT:
-		bprintf(out, "Token PRINT      char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym->lexem);
-		break;
 	case READ:
-		bprintf(out, "Token READ       char %4d line %3d Lexem %s\n", tp->col, tp->row, tp->data.sym->lexem);
+		bprintf(out, "Token %-10s char %4d line %3d Lexem %s\n", tokennames[tp->type], tp->col, tp->row, tp->data.sym->lexem);
 		break;
-	case SIGN:
-		bprintf(out, "Token SIGN       char %4d line %3d Sign  %s\n", tp->col, tp->row, tp->data.sign);
+	case SIGN_PLUS:
+	case SIGN_MINUS:
+	case SIGN_DIV:
+	case SIGN_MULT:
+	case SIGN_LESS:
+	case SIGN_GRTR:
+	case SIGN_EQUAL:
+	case SIGN_UNEQL:
+	case SIGN_NOT:
+	case SIGN_AND:
+	case SIGN_TERM:
+	case SIGN_PAROP:
+	case SIGN_PARCL:
+	case SIGN_CBOP:
+	case SIGN_CBCL:
+	case SIGN_BROP:
+	case SIGN_BRCL:
+		bprintf(out, "Token %-10s char %4d line %3d Sign  %s\n", tokennames[tp->type], tp->col, tp->row, tp->data.sign);
 		break;
 	default:
 		bprintf(out, "Unknown Token    char %4d line %3d Value %x\n", tp->col, tp->row, tp->type);
