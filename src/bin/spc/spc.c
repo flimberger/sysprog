@@ -111,6 +111,6 @@ printtoken(Token *tp)
 		bprintf(out, "Token %-10s char %4d line %3d Sign  %s\n", tokennames[tp->type], tp->col, tp->row, tp->data.sign);
 		break;
 	default:
-		bprintf(out, "Unknown Token    char %4d line %3d Value %x\n", tp->col, tp->row, tp->type);
+		die(3, "Unknown Token %s on char %4d line %3d\n", tokennames[tp->type], tp->col, tp->row);
 	}
 }
