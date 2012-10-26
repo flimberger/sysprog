@@ -69,14 +69,18 @@ Daraus ergeben sich folgende Token:
 
 Die resultierende Grammatik ist im folgenden tabellarisch dargestellt:
 
+\begingroup
+\ttfamily
 \begin{tabular}{l c l}
 \hline \\
-letter & ::= & ``A'' \ldots ``B'' \textbar ``a'' \ldots ``b'' \\
-digit & ::= & ``0'' \ldots ``9'' \\
-sign\ldots & ::= & ``+'' \textbar ``-'' \textbar ``/'' \textbar ``*'' \textbar ``\textless'' \textbar ``\textgreater'' \textbar ``='' \textbar ``\textless!\textgreater'' \textbar ``!'' \textbar ``\&'' \textbar ``;'' \textbar ``('' \textbar ``)'' \textbar ``\{'' \textbar ``\}'' \textbar ``['' \textbar ``]'' \\
+letter & ::= & \textquotesingle A\textquotesingle, \ldots \textquotesingle B\textquotesingle \textbar \textquotesingle a\textquotesingle \ldots \textquotesingle b\textquotesingle \\
+digit & ::= & \textquotesingle 0\textquotesingle \ldots \textquotesingle 9\textquotesingle \\
+sign\ldots & ::= & \textquotesingle +\textquotesingle \textbar \textquotesingle -\textquotesingle \textbar \textquotesingle /\textquotesingle \textbar \textquotesingle *\textquotesingle \textbar \textquotesingle \textless\textquotesingle \textbar \textquotesingle \textgreater\textquotesingle \textbar \textquotesingle =\textquotesingle \textbar \textquotesingle \textless!\textgreater\textquotesingle \textbar \textquotesingle !\textquotesingle \textbar \textquotesingle \&\textquotesingle \textbar \textquotesingle ;\textquotesingle \\
+ & & \textbar \textquotesingle (\textquotesingle \textbar \textquotesingle )\textquotesingle \textbar \textquotesingle \{\textquotesingle \textbar \textquotesingle \}\textquotesingle \textbar \textquotesingle [\textquotesingle \textbar \textquotesingle ]\textquotesingle \\
 integer & ::= & digit digit* \\
 identifier & ::= & letter (letter \textbar digit) \\
-print & ::= & ``print'' \\
-read & ::= & ``read'' \\
+print & ::= & \textquotesingle print\textquotesingle \\
+read & ::= & \textquotesingle read\textquotesingle \\
 \hline
 \end{tabular}
+\endgroup
