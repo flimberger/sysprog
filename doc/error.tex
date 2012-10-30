@@ -1,2 +1,36 @@
 \chapter{Fehlerbehandlung}
 \label{chap:error}
+
+\section{Übersicht}
+\label{sec:error_overview}
+Die Error Library kümmert sich um die Fehlerbehandlung und enthält die folgenden Funktionen
+
+\begin{itemize}
+	\item warn() 	: Fehlerausgabe
+	\item die()  	: Abbruch des Programms
+	\item panic()	: Core Dump
+\end{itemize}
+
+Man findet sie unter src/lib/error.
+
+\section{Funktionen}
+\label{sec:error_functions}
+
+Funktion \texttt{vwarn()}
+
+Dies ist die Hauptfunktion der Error Library, sie wird von allen anderen Funktionen aufgerufen.
+Übergabeparameter sind der Format-String sowie die Format-Argumente und gibt diese auf dem Standard-Error-Stream aus.
+
+Funktion \texttt{warn()}
+
+Fehlerausgabe Funktion, bekommt den Formatstring sowie Variable Format-Argumente übergeben und gibt diese mit Hilfe der warn()-Funktion aus.
+
+Funktion \texttt{die()}
+
+Programm-Abbruch Funktion, gibt wie vwarn() die Fehler aus und beendet zusätzlich das Programm.
+
+Funktion \texttt{panic()}
+
+``Core-Dump''-Funktion, gibt wie vwarn() die Fehler aus und schreibt zusätzlich ein Speicherabbild auf die Festplatte.
+
+
