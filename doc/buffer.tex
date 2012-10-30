@@ -15,6 +15,10 @@ Das verwendete Puffer-Schema ist Doppelpufferung,
 d.h. es gibt zwei Pufferblöcke,
 welche im Wechsel zum Lesen oder Schreiben verwendet werden.
 
+Die Puffer ohne zugeordnete Dateien können nicht verwendet werden,
+um inkonsistente Dateizustände zu verhinden.
+Nicht komplett auf die Platte geschriebene Schreibpuffer werden vor dem Beenden des Prozesses geflushed.
+
 \section{Datenstrukturen und Funktionen}
 \label{sec:buf_datafunc}
 
@@ -116,6 +120,78 @@ Folgende Routinen werden von der Bibliothek zur Verfügung gestellt:
 \item \texttt{fillbuf} - Liest einen Block aus der Datei in den Puffer ein
 \item \texttt{blush} - Schreibt den Inhalt des sekundären Puffers in die Datei
 \item \texttt{bbflush} - Schreibt den Inhalt beider Puffer in die Datei
+\item \texttt{bputchar} - Schreibt ein einzelnes Zeichen in den Puffer
 \item \texttt{bprintf} - Schreibt einen Formatstring in den Puffer
-\item \txtttt{vbprintf} - Schreibt einen Formatstring und seine vararg-Liste in den Puffer
+\item \texttt{vbprintf} - Schreibt einen Formatstring und seine vararg-Liste in den Puffer
 \end{itemize}
+
+\texttt{makebuf} reserviert eine Buffer-Struktur mittels \texttt{malloc}
+und ein Speichersegment	mittels \texttt{posix\_memalign}.
+Der Dateideskriptor wird sicherheitshalber auf -1 gesetzt und das flags-Variable auf 0,
+damit der leere Puffer nicht verwendet wird. \\
+Mit \texttt{initbuf} wird ein bereits bestehender Puffer mit einem bereits geöffneten Dateideskriptor verbunden.
+Damit können bereits reservierte Puffer wiederverwendet werden.
+Die Routine setzt die Flags entsprechend dem Dateimodus,
+setzt die Zeiger entsprechend der Puffergröße
+und markiert den Puffer als aktiv und überschreibbar. \\
+\texttt{bopen} gibt einen fertigen Puffer für eine Datei zurück.
+Der Puffer wird mittels \texttt{makebuf} alloziert,
+wobei die Standard-Puffergröße verwendet wird.
+Die Datei wird im angegebenen Modus geöffnet
+und mit \texttt{initbuf} dem Puffer zugeordnet. \\
+Durch einen Aufruf von \texttt{termbuf} wird das Flushen und Deaktivieren des Buffers veranlasst.
+Dies geschieht, indem der Dateideskriptor auf -1 und die Flags auf 0 gesetzt werden. \\
+Der Speicher eines Puffers wird mittels \texttt{freebuf} freigegeben. \\
+\texttt{blcose} flusht den Puffer und schließt die Datei,
+danach wird der Speicher freigegeben. \\
+\texttt{bgetchar} gibt das nächste aus dem Puffer zurück.
+Wenn dieses vor dem Ende des Primärbuffers steht,
+wird dieser zurückgegeben und der Zeiger inkrementiert.
+Wenn der nächste Character hinter dem Ende des Primärbuffers steht wird geprüft,
+ob der Pufferstatus \texttt{Clean} ist.
+Ist dies der Fall, wird der Sekundärpuffer neu befüllt.
+Schlägt diese Aktion fehl, wird \texttt{EOF} zurückgegeben.
+Danach wird überprüft,
+ob der Abstand zwischen Beginn und Ende des Sekundärpuffers größer ist als Bungetsize.
+Ist dies nicht der Fall,
+dann werden Bungetsize Bytes vom Ende des Primärpuffers an dessen Anfang kopiert
+und dahinter der Inhalt des Sekundärpuffers.
+Das Ende des Primärpuffers wird auf die letzte Position der kopierten Daten gesetzt.
+Der Status wird darauf hin wieder auf \texttt{Clean} gesetzt,
+da der Sekundärpuffer wieder überschrieben werden kann.
+Ansonsten werden die Zeiger auf Beginn und Ende von Primär- und Sekundärpuffer ausgetauscht.
+In jedem Fall wird der Zeiger auf das nächste Zeichen auf den Beginn des Primärpuffers gesetzt und ein Sprung an den Beginn	der Routine gemacht,
+damit das nächste Zeichen zurückgegeben wird. \\
+Mit \texttt{bungetchar} wird das zuletzt gelesene Zeichen zurück in den Puffer ``gepushed''.
+Wenn das nächste Zeichen hinter dem Beginn des Primärpuffers steht,
+dann wird lediglich der Zeiger darauf dekrementiert.
+Ist dies nicht der Fall, aber der Status des Puffers ist nicht \texttt{Clean},
+dann werden die Pufferzeiger getauscht und der Zeiger für das nächste Zeichen wird auf das Ende des (neuen) Primärpuffers gesetzt.
+In anderen Fällen wird \texttt{EOF} zurückgegeben,
+um einen Misserfolg zu signalisieren. \\
+Um den sekundären Puffer mit Daten zu füllen,
+ruft man \texttt{fillbuf} auf.
+Wenn der Status \texttt{Clean} ist,
+setzt die Routine den Endezeiger auf das aktuelle Ende der validen Daten.
+Wenn ein Lesefehler auftritt,
+oder der Status \texttt{Dirty} ist,
+wird \texttt{EOF} zurückgegeben,
+ansonsten 0.
+\texttt{bflush} schreibt die Daten aus dem sekundären Puffer in die entsprechende Datei,
+sofern der Pufferstatus \texttt{Dirty ist} und es sich um einen Schreibpuffer handelt.
+Wenn die obigen Vorraussetzungen nicht erfüllt werden,
+oder der Schreibvorgang erfolgreich war,
+wird 0 zurückgegeben.
+Wenn ein Fehler beim Schreiben auftritt ist der Rückgabewert \texttt{EOF}. \\
+Die zugehörige Funktion \texttt{bbflush} wird hauptsächlich beim Beenden des Prozesses oder dem Schließen des Puffers aufgerufen.
+Es veranlasst das Schreiben beider Puffer. \\
+Ein einzelnes Zeichen wird mittels \texttt{bputchar} in den Pufer geschrieben.
+Wird dabei das letzte Zeichen eines Pufferblocks erreicht,
+werden Primär- und Sekundärpuffer vertauscht
+und das Statusflag für den Sekundärpuffer auf \texttt{Dirty} gesetzt. \\
+Formatstrings werden durch einen Aufruf von \texttt{bprintf} in den Puffer geschrieben.
+Wenn angepasste Formatstrings eingeben möchte,
+kann dies durch die \texttt{vbprintf} realisiert werden,
+welche auch von \texttt{bprintf} verwendet wird.
+Dabei können momentan jedoch nur Gesamtlängen von bis zu \texttt{Bfmtstrlen} Zeichen (standardmäßig 512) garantiert werden.
+Das Verhalten gleicht den bekannten Bibliotheksfunktionen aus der \texttt{printf}-Familie.
