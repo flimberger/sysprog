@@ -1,3 +1,121 @@
 \chapter{Ein-/Ausgabebibliothek}
 \label{chap:buffer}
 
+\section{Übersicht}
+\label{sec:buffer_overview}
+
+Die Buffer-Library stellt voll gepufferte Datenein-
+und Ausgabe zur Verfügung.
+Zur Eingabe wird unter Linux das \texttt{O\_DIRECT}-Flag genutzt,
+damit es auf der Seite des Betriessystems nicht zu weiteren Pufferungen kommt.
+Dadurch wird Verhindert,
+dass es zu Performanceeinbußen aufgrund ungünstiger Mehrfachpufferung kommt.
+
+Das verwendete Puffer-Schema ist Doppelpufferung,
+d.h. es gibt zwei Pufferblöcke,
+welche im Wechsel zum Lesen oder Schreiben verwendet werden.
+
+\section{Datenstrukturen und Funktionen}
+\label{sec:buf_datafunc}
+
+Folgende Konstanten werden in der Header-Datei definiert:
+
+\begin{lstlisting}
+enum {
+	Blocksize	= 512,
+	Bufsize		= 4 * 1024,
+	Bungetsize	= 4,
+	NBuf		= 8,		/* # of buffers/process */
+	Bfmtstrlen	= 512,		/* Maximum guaranteed len of fmtstr */
+
+	Readbuf		= 1 << 0,	/* status flags positions */
+	Writebuf	= 1 << 1,
+	Active		= 1 << 2,	/* active if set */
+
+	Dirty		= 0,		/* state of second buffer */
+	Clean
+};
+\end{lstlisting}
+
+\begin{itemize}
+\item \texttt{Blocksize} - Blockgröße für die Ausrichtung der Daten
+\item \texttt{Bufsize} - Größe eines Pufferblocks
+\item \texttt{Bungetsize} - Anzahl der Zeichen, welche mindestens zurückgegangen werden können
+\item \texttt{NBuf} - Anzahl der Schreibpuffer pro Prozess
+\item \texttt{Bfmtstrlen} - Garantierte Maximallänge für Formatstrings
+\item \texttt{Readbuf} - Bitmaske für Schreibpuffer
+\item \texttt{Writebuf} - Bitmaske für Lesepuffer
+\item \texttt{Active} - Bitmaske für Aktivität/Inaktivität
+\item \texttt{Dirty} - Statuskonstante für veränderten Pufferinhalt
+\item \texttt{Clean} - Statuskonstante für unveränderten Pufferinhalt
+\end{itemize}
+
+Die Puffer-Bibliothek stellt folgende Datenstruktur bereit:
+\begin{lstlisting}
+typedef struct {
+	uchar *nc;	/* pointer to next character */
+	uchar *bpb;	/* pointer to beginning of primary buffer */
+	uchar *epb;	/* pointer to end of primary buffer */
+	uchar *bsb;	/* pointer to beginning of secondary buffer */
+	uchar *esb;	/* pointer to end of secondary buffer */
+	void *mem;	/* pointer to (aligned) memory */
+	size_t size;	/* size of buffers */
+	int fd;		/* file descriptor */
+	int state;	/* state of second buffer: Clean or Dirty */
+	uint flags;	/* flags indicating state of buffer */
+} Buffer;
+\end{lstlisting}
+
+Die \texttt{Buffer}-Struktur beschreibt einen Puffer und enthält folgende Elemente:
+
+\begin{itemize}
+\item \texttt{nc} - Zeiger auf das nächste zu lesende Zeichen im Puffer
+\item \texttt{bpb} - Zeiger auf das erste Zeichen des primären Puffers
+\item \texttt{epb} - Zeiger auf das letzte Zeichen des primären Puffers
+\item \texttt{bsb} - Zeiger auf das erste Zeichen des sekundären Puffers
+\item \texttt{esb} - Zeiger auf das letzte Zeichen sekundären Puffers
+\item \texttt{mem} - Zeiger auf den Pufferspeicher
+\item \texttt{size} - Größe eines Pufferblocks
+\item \texttt{fd} - Dem Puffer zugewiesener Dateideskriptor
+\item \texttt{state} - Statusflag für den Zustand des Sekundären Puffers
+\item \texttt{flags} - Statusflags für den allgemeinen Pufferzustand
+\end{itemize}
+
+Der Pufferspeicher muss aufgrund der Verwendung des \texttt{O\_DIRECT}-Flags speziell ausgerichtet sein.
+Dafür wird, wie im Abschnitt zu \texttt{makebuf} beschrieben,
+die Bibliotheksroutine \texttt{posix\_memalign} verwendet.
+
+Da der Puffer das Doppelpufferschema verwendet,
+muss der Status gespeichert werden.
+Dies geschieht mittels dem Element \texttt{state}.
+Gültige Werte sind die Konstanten \texttt{Dirty} und \texttt{Clean}. \\
+Ein Status von \texttt{Clean} bedeutet,
+dass der Inhalt des sekundären Puffers gefahrlos überschrieben werden kann. \\
+\texttt{Dirty} heißt, dass sich noch nicht gelesene oder geschriebene Daten im Puffer stehen.
+
+Der Allgemeine Pufferzustand wird durch die Variable \texttt{flags} widergespiegelt.
+An ihr kann man ablesen,
+ob es sich um einen Schreib- oder Lesepuffer handelt.
+Gleichzeitige Schreib-/Lesepuffer werden derzeit nicht unterstützt. \\
+Eine weiteres Statusbit ist die Aktivität.
+Kommt es zu Lese- oder Schreibfehlern,
+wird der Pufferstatus auf Inaktiv gesetzt,
+um Interaktion mit inkonsistenten Zuständen zu verhindern.
+
+Folgende Routinen werden von der Bibliothek zur Verfügung gestellt:
+
+\begin{itemize}
+\item \texttt{makebuf} - Legt eine neue Pufferstruktur mit der spezifizierten Größe an
+\item \texttt{initbuf} - Ordnet einen bereits geöffneten Dateideskriptor mit einem Puffer
+\item \texttt{bopen} - Öffnet die Datei mit dem gegebenen Modus und gibt einen neu reservierten Puffer zurück
+\item \texttt{termbuf} - Trennt die Verbindung zwischen Datei und Puffer
+\item \texttt{freebuf} - Gibt den Speicher des Puffers frei
+\item \texttt{bclose} - Schließt die Datei des Puffers und gibt anschließend den Speicher frei
+\item \texttt{bgetchar} - Gibt das nächste Zeichen aus dem Puffer zurück
+\item \texttt{bungetchar} - Geht ein Zeichen im Puffer zurück
+\item \texttt{fillbuf} - Liest einen Block aus der Datei in den Puffer ein
+\item \texttt{blush} - Schreibt den Inhalt des sekundären Puffers in die Datei
+\item \texttt{bbflush} - Schreibt den Inhalt beider Puffer in die Datei
+\item \texttt{bprintf} - Schreibt einen Formatstring in den Puffer
+\item \txtttt{vbprintf} - Schreibt einen Formatstring und seine vararg-Liste in den Puffer
+\end{itemize}
