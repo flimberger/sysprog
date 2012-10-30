@@ -30,3 +30,7 @@ test/buffer/bprintftest
 test/buffer/bputtest
 test/symtab/symtabtest
 test/strtab/strtabtest
+
+# manual txt + tex files
+man-*.tex*
+
