@@ -1,8 +1,0 @@
-Strtab:
-Kopfstruktur, enthaelt Zeiger auf die Liste und den naechsten String sowie die Groesse des verbleibenden Speicherplatzes.
-
-strtab_elem:
-Listenstruktur, enthaelt Zeiger auf das naechste Listenelement und auf den Datenblock.
-
-strtab_insert:
-Kopiere gegebenen String in den Datenblock, sofern dieser passt. Wenn der String zu lang fuer den gesamten Speicher ist, wird ein neues Listenelement mit genau der benoetigten Laenge erzeugt und am Ende eingefuegt.

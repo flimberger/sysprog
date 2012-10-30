@@ -35,5 +35,5 @@ once:
 	xelatex sysprog
 
 clean:
-	rm -f *.aux *.bbl *.bcf *.blg *.lof *.log *.out *.pdf *.toc $(MAN) #*.txt 
+	rm -f *.aux *.bbl *.bcf *.blg *.lof *.log *.out *.pdf *.toc $(MAN) 
 
