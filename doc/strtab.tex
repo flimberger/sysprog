@@ -1,2 +1,71 @@
 \chapter{Stringspeicher}
 \label{chap:strtab}
+
+\section{Übersicht}
+\label{sec:strtab_overview}
+
+Die Strtab speichert Strings, bzw. Lexeme, die für die Symtab benötigt werden. Sie wird ausschließlich von der Symtab verwendet.
+
+\section{Datenstrukturen und Funktionen}
+\label{sec:strtab_datafunc}
+
+Die Strtab stellt die folgenden Datenstrukturen bereit:
+\begin{lstlisting}
+typedef struct {
+	struct strtab_elem *list;
+	char *fptr;	/* pointer at free space */
+	size_t fsiz;	/* size of free space */
+} Strtab;
+\end{lstlisting}
+Die \texttt{Strtab}-Struktur beschreibt eine einfach verkettete Liste und 
+enthält die folgenden Elemente:
+\begin{itemize}
+\item{list} - Zeigt auf das erste Element der verketten Liste
+\item{fptr} - Zeigt auf den nächste freien Speicherplatz
+\item{fsiz} - Verfügbarer freier Speicher
+\end{itemize}
+
+\begin{lstlisting}
+struct strtab_elem {
+	struct strtab_elem *next;
+	char *data;
+};
+\end{lstlisting}
+Das \texttt{strab\_elem} beschreibt ein Element der Strtab  und hat die folgenden Elemente:
+\begin{itemize}
+\item{next} - Zeigt auf das folgende Element der Liste
+\item{data} - Zeigt auf den eigenen Speicherplatz 
+\end{itemize}
+
+
+Funktionen der Strtab
+\begin{itemize}
+\item{newelem()}
+\item{freeelem()}
+\item{addfront()}
+\item{addend()}
+\item{freeall()}
+\item{makestrtab()}
+\item{storestr()}
+\end{itemize}
+
+Funktion \texttt{newelem()} \\
+Die Funktion \texttt{newelem()} erzeugt ein neues \texttt{strtab\_elem} und allokiert die übergebene Größe als Speicher, sodass *data auf diesen Speicher verweist.
+
+Funktion \texttt{freeelem()} \\
+\texttt{freeelem()} bekommt ein \texttt{strtab\_elem} übergeben, gibt den allokierten Speicher dieses Elementes frei und das Element selber.
+
+Funktion \texttt{addfront()} \\
+Die Funktion \texttt{addfront()} bekommt zwei \texttt{strtab\_elem} übergeben, zum einem das momentane erste Element der Liste sowie das ``neue'' erste Element. Das ``neue'' erste Element verweist nun auf das alte Element und wird zurückgegeben.
+
+Funktion \texttt{addend()} \\
+\texttt{addend()} bekommt wie addfront() zwei \texttt{strtab\_elem} übergeben, jedoch soll hier das Element am Ende hinzugefügt werden, also wird abhängig vom ersten übergebenen Element durch die Liste iteriert und am Ende das Element hinzugefüt und zurückgegeben.
+
+Funktion \texttt{freeall()} \\
+Die Funktion \texttt{freeall()} iteriert abhängig vom übergebenen \texttt{strtab\_elem} durch die Liste und gibt jedes einzelne Element mit Hilfe von \texttt{freeelem()}
+
+Funktion \texttt{makestrtab()} \\
+\texttt{makestrttab()} ist der Konstruktor der \texttt{strtab}, es wird automatisch ein leeres Listenelement erzeugt, auf welches verwiesen wird.
+
+Funktion \texttt{storestr()} \\
+Die Funktion \texttt{storestr()} bekommt die Liste sowie den zu speichernden String übergeben, dazu wird ein neues Listen-Element erzeug. Sollte der übergebene String länger als der definierte Speicher sein wird er zum Ende der Liste hinzugefügt sonst am Anfang.
