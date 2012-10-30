@@ -1,2 +1,51 @@
 \chapter{Symboltabelle}
 \label{chap:symtab}
+
+\section{Übersicht}
+\label{sec:symtab_overview}
+In der Symboltabelle werden die im Quellcode eingelesenen Lexem und deren Typ gespeichert. Zu diesem Zweck wird eine Stringtabelle angelegt, in welcher die benutzten Strings hinterlegt werden.
+
+\section{Datenstrukturen und Funktionen}
+\label{sec:symtab_datastructure_function}
+
+Im folgenden werden die Datenstrukturen und Funktionen der Symboltabelle erläutert.
+
+\subsection{Datenstrukturen}
+\label{sec:symtab_datastructure}
+
+\begin{lstlisting}
+typedef struct Symbol Symbol;
+struct Symbol {
+	Symbol *next;
+	const char *lexem;
+	Symboltype type;
+};
+\end{lstlisting}
+Die Datenstruktur \texttt{Symbol} beeinhaltet das Lexem und den Symboltyp. Daneben wird ein Verweis auf das nächste Symbol angegeben, so dass eine einfach verkettete Liste der Symbole entsteht.
+
+\begin{lstlisting}
+typedef struct {
+	Symbol **symbols;
+	Strtab *strtab;
+	size_t size;
+} Symtab;
+\end{lstlisting}
+In der Datenstruktur \texttt{Symtab} ist neben einem Verweis auf die Datenstruktur \texttt{Symbol}
+noch die Stringtabelle \texttt{Strtab} und die Größe der Symboltabelle enthalten. Diese Datenstruktur stellten den Zugriff auf alle erkannten Symbole und Schlüsselwörter zur Verfügung. 
+
+\subsection{Funktionen}
+\label{sec:symtab_functions}
+
+\begin{itemize}
+\item makesymtab
+\item freesymtab
+\item storesym
+\item findsym
+\end{itemize}
+In der ersten Funktion, \texttt{makesymtab} wird als Allokator die Datenstruktur \texttt{Symtab} mit der als Parameter übergebenen Größe erstellt.
+Zu diesem Zweck wird der Speicher für die \texttt{Symtab} und die Datenstruktur \texttt{Symbol} alloziert.
+Daneben initialisiert \texttt{makesymtab} die Stringtabelle mit Hilfe der Funktion \texttt{makestrtab}. \\
+Mit \texttt{freesymtab} wird der Speicher der \texttt{Symtab} und der Datenstruktur \texttt{Symbol} freigegeben.
+Zudem wird die Funktion \texttt{freestrtab} aus der \texttt{strtab} aufgerufen, welche den Speicher der Stringtabelle freigibt. \\
+Durch \texttt{storesym} und \texttt{findsym} wird die private Funktion \texttt{process} aufgerufen. Der Aufruf dieser privaten Funktion unterscheidet sich hierbei durch den Parameter \texttt{create}.
+Dieser Parameter gibt an, ob ein neuer Eintrag angelegt (\texttt{storesym}) oder in der Symboltabelle nach einem bestehenden Eintrag gesucht (\texttt{findsym}) wird.
