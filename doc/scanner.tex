@@ -94,3 +94,31 @@ typedef enum {
 	LXEND
 } State;
 \end{lstlisting}
+
+Der Akzeptor beschreibt einen Automat mit Zuständen und liest mit Hilfe des Buffers die Zeichen ein und baut bei erkanntem Symbol oder Lexem das jeweilige Token.
+
+Die Größe eines Tokens ist abhängig von der oben definierten ``LEXLEN''
+
+\subsection{Funktionen}
+\label{sec:acceptor}
+
+Er besitzt folgende Funktionen:
+\begin{itemize}
+\item{getchar()}
+\item{ungetchar()}
+\item{mktok()}
+\end{itemize}
+
+Sowie jeweils eine eigene Funktion für die einzelnen Zustände in denen die Übergänge realisiert werden.
+
+Funktion \texttt{getchar()} \\
+Die Funktion \texttt{getchar()} gibt mit Hilfe des Buffers ein einzelnen Character zurück, welcher dann vom Akzeptor für seine Zustandsübergänge benutzt wird, weiterhin erfolgt hier die Erkennung der jeweiligen Zeile und Spalte.
+
+Funktion \texttt{ungechar()}\\
+\texttt{ungetchar()} geht im Buffer einen Character zurück, und kümmert sich wie \texttt{ungetchar()} um die Spalten und Zeilenerkennung.
+
+Funktion \texttt{mktok()} \\
+\texttt{mktok()} erzeugt abhängig vom letzten besuchten Zustand ein Token und dessen Daten.
+
+
+
