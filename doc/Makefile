@@ -1,6 +1,6 @@
 TEX=xelatex
 DOC=Sysprog-Dokumentation
-SRC=sysprog.tex intro.tex buffer.tex error.tex strtab.tex symtab.tex scanner.tex mapnpages.tex defs.tex
+SRC=sysprog.tex intro.tex buffer.tex error.tex strtab.tex symtab.tex scanner.tex manpages.tex defs.tex
 ROOT=..
 MAN=spc.txt buffer.txt error.txt strtab.txt symtab.txt
 
