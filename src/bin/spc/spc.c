@@ -1,6 +1,7 @@
 #include <fcntl.h>
 
 #include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "buffer.h"
@@ -107,7 +108,7 @@ printtoken(Token *tp)
 	case END:
 		break;
 	case ERROR:
-		bprintf(out, "Token %-10s char %4d line %3d Char  %c\n", tokennames[tp->type], tp->col, tp->row, tp->data.lastchar);
+		fprintf(stderr, "Token %-10s char %4d line %3d Char  %c\n", tokennames[tp->type], tp->col, tp->row, tp->data.lastchar);
 		break;
 	case INTEGER:
 		bprintf(out, "Token %-10s char %4d line %3d Value %ld\n", tokennames[tp->type], tp->col, tp->row, tp->data.val);
