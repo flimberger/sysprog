@@ -1,2 +1,96 @@
 \chapter{Scanner}
 \label{chap:scanner}
+
+\section{Übersicht}
+\label{sec:scanner_overview}
+Der Scanner besteht vornehmlich aus einem Automaten,
+welcher in der Datei \texttt{acceptor.c} implementiert ist.
+Die \texttt{main}-Routine befindet sich zusammen mit einigen Hilfsprozeduren in der Datei \texttt{spc.c},
+wo die Randbedingungen für den Scanner vorbereitet werden. \\
+Der eigentliche Scan-Vorgang wird das wiederholte aufrufen der Routine \texttt{gettoken} eingeleitet.
+
+\section{Datenstrukturen und Funktionen}
+\label{sec:scanner_datafunc}
+
+In der Headerdatei des Scanners wird ein Token als folgende Datenstruktur definiert:
+
+\begin{lstlisting}
+typedef struct {
+	union {
+		long long val;
+		Symbol *sym;
+		const char *sign;
+		char lastchar;
+	} data;
+	uint	row;
+	uint	col;
+	Symboltype	type;
+} Token;
+\end{lstlisting}
+
+Weiterhin werden folgende Routinen deklariert:
+
+\begin{itemize}
+\item \texttt{compile} - Leitet den Scanvorgang ein
+\item \texttt{gettoken} - Gibt das nächste Token aus der Eingabedatei zurück
+\item \texttt{printtoken} - Schreibt eine Menschenlesbare Repräsentation eines Tokens in die Ausgabedatei
+\item \texttt{syminit} - Reserviert den Speicherplatz für die Symboltabelle und trägt Schlüsselwörter ein
+\item \texttt{symterm} - Gibt die Symboltabelle frei
+\end{itemize}
+
+Das Programm wird in der \texttt{main}-Routine gestartet.
+Diese setzt den Programmnamen für die Fehlerbehandlungsbibliothek aus \hyperref[chap:error]{Kapitel \ref{chap:error}}
+und initialisiert die Symboltabelle mittels \texttt{syminit}.
+Danach werden die Ein- und Ausgabedateien entsprechend der Kommandozeilenargumente eingerichtet.
+Danach leitet sie durch den Aufruf von \texttt{compile} den Scanvorgang ein.
+
+Die Prozedur \texttt{syminit} initialisiert eine Symboltabelle (siehe \hyperref[chap:symtab]{Kapitel \ref{chap:symtab}})
+und registriert ihr Gegenstück \texttt{symterm} durch die Bibliotheksroutine \texttt{atexit},
+damit der Speicher beim Beenden des Programms wieder freigegeben wird.
+
+In \texttt{compile} werden die Puffer für die Ein- und Ausgabe geöffnet.
+Danach wird eine Schleife betreten,
+in welcher alle Tokens aus der Eingabedatei ausgelesen
+und in menschenlesbarer Representation in die Ausgabedatei geschrieben werden.
+Dazu nutzt sie doe Routine \texttt{printtoken},
+welche anhand des Tokentyps eine Ausgabesignatur auswählt
+und diese mit den entsprechenden Daten des Tokens in die Ausgabedatei schreibt.
+
+\section{Akzeptor}
+\label{sec:scanner_acceptor}
+
+\begin{lstlisting}
+enum {
+	LEXLEN = 1024 * 4
+};
+
+typedef enum {
+	LXNEW,
+	IDENT,
+	INTEG,
+	OPADD,	/* + */
+	OPSUB,	/* - */
+	OPDIV,	/* / */
+	OPMUL,	/* * */
+	OLESS,	/* < */
+	OGRTR,	/* > */
+	OASGN,	/* = */
+	OUNEQ,	/* <!> */
+	OPNOT,	/* ! */
+	OPAND,	/* & */
+	OTERM,	/* ; */
+	OPAOP,	/* ( */
+	OPACL,	/* ) */
+	OCBOP,	/* { */
+	OCBCL,	/* } */
+	OBROP,	/* [ */
+	OBRCL,	/* ] */
+	CMMNT,
+	CMEND,
+	CUNEQ,
+	LXERR,
+	MKTOK,
+	LXEOF,
+	LXEND
+} State;
+\end{lstlisting}
