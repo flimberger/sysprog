@@ -70,7 +70,7 @@ compile(char *outfile)
 		die(1, "failed to allocate input buffer:");
 	if ((out = bopen(outfile, O_WRONLY)) == NULL)
 		die(1, "failed to allocate output buffer:");
-	for (t = gettoken(); t->type != ERROR && t->type != END; t = gettoken())
+	for (t = gettoken(); t->type != END; t = gettoken())
 		printtoken(t);
 	printtoken(t);
 	bclose(out);
