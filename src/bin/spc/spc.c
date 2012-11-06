@@ -37,6 +37,10 @@ static const char *const tokennames[] = {
 	"SIGN_BRCL"
 };
 
+char *infile;
+Buffer *src, *out;
+Symtab *symtab;
+
 int
 main(int argc, char *argv[])
 {
