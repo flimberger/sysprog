@@ -1,0 +1,86 @@
+Digraph Acceptor {
+//	rankdir = LR;
+	node [shape = doublecircle, width = 1.0, fixedsize = true] LXEND;
+	node [shape = circle, width = 1.0, fixedsize = true];
+
+	LXNEW -> LXEOF [label = EOF];
+	LXNEW -> LXNEW [label = "isspace()"];
+	LXNEW -> IDENT [label = "isalpha()"];
+	LXNEW -> INTEG [label = "isdigit()"];
+	LXNEW -> OPADD [label = "'+'"];
+	LXNEW -> OPSUB [label = "'-'"];
+	LXNEW -> OPDIV [label = "'/'"];
+	LXNEW -> OPMUL [label = "'*'"];
+	LXNEW -> OLESS [label = "'<'"];
+	LXNEW -> OGRTR [label = "'>'"];
+	LXNEW -> OASGN [label = "'='"];
+	LXNEW -> OPNOT [label = "'!'"];
+	LXNEW -> OPAND [label = "'&'"];
+	LXNEW -> OTERM [label = "';'"];
+	LXNEW -> OPAOP [label = "'('"];
+	LXNEW -> OPACL [label = "')'"];
+	LXNEW -> OCBOP [label = "'{'"];
+	LXNEW -> OCBCL [label = "'}'"];
+	LXNEW -> OBROP [label = "'['"];
+	LXNEW -> OBRCL [label = "']'"];
+	LXNEW -> LXERR [label = "else"];
+
+	IDENT -> IDENT [label = "isalnum()"];
+	IDENT ->MKTOK [label = "else"];
+
+	INTEG -> INTEG [label = "isdigit()"];
+	INTEG -> MKTOK [label = "else"];
+
+	OPADD -> MKTOK;
+
+	OPSUB -> MKTOK;
+
+	OPDIV -> MKTOK;
+	OPDIV -> CMMNT;
+
+	OPMUL -> MKTOK;
+
+	OLESS -> MKTOK;
+	OLESS -> CUNEQ;
+
+	OGRTR -> MKTOK;
+
+	OASGN -> MKTOK;
+
+	OUNEQ -> MKTOK;
+
+	OPNOT -> MKTOK;
+
+	OPAND -> MKTOK;
+
+	OTERM -> MKTOK;
+
+	OPAOP -> MKTOK;
+
+	OPACL -> MKTOK;
+
+	OCBOP -> MKTOK;
+
+	OCBCL -> MKTOK;
+
+	OBROP -> MKTOK;
+
+	OBRCL -> MKTOK;
+
+	LXERR -> MKTOK;
+
+	CMMNT -> CMEND [label = "'*'"];
+	CMMNT -> LXEOF [label = "EOF"];
+
+	CMEND -> LXEOF [label = "EOF"];
+	CMEND -> LXNEW [label = "else"];
+
+	CUNEQ -> MKTOK [label = "'>'"];
+	CUNEQ -> OUNEQ [label = "else"];
+
+	LXERR -> MKTOK;
+
+	MKTOK -> LXEND;
+
+	LXEOF -> LXEND;
+}
