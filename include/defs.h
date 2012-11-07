@@ -11,12 +11,16 @@ typedef long long      vlong;
 typedef unsigned long long uvlong;
 
 typedef enum {
+	ELSE,
 	END,
 	ERROR,
 	IDENTIFIER,
+	IF,
+	INT,
 	INTEGER,
 	PRINT,
 	READ,
+	WHILE,
 	SIGN_PLUS,	/* + */
 	SIGN_MINUS,	/* - */
 	SIGN_DIV,	/* / */
