@@ -34,3 +34,6 @@ test/strtab/strtabtest
 # manual txt + tex files
 man-*.tex*
 
+# acceptor image
+acceptor.png
+

@@ -30,6 +30,8 @@ strtab.txt: $(ROOT)/man/man3/strtab.3
 symtab.txt: $(ROOT)/man/man3/symtab.3
 	man $< | col -b > $@
 
+.gv.png:
+	$(GV) $(GVFLAGS) $<
 
 once:
 	xelatex sysprog
