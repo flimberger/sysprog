@@ -1,5 +1,5 @@
 int a; int b;
-int c[3]; int foo;
+int[3] c; int foo;
 
 int bar;
 
