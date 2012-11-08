@@ -18,11 +18,13 @@ typedef struct {
 } Token;
 
 extern char *infile;
+extern const char *const tokennames[];
 extern Buffer *src, *out;
 extern Symtab *symtab;
 
 int compile(char *outfile);
 Token *gettoken(void);
+void parseprog(void);
 void printtoken(Token *tp);
 void syminit(void);
 void symterm(void);

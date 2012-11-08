@@ -11,7 +11,7 @@
 
 #define STDOUTFILE	"sp.out"
 
-static const char *const tokennames[] = {
+const char *const tokennames[] = {
 	"ELSE",
 	"END",
 	"ERROR",
@@ -71,17 +71,13 @@ main(int argc, char *argv[])
 int
 compile(char *outfile)
 {
-	Token *t;
-
 	if (outfile == NULL)
 		outfile = STDOUTFILE;
 	if ((src = bopen(infile, O_RDONLY)) == NULL)
 		die(1, "failed to allocate input buffer:");
 	if ((out = bopen(outfile, O_WRONLY)) == NULL)
 		die(1, "failed to allocate output buffer:");
-	for (t = gettoken(); t->type != END; t = gettoken())
-		printtoken(t);
-	printtoken(t);
+	parseprog();
 	bclose(out);
 	bclose(src);
 	return 0;
