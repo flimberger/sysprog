@@ -194,18 +194,18 @@ parsestatement(void)
 	return np;
 }
 
+/* TODO: Fix index node */
 static
 Node *
 parseindex(void)
 {
 	Node *np;
 
-	np = NULL;
 	fprintf(stderr, "parseindex\n");
 	if (token->type != SIGN_BROP)
-		return;
+		return NULL;
 	nexttoken();
-	parseexp();
+	np = parseexp();
 	nexttoken();
 	if (token->type != SIGN_BRCL)
 		parseerror("Expected ]");
@@ -216,14 +216,16 @@ static
 Node *
 parseexp(void)
 {
-	Node *np;
+	Node *npopexp, *npexp2;
 
-	np = NULL;
 	fprintf(stderr, "parseexp\n");
-	parseexp2();
+	npexp2 = parseexp2();
 	nexttoken();
-	parseop_exp();
-	return np;
+	if ((npopexp = parseop_exp()) == NULL) {
+		npopexp->left = npexp2;
+		return npopexp;
+	}
+	return npexp2;	
 }
 
 static
@@ -232,15 +234,18 @@ parseexp2(void)
 {
 	Node *np;
 
-	np = NULL;
 	fprintf(stderr, "parseexp2\n");
 	switch (token->type) {
 	case SIGN_PAROP:
+		nexttoken();
+		np = parseexp();
 		nexttoken();
 		if (token->type != SIGN_PARCL)
 			parseerror("Expected (");
 		break;
 	case IDENTIFIER:
+		np = makenode();
+		np->type = NODE_IDENTIFIER;
 		nexttoken();
 		parseindex();
 		break;
@@ -264,12 +269,13 @@ parseop_exp(void)
 {
 	Node *np;
 
-	np = NULL;
-	fprintf(stderr, "parseop_exp\n");
-	parseop();
-	nexttoken();
-	parseexp();
-	return np;
+	fprintf(stderr, "parseop_exp\n");	
+	if ((np = parseop()) != NULL) {
+		nexttoken();
+		np->right = parseexp();
+		return np;	
+	}
+	return NULL;
 }
 
 static
@@ -280,24 +286,34 @@ parseop(void)
 
 	fprintf(stderr, "parseop\n");
 	np = makenode();
+	np->type = NODE_OPERATOR;
 	switch (token->type) {
 	case SIGN_PLUS:
+		np->data.operator = OP_ADD;
 		break;
 	case SIGN_MINUS:
+		np->data.operator = OP_SUB;
 		break;
 	case SIGN_MULT:
+		np->data.operator = OP_MUL;
 		break;
 	case SIGN_DIV:
+		np->data.operator = OP_DIV;
 		break;
 	case SIGN_LESS:
+		np->data.operator = OP_LESS;
 		break;
 	case SIGN_GRTR:
+		np->data.operator = OP_GRTR;
 		break;
 	case SIGN_EQUAL:
+		np->data.operator = OP_EQUAL;
 		break;
 	case SIGN_UNEQL:
+		np->data.operator = OP_UNEQ;
 		break;
 	case SIGN_AND:
+		np->data.operator = OP_AND;
 		break;
 	default:
 		free(np);
