@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "error.h"
 #include "spc.h"
 
-static void parsedecls(void);
-static void parsedecl(void);
-static void parsearray(void);
-static void parsestatements(void);
-static void parsestatement(void);
-static void parseindex(void);
-static void parseexp(void);
-static void parseexp2(void);
-static void parseop_exp(void);
-static void parseop(void);
+static Node* parsedecls(void);
+static Node* parsedecl(void);
+static Node* parsearray(void);
+static Node* parsestatements(void);
+static Node* parsestatement(void);
+static Node* parseindex(void);
+static Node* parseexp(void);
+static Node* parseexp2(void);
+static Node* parseop_exp(void);
+static Node* parseop(void);
 
 static Token *token;
 
@@ -20,9 +21,8 @@ static inline
 void
 parseerror(const char *const str)
 {
-	fprintf(stderr, "%s:%u:%u: Error on Token %s: %s\n", infile, token->row,
+	die(EXIT_FAILURE, "%s:%u:%u: Error on Token %s: %s\n", infile, token->row,
 			token->col, tokennames[token->type], str);
-	exit(EXIT_FAILURE);
 }
 
 static inline
@@ -38,15 +38,21 @@ void
 parseprog(void)
 {
 	fprintf(stderr, "parseprog\n");
+	parsetree = makenode();
 	nexttoken();
-	parsedecls();
-	parsestatements();
+	if ((parsetree->left = parsedecls()) == NULL)
+		parseerror("FIXME parsedecls");
+	if ((parsetree->right = parsestatements()) == NULL)
+		parseerror("FIXME parsestatements");
 }
 
 static
-void
+Node *
 parsedecls(void)
 {
+	Node *np;
+
+	np = NULL;
 	do {
 		fprintf(stderr, "parsedecls\n");
 		parsedecl();
@@ -55,12 +61,16 @@ parsedecls(void)
 			parseerror("Expected ;");
 		nexttoken();
 	} while (token->type == INT);
+	return np;
 }
 
 static
-void
+Node *
 parsedecl(void)
 {
+	Node *np;
+
+	np = NULL;
 	fprintf(stderr, "parsedecl\n");
 	if (token->type != INT)
 		parseerror("Expected int keyword");
@@ -68,12 +78,16 @@ parsedecl(void)
 	parsearray();
 	if (token->type != IDENTIFIER)
 		parseerror("Expected Identifier");
+	return np;
 }
 
 static
-void
+Node *
 parsearray(void)
 {
+	Node *np;
+
+	np = NULL;
 	fprintf(stderr, "parsearray\n");
 	if (token->type != SIGN_BROP)
 		return;
@@ -84,12 +98,16 @@ parsearray(void)
 	if (token->type != SIGN_BRCL)
 		parseerror("Expected ]");
 	nexttoken();
+	return np;
 }
 
 static
-void
+Node *
 parsestatements(void)
 {
+	Node *np;
+
+	np = NULL;
 	do {
 		fprintf(stderr, "parsestatements\n");
 		parsestatement();
@@ -97,12 +115,16 @@ parsestatements(void)
 		if (token->type != SIGN_TERM)
 			parseerror("Expected ;");
 	} while (1);
+	return np;
 }
 
 static
-void
+Node *
 parsestatement(void)
 {
+	Node *np;
+
+	np = NULL;
 	fprintf(stderr, "parsestatement\n");
 	#pragma GCC diagnostic ignored "-Wswitch"
 	switch (token->type) {
@@ -169,12 +191,16 @@ parsestatement(void)
 	default:
 		parseerror("Expected Identifier, if, while or }");
 	}
+	return np;
 }
 
 static
-void
+Node *
 parseindex(void)
 {
+	Node *np;
+
+	np = NULL;
 	fprintf(stderr, "parseindex\n");
 	if (token->type != SIGN_BROP)
 		return;
@@ -183,22 +209,30 @@ parseindex(void)
 	nexttoken();
 	if (token->type != SIGN_BRCL)
 		parseerror("Expected ]");
+	return np;
 }
 
 static
-void
+Node *
 parseexp(void)
 {
+	Node *np;
+
+	np = NULL;
 	fprintf(stderr, "parseexp\n");
 	parseexp2();
 	nexttoken();
 	parseop_exp();
+	return np;
 }
 
 static
-void
+Node *
 parseexp2(void)
 {
+	Node *np;
+
+	np = NULL;
 	fprintf(stderr, "parseexp2\n");
 	switch (token->type) {
 	case SIGN_PAROP:
@@ -221,22 +255,31 @@ parseexp2(void)
 		parseexp2();
 		break;
 	}
+	return np;
 }
 
 static
-void
+Node *
 parseop_exp(void)
 {
+	Node *np;
+
+	np = NULL;
 	fprintf(stderr, "parseop_exp\n");
 	parseop();
 	nexttoken();
 	parseexp();
+	return np;
 }
 
 static
-void
+Node *
 parseop(void)
 {
+	Node *np;
+
+	fprintf(stderr, "parseop\n");
+	np = makenode();
 	switch (token->type) {
 	case SIGN_PLUS:
 		break;
@@ -256,5 +299,9 @@ parseop(void)
 		break;
 	case SIGN_AND:
 		break;
+	default:
+		free(np);
+		return NULL;
 	}
+	return np;
 }
