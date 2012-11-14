@@ -5,6 +5,28 @@
 #include "defs.h"
 #include "symtab.h"
 
+typedef enum {
+	NODE_IDENTIFIER,
+	NODE_IF,
+	NODE_CONSTINT,
+	NODE_PRINT,
+	NODE_READ,
+	NODE_WHILE,
+} Nodetype;
+
+typedef enum {
+	OP_ADD,	/* + */
+	OP_SUB,	/* - */
+	OP_DIV,	/* / */
+	OP_MUL,	/* * */
+	OP_LESS,	/* < */
+	OP_GRTR,	/* > */
+	OP_ASGN,	/* = */
+	OP_UNEQ,	/* <!> */
+	OP_NOT,	/* ! */
+	OP_AND,	/* & */
+} Optype;
+
 typedef struct {
 	union {
 		long long val;
@@ -17,10 +39,23 @@ typedef struct {
 	Symboltype	type;
 } Token;
 
+typedef struct Node Node;
+struct Node {
+	Node *left;
+	Node *right;
+	Nodetype type;
+	union {
+		vlong intval;
+		Symbol *sym;
+		Optype operator;
+	} data;
+};
+
 extern char *infile;
 extern const char *const tokennames[];
 extern Buffer *src, *out;
 extern Symtab *symtab;
+extern Node *parsetree;
 
 int compile(char *outfile);
 Token *gettoken(void);
@@ -28,5 +63,8 @@ void parseprog(void);
 void printtoken(Token *tp);
 void syminit(void);
 void symterm(void);
+
+// Btree functions
+Node *makenode(void);
 
 #endif /* _SYSPROG_H_ */

@@ -44,6 +44,7 @@ const char *const tokennames[] = {
 char *infile;
 Buffer *src, *out;
 Symtab *symtab;
+Node *parsetree;
 
 int
 main(int argc, char *argv[])
