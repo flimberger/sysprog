@@ -20,8 +20,8 @@ static inline
 void
 parseerror(const char *const str)
 {
-	fprintf(stderr, "%s:%u: Error on Token %s: %s\n", infile, token->row,
-			tokennames[token->type], str);
+	fprintf(stderr, "%s:%u:%u: Error on Token %s: %s\n", infile, token->row,
+			token->col, tokennames[token->type], str);
 	exit(EXIT_FAILURE);
 }
 
@@ -177,7 +177,7 @@ parseindex(void)
 {
 	fprintf(stderr, "parseindex\n");
 	if (token->type != SIGN_BROP)
-		parseerror("Expected [");
+		return;
 	nexttoken();
 	parseexp();
 	nexttoken();
