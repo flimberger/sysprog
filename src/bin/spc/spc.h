@@ -6,12 +6,13 @@
 #include "symtab.h"
 
 typedef enum {
-	NODE_IDENTIFIER,
-	NODE_IF,
 	NODE_CONSTINT,
+	NODE_IDENTIFIER,
+	NODE_IF,	
+	NODE_OPERATOR,
 	NODE_PRINT,
 	NODE_READ,
-	NODE_WHILE,
+	NODE_WHILE
 } Nodetype;
 
 typedef enum {
@@ -21,10 +22,10 @@ typedef enum {
 	OP_MUL,	/* * */
 	OP_LESS,	/* < */
 	OP_GRTR,	/* > */
-	OP_ASGN,	/* = */
+	OP_EQUAL,	/* = */
 	OP_UNEQ,	/* <!> */
 	OP_NOT,	/* ! */
-	OP_AND,	/* & */
+	OP_AND	/* & */
 } Optype;
 
 typedef struct {
