@@ -124,69 +124,95 @@ parsestatement(void)
 {
 	Node *np;
 
-	np = NULL;
+	np = makenode();
 	fprintf(stderr, "parsestatement\n");
 	#pragma GCC diagnostic ignored "-Wswitch"
 	switch (token->type) {
 	case IDENTIFIER:
+		np->left = makenode();
 		nexttoken();
-		parseindex();
+		if ((np->left->right = parseindex()) == NULL) {
+			np->left->type = NODE_IDENTIFIER;
+		} else {
+			/* TODO: Set type of np node */
+			np->left = makenode();
+			np->left->left->type = NODE_IDENTIFIER;
+		}
 		nexttoken();
 		if (token->type != SIGN_EQUAL)
 			parseerror("Expected =");
+		np->type = NODE_OPERATOR;
+		np->data.operator = OP_EQUAL;		
 		nexttoken();
-		parseexp();
+		np->right = parseexp();
 		break;
 	case PRINT:
+		np->type = NODE_PRINT;
 		nexttoken();
 		if (token->type != SIGN_PAROP)
 			parseerror("Expected (");
-		parseexp();
+		np->type = NODE_PRINT;		
+		nexttoken();
+		np->left = parseexp();
 		nexttoken();
 		if (token->type != SIGN_PARCL)
 			parseerror("Expected )");
 		break;
 	case READ:
+		np->type = NODE_READ;
 		nexttoken();
 		if (token->type != SIGN_PAROP)
 			parseerror("Expected (");
-		parseexp();
+		np->left = makenode();
+		nexttoken();
+		if ((np->left->right = parseindex()) == NULL) {
+			np->left->type = NODE_IDENTIFIER;
+		} else {
+			/* TODO: Set type of np node */
+			np->left = makenode();
+			np->left->left->type = NODE_IDENTIFIER;
+		}	
 		nexttoken();
 		if (token->type != SIGN_PARCL)
-			parseerror("Expected )");
+			parseerror("Expected )");		
 		break;
 	case SIGN_CBOP:
 		nexttoken();
 		if (token->type != SIGN_BROP)
 			parseerror("Expected {");
-		parsestatements();
+		np = parsestatements();
 		if (token->type != SIGN_BRCL)
 			parseerror("Expected }");
 		break;
 	case IF:
+		np->type = NODE_IF;
 		nexttoken();
 		if (token->type != SIGN_PAROP)
 			parseerror("Expected (");
-		parseexp();
+		np->left = parseexp();
 		nexttoken();
 		if (token->type != SIGN_PARCL)
 			parseerror("Expected )");
-		parsestatement();
+		np->right = makenode();
+		np->right->left = parsestatement();
 		if (token->type != ELSE)
 			parseerror("Expected else");
+		nexttoken();
+		np->right->right = parsestatement();
 		break;
 	case WHILE:
+		np->type = NODE_WHILE;
 		nexttoken();
 		if (token->type != WHILE)
 			parseerror("Expected while");
 		if (token->type != SIGN_PAROP)
 			parseerror("Expected (");
-		parseexp();
+		np->left = parseexp();
 		nexttoken();
 		if (token->type != SIGN_PARCL)
 			parseerror("Expected )");
 		nexttoken();
-		parsestatement();
+		np->right = parsestatement();
 		break;
 	default:
 		parseerror("Expected Identifier, if, while or }");
@@ -244,20 +270,31 @@ parseexp2(void)
 			parseerror("Expected (");
 		break;
 	case IDENTIFIER:
-		np = makenode();
-		np->type = NODE_IDENTIFIER;
+		np = makenode();		
 		nexttoken();
-		parseindex();
+		if ((np->right = parseindex()) == NULL) {
+			np->type = NODE_IDENTIFIER;
+		} else {
+			/* TODO: Set type of np node */
+			np->left = makenode();
+			np->left->type = NODE_IDENTIFIER;
+		}
 		break;
 	case INTEGER:
+		np = makenode();
+		np->type = NODE_CONSTANT;
 		break;
 	case SIGN_MINUS:
-		nexttoken();
-		parseexp2();
-		break;
 	case SIGN_NOT:
+		np = makenode();
+		np->type = NODE_OPERATOR;
+		if (token->type == SIGN_MINUS) {
+			np->data.operator = OP_SUB;
+		} else {
+			np->data.operator = OP_NOT;
+		}		
 		nexttoken();
-		parseexp2();
+		np->left = parseexp2();
 		break;
 	}
 	return np;
