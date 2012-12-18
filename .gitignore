@@ -2,12 +2,7 @@
 *.a
 *.so
 
-lib/*
-bin/*
-
 *.out
-?*test$
-spc$
 *.txt
 
 *.pdf
@@ -20,8 +15,10 @@ spc$
 *.out
 *.toc
 
-*.sublime-project
 *.sublime-workspace
+
+bin/*
+lib/*
 
 # all executables, fuck you git!
 src/bin/spc/spc

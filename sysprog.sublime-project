@@ -1,0 +1,9 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+			"file_exclude_patterns": [ "*.a", "*.aux", "*.o", "*.out", "*.pdf", "*.png", "*.so", "*.toc" ]
+		}
+	]
+}
