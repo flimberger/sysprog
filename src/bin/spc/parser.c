@@ -40,10 +40,17 @@ parseprog(void)
 	fprintf(stderr, "parseprog\n");
 	parsetree = makenode();
 	nexttoken();
-	if ((parsetree->left = parsedecls()) == NULL)
-		parseerror("FIXME parsedecls");
-	if ((parsetree->right = parsestatements()) == NULL)
-		parseerror("FIXME parsestatements");
+	parsetree->left = parsedecls();
+	parsetree->right = parsestatements();
+}
+
+static inline
+void
+parseterm(void)
+{
+	nexttoken();
+	if (token->type != SIGN_TERM)
+		parseerror("Expected ;");
 }
 
 static
@@ -56,9 +63,7 @@ parsedecls(void)
 	do {
 		fprintf(stderr, "parsedecls\n");
 		parsedecl();
-		nexttoken();
-		if (token->type != SIGN_TERM)
-			parseerror("Expected ;");
+		parseterm();
 		nexttoken();
 	} while (token->type == INT);
 	return np;
@@ -90,7 +95,7 @@ parsearray(void)
 	np = NULL;
 	fprintf(stderr, "parsearray\n");
 	if (token->type != SIGN_BROP)
-		return;
+		return np;
 	nexttoken();
 	if (token->type != INTEGER)
 		parseerror("Expected Integer");
@@ -105,17 +110,33 @@ static
 Node *
 parsestatements(void)
 {
-	Node *np;
+	Node *cp, *np, *op, *stmts;
 
-	np = NULL;
-	do {
+	fprintf(stderr, "parsestatements\n");
+	np = parsestatement();
+	if (np == NULL)
+		return NULL;
+	parseterm();
+	nexttoken();
+	if ((cp = parsestatement()) == NULL)
+		return np;
+	parseterm();
+	stmts = makenode();
+	stmts->type = NODE_LIST;
+	stmts->left = np;
+	np = cp;
+	op = stmts;
+	for ( ; (cp = parsestatement()); np = cp) {
 		fprintf(stderr, "parsestatements\n");
-		parsestatement();
+		parseterm();
+		op->right = makenode();
+		op->type = NODE_LIST;
+		op->left = np;
 		nexttoken();
-		if (token->type != SIGN_TERM)
-			parseerror("Expected ;");
-	} while (1);
-	return np;
+		op = op->right;
+	}
+	op->right = cp;
+	return stmts;
 }
 
 static
@@ -138,7 +159,6 @@ parsestatement(void)
 			np->left = makenode();
 			np->left->left->type = NODE_IDENTIFIER;
 		}
-		nexttoken();
 		if (token->type != SIGN_EQUAL)
 			parseerror("Expected =");
 		np->type = NODE_OPERATOR;
