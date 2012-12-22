@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "error.h"
 #include "spc.h"
 
@@ -7,8 +9,9 @@ makenode(void)
 	Node *node;
 
 	if((node = malloc(sizeof(Node))) == NULL)
-		die("Failed to allocate memory for parse tree node.")
+		die(EXIT_FAILURE, "Failed to allocate memory for parse tree node.");
 	node->left = NULL;
 	node->right = NULL;
 	node->data.sym = NULL;
+	return node;
 }
