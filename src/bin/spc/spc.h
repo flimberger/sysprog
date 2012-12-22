@@ -6,9 +6,10 @@
 #include "symtab.h"
 
 typedef enum {
-	NODE_CONSTINT,
+	NODE_CONSTANT,
 	NODE_IDENTIFIER,
-	NODE_IF,	
+	NODE_IF,
+	NODE_LIST,
 	NODE_OPERATOR,
 	NODE_PRINT,
 	NODE_READ,
