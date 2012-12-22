@@ -41,6 +41,15 @@ nexttoken(void)
 	printtoken(token);
 }
 
+static inline
+void
+parseterm(void)
+{
+	nexttoken();
+	if (token->type != SIGN_TERM)
+		parseerror("Expected ;");
+}
+
 void
 parseprog(void)
 {
@@ -51,29 +60,35 @@ parseprog(void)
 	parsetree->right = parsestatements();
 }
 
-static inline
-void
-parseterm(void)
-{
-	nexttoken();
-	if (token->type != SIGN_TERM)
-		parseerror("Expected ;");
-}
-
 static
 Node *
 parsedecls(void)
 {
-	Node *np;
+	Node *cp, *decls, *lp, *np;
 
-	np = NULL;
-	do {
+	printfunc("parsedecls");
+	np = makenode();
+	np->type = NODE_LIST;
+	if ((token->type != INT) || (np = parsedecl()) == NULL)
+		return NULL;
+	if ((token->type != INT) || (cp = parsedecl()) == NULL)
+		return np;
+	lp = makenode();
+	lp->type = NODE_LIST;
+	lp->left = np;
+	decls = lp;
+	np = cp;
+	for ( ; (token->type == INT) && (cp = parsedecl()); np = cp) {
 		printfunc("parsedecls");
-		parsedecl();
 		parseterm();
 		nexttoken();
-	} while (token->type == INT);
-	return np;
+		lp->right = makenode();
+		lp->right->type = NODE_LIST;
+		lp->left = cp;
+		lp = lp->right;
+	}
+	fprintf(stderr, "done parsing decls\n");
+	return decls;
 }
 
 static
@@ -87,12 +102,20 @@ parsedecl(void)
 	if (token->type != INT)
 		parseerror("Expected int keyword");
 	nexttoken();
-	parsearray();
+	np = parsearray();
 	if (token->type != IDENTIFIER)
 		parseerror("Expected Identifier");
+	if (np != NULL) {
+		np->left = NULL; /* TODO: identifier */
+	}
 	return np;
 }
 
+/*
+ *    Array
+ *    /   \
+ * name  length
+ */
 static
 Node *
 parsearray(void)
@@ -102,13 +125,16 @@ parsearray(void)
 	np = NULL;
 	printfunc("parsearray");
 	if (token->type != SIGN_BROP)
-		return np;
+		return NULL;
 	nexttoken();
 	if (token->type != INTEGER)
 		parseerror("Expected Integer");
 	nexttoken();
 	if (token->type != SIGN_BRCL)
 		parseerror("Expected ]");
+	np = maketoken();
+	np->type = NODE_ARRAY;
+	node->right = NULL; /* TODO: size */
 	nexttoken();
 	return np;
 }
@@ -137,7 +163,7 @@ parsestatements(void)
 		printfunc("parsestatements");
 		parseterm();
 		op->right = makenode();
-		op->type = NODE_LIST;
+		op->right->type = NODE_LIST;
 		op->left = np;
 		nexttoken();
 		op = op->right;
