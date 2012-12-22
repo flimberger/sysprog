@@ -19,6 +19,13 @@ static Token *token;
 
 static inline
 void
+printfunc(char *mesg)
+{
+	fprintf(stderr, "%u:%u:%s: %s\n", token->row, token->col, tokennames[token->type], mesg);
+}
+
+static inline
+void
 parseerror(const char *const str)
 {
 	die(EXIT_FAILURE, "%s:%u:%u: Error on Token %s: %s\n", infile, token->row,
@@ -61,7 +68,7 @@ parsedecls(void)
 
 	np = NULL;
 	do {
-		fprintf(stderr, "parsedecls\n");
+		printfunc("parsedecls");
 		parsedecl();
 		parseterm();
 		nexttoken();
@@ -76,7 +83,7 @@ parsedecl(void)
 	Node *np;
 
 	np = NULL;
-	fprintf(stderr, "parsedecl\n");
+	printfunc("parsedecl");
 	if (token->type != INT)
 		parseerror("Expected int keyword");
 	nexttoken();
@@ -93,7 +100,7 @@ parsearray(void)
 	Node *np;
 
 	np = NULL;
-	fprintf(stderr, "parsearray\n");
+	printfunc("parsearray");
 	if (token->type != SIGN_BROP)
 		return np;
 	nexttoken();
@@ -112,7 +119,7 @@ parsestatements(void)
 {
 	Node *cp, *np, *op, *stmts;
 
-	fprintf(stderr, "parsestatements\n");
+	printfunc("parsestatements");
 	np = parsestatement();
 	if (np == NULL)
 		return NULL;
@@ -127,7 +134,7 @@ parsestatements(void)
 	np = cp;
 	op = stmts;
 	for ( ; (cp = parsestatement()); np = cp) {
-		fprintf(stderr, "parsestatements\n");
+		printfunc("parsestatements");
 		parseterm();
 		op->right = makenode();
 		op->type = NODE_LIST;
@@ -146,7 +153,7 @@ parsestatement(void)
 	Node *np;
 
 	np = makenode();
-	fprintf(stderr, "parsestatement\n");
+	printfunc("parsestatement");
 	#pragma GCC diagnostic ignored "-Wswitch"
 	switch (token->type) {
 	case IDENTIFIER:
@@ -247,7 +254,7 @@ parseindex(void)
 {
 	Node *np;
 
-	fprintf(stderr, "parseindex\n");
+	printfunc("parseindex");
 	if (token->type != SIGN_BROP)
 		return NULL;
 	nexttoken();
@@ -264,7 +271,7 @@ parseexp(void)
 {
 	Node *npopexp, *npexp2;
 
-	fprintf(stderr, "parseexp\n");
+	printfunc("parseexp");
 	npexp2 = parseexp2();
 	nexttoken();
 	if ((npopexp = parseop_exp()) == NULL) {
@@ -280,7 +287,7 @@ parseexp2(void)
 {
 	Node *np;
 
-	fprintf(stderr, "parseexp2\n");
+	printfunc("parseexp2");
 	switch (token->type) {
 	case SIGN_PAROP:
 		nexttoken();
@@ -326,7 +333,7 @@ parseop_exp(void)
 {
 	Node *np;
 
-	fprintf(stderr, "parseop_exp\n");	
+	printfunc("parseop_exp");	
 	if ((np = parseop()) != NULL) {
 		nexttoken();
 		np->right = parseexp();
@@ -341,7 +348,7 @@ parseop(void)
 {
 	Node *np;
 
-	fprintf(stderr, "parseop\n");
+	printfunc("parseop");
 	np = makenode();
 	np->type = NODE_OPERATOR;
 	switch (token->type) {
