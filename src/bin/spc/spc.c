@@ -3,13 +3,12 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "buffer.h"
 #include "error.h"
 #include "spc.h"
 #include "symtab.h"
-
-#define STDOUTFILE	"sp.out"
 
 const char *const tokennames[] = {
 	"ELSE",
@@ -72,8 +71,17 @@ main(int argc, char *argv[])
 int
 compile(char *outfile)
 {
-	if (outfile == NULL)
-		outfile = STDOUTFILE;
+	char *b, *e;
+	ptrdiff_t l;
+
+	if (outfile == NULL) {
+		b = strrchr(infile, '/') + 1;
+		e = strrchr(infile, '.') + 1;
+		l = e - b;
+		outfile = calloc(l + 3, sizeof(char));
+		strncpy(outfile, b, l);
+		strncat(outfile, "out", 3);
+	}
 	if ((src = bopen(infile, O_RDONLY)) == NULL)
 		die(1, "failed to allocate input buffer:");
 	if ((out = bopen(outfile, O_WRONLY)) == NULL)
