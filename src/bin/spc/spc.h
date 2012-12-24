@@ -32,7 +32,7 @@ typedef enum {
 
 typedef struct {
 	union {
-		long long val;
+		vlong val;
 		Symbol *sym;
 		const char *sign;
 		char lastchar;

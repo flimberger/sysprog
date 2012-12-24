@@ -132,9 +132,9 @@ parsearray(void)
 	nexttoken();
 	if (token->type != SIGN_BRCL)
 		parseerror("Expected ]");
-	np = maketoken();
+	np = makenode();
 	np->type = NODE_ARRAY;
-	node->right = NULL; /* TODO: size */
+	np->right = NULL; /* TODO: size */
 	nexttoken();
 	return np;
 }
