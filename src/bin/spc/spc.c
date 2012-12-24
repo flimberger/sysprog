@@ -132,7 +132,7 @@ printtoken(Token *tp)
 		fprintf(stderr, "Token %-10s char %4d line %3d Char  %c\n", tokennames[tp->type], tp->col, tp->row, tp->data.lastchar);
 		break;
 	case INTEGER:
-		bprintf(out, "Token %-10s char %4d line %3d Value %ld\n", tokennames[tp->type], tp->col, tp->row, tp->data.val);
+		bprintf(out, "Token %-10s char %4d line %3d Value %lld\n", tokennames[tp->type], tp->col, tp->row, tp->data.val);
 		break;
 	case ELSE:
 	case IF:

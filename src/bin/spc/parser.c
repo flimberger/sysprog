@@ -69,10 +69,17 @@ parsedecls(void)
 	printfunc("parsedecls");
 	np = makenode();
 	np->type = NODE_LIST;
-	if ((token->type != INT) || (np = parsedecl()) == NULL)
+	if ((token->type != INT) || (np = parsedecl()) == NULL) {
+		fprintf(stderr, "no decls\n");
 		return NULL;
-	if ((token->type != INT) || (cp = parsedecl()) == NULL)
+	}
+	nexttoken();
+	if ((token->type != INT) || (cp = parsedecl()) == NULL) {
+		fprintf(stderr, "only one decl\n");
 		return np;
+	}
+	nexttoken();
+	fprintf(stderr, "more decls\n");
 	lp = makenode();
 	lp->type = NODE_LIST;
 	lp->left = np;
@@ -105,9 +112,13 @@ parsedecl(void)
 	np = parsearray();
 	if (token->type != IDENTIFIER)
 		parseerror("Expected Identifier");
-	if (np != NULL) {
+	if (np != NULL)
 		np->left = NULL; /* TODO: identifier */
+	else {
+		np = makenode();
+		np->type = NODE_IDENTIFIER;
 	}
+	parseterm();
 	return np;
 }
 
@@ -132,10 +143,10 @@ parsearray(void)
 	nexttoken();
 	if (token->type != SIGN_BRCL)
 		parseerror("Expected ]");
+	nexttoken();
 	np = makenode();
 	np->type = NODE_ARRAY;
 	np->right = NULL; /* TODO: size */
-	nexttoken();
 	return np;
 }
 
@@ -300,7 +311,7 @@ parseexp(void)
 	printfunc("parseexp");
 	npexp2 = parseexp2();
 	nexttoken();
-	if ((npopexp = parseop_exp()) == NULL) {
+	if ((npopexp = parseop_exp()) != NULL) {
 		npopexp->left = npexp2;
 		return npopexp;
 	}
