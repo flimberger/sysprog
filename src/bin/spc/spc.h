@@ -6,6 +6,7 @@
 #include "symtab.h"
 
 typedef enum {
+	NODE_ARRAY,
 	NODE_CONSTANT,
 	NODE_IDENTIFIER,
 	NODE_IF,
@@ -31,7 +32,7 @@ typedef enum {
 
 typedef struct {
 	union {
-		long long val;
+		vlong val;
 		Symbol *sym;
 		const char *sign;
 		char lastchar;

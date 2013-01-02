@@ -29,7 +29,7 @@ test/buffer/bputtest
 test/symtab/symtabtest
 test/strtab/strtabtest
 
-# manual txt + tex files
+# manual tex files
 man-*.tex*
 
 # acceptor image
