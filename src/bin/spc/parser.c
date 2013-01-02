@@ -90,7 +90,7 @@ parsearray(void)
 	np = NULL;
 	fprintf(stderr, "parsearray\n");
 	if (token->type != SIGN_BROP)
-		return;
+		return np;
 	nexttoken();
 	if (token->type != INTEGER)
 		parseerror("Expected Integer");
@@ -105,17 +105,20 @@ static
 Node *
 parsestatements(void)
 {
-	Node *np;
+	Node *cp, *np, *stmts;
 
-	np = NULL;
-	do {
-		fprintf(stderr, "parsestatements\n");
-		parsestatement();
+	stmts = np = parsestatement();
+	if (np == NULL)
+		return NULL;
+	nexttoken();
+	if (token->type != SIGN_TERM)
+		parseerror("Expected ;");
+	while ((cp = parsestatement()) != NULL) {
 		nexttoken();
 		if (token->type != SIGN_TERM)
 			parseerror("Expected ;");
-	} while (1);
-	return np;
+	}
+	return stmts;
 }
 
 static
