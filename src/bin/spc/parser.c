@@ -45,6 +45,7 @@ static inline
 void
 parseterm(void)
 {
+	printfunc("parseterm");
 	nexttoken();
 	if (token->type != SIGN_TERM)
 		parseerror("Expected ;");
@@ -53,7 +54,7 @@ parseterm(void)
 void
 parseprog(void)
 {
-	fprintf(stderr, "parseprog\n");
+	fprintf(stderr, "parseprog: Begin parsing\n");
 	parsetree = makenode();
 	nexttoken();
 	parsetree->left = parsedecls();
@@ -74,7 +75,7 @@ parsedecls(void)
 		return NULL;
 	}
 	nexttoken();
-	if ((token->type != INT) || (cp = parsedecl()) == NULL) {
+	if ((token->type != INT) || ((cp = parsedecl()) == NULL)) {
 		fprintf(stderr, "only one decl\n");
 		return np;
 	}
@@ -87,7 +88,6 @@ parsedecls(void)
 	np = cp;
 	for ( ; (token->type == INT) && (cp = parsedecl()); np = cp) {
 		printfunc("parsedecls");
-		parseterm();
 		nexttoken();
 		lp->right = makenode();
 		lp->right->type = NODE_LIST;
