@@ -176,8 +176,8 @@ parsestatements(void)
 		op->right = makenode();
 		op->right->type = NODE_LIST;
 		op->left = np;
-		nexttoken();
 		op = op->right;
+		nexttoken();
 	}
 	op->right = cp;
 	return stmts;
@@ -206,7 +206,7 @@ parsestatement(void)
 		if (token->type != SIGN_EQUAL)
 			parseerror("Expected =");
 		np->type = NODE_OPERATOR;
-		np->data.operator = OP_EQUAL;		
+		np->data.operator = OP_EQUAL;
 		nexttoken();
 		np->right = parseexp();
 		break;
@@ -215,7 +215,7 @@ parsestatement(void)
 		nexttoken();
 		if (token->type != SIGN_PAROP)
 			parseerror("Expected (");
-		np->type = NODE_PRINT;		
+		np->type = NODE_PRINT;
 		nexttoken();
 		np->left = parseexp();
 		nexttoken();
@@ -238,7 +238,7 @@ parsestatement(void)
 		}	
 		nexttoken();
 		if (token->type != SIGN_PARCL)
-			parseerror("Expected )");		
+			parseerror("Expected )");
 		break;
 	case SIGN_CBOP:
 		nexttoken();
@@ -370,11 +370,11 @@ parseop_exp(void)
 {
 	Node *np;
 
-	printfunc("parseop_exp");	
+	printfunc("parseop_exp");
 	if ((np = parseop()) != NULL) {
 		nexttoken();
 		np->right = parseexp();
-		return np;	
+		return np;
 	}
 	return NULL;
 }
