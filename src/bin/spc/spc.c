@@ -73,21 +73,24 @@ int
 compile(char *outfile)
 {
 	char *b, *e;
-	ptrdiff_t l;
+	ptrdiff_t nl;
+	size_t el;
 
 	if (outfile == NULL) {
 		b = strrchr(infile, '/') + 1;
 		e = strrchr(infile, '.') + 1;
-		l = e - b;
-		outfile = calloc(l + 3, sizeof(char));
-		strncpy(outfile, b, l);
-		strncat(outfile, "out", 3);
+		nl = e - b;
+		el = strlen(ext);
+		outfile = calloc(nl + el, sizeof(char));
+		strncpy(outfile, b, nl);
+		strncat(outfile, ext, el);
 	}
 	if ((src = bopen(infile, O_RDONLY)) == NULL)
 		die(1, "failed to allocate input buffer:");
 	if ((out = bopen(outfile, O_WRONLY)) == NULL)
 		die(1, "failed to allocate output buffer:");
 	parseprog();
+	gencode();
 	bclose(out);
 	bclose(src);
 	return 0;

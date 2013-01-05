@@ -17,11 +17,14 @@
 
 *.sublime-workspace
 
+*.class
+
 bin/*
 lib/*
 
 # all executables, fuck you git!
 src/bin/spc/spc
+src/bin/jsp/jsp
 test/buffer/bungettest
 test/buffer/bgettest
 test/buffer/bprintftest
@@ -34,4 +37,3 @@ man-*.tex*
 
 # acceptor image
 acceptor.png
-

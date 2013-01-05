@@ -60,7 +60,7 @@ struct Node {
 	Datatype datatype;
 };
 
-extern char *infile;
+extern char *infile, *ext;
 extern const char *const tokennames[];
 extern Buffer *src, *out;
 extern Symtab *symtab;
@@ -72,6 +72,7 @@ void parseprog(void);
 void printtoken(Token *tp);
 void syminit(void);
 void symterm(void);
+void gencode(void);
 
 // Btree functions
 Node *makenode(void);
