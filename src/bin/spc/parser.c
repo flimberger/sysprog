@@ -113,9 +113,13 @@ parsedecl(void)
 	np->type = NODE_DECL;
 	if (nexttoken->symtype == S_BROP) {
 		np->left = parsearray();
-	}
-	if (nexttoken->symtype == S_IDENT)
+		np->datatype = T_INTARR;
+	} else
+		np->datatype = T_INT;
+	if (nexttoken->symtype == S_IDENT) {
 		np->data.sym = nexttoken->data.sym;
+		np->data.sym->datatype = np->datatype;
+	}
 	match(S_IDENT);
 	return np;
 }
