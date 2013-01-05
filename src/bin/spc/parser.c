@@ -30,8 +30,8 @@ void
 match(Symboltype t)
 {
 	if (t == nexttoken->type) {
-		nexttoken = gettoken();
 		printtoken(nexttoken);
+		nexttoken = gettoken();
 	} else
 		die(EXIT_FAILURE, "%s:%u:%u: Error on Token %s: Expected %s\n",
 			infile, nexttoken->row, nexttoken->col,
@@ -52,11 +52,9 @@ static
 Node *
 parsedecls(void)
 {
-	Node *cp, *decls, *lp, *np;
+	Node *decls, *lp, *np;
 
 	printfunc("parsedecls");
-	np = makenode();
-	np->type = NODE_LIST;
 	if (nexttoken->type != INT) {
 		fprintf(stderr, "no decls\n");
 		return NULL;
@@ -68,22 +66,22 @@ parsedecls(void)
 		return np;
 	}
 	fprintf(stderr, "more decls\n");
-	cp = parsedecl();
-	match(SIGN_TERM);
 	lp = makenode();
 	lp->type = NODE_LIST;
 	lp->left = np;
+	np = parsedecl();
+	match(SIGN_TERM);
 	decls = lp;
-	np = cp;
-	for ( ; (nexttoken->type == INT); np = cp) {
+	while (nexttoken->type == INT) {
 		printfunc("parsedecls");
-		cp = parsedecl();
-		match(SIGN_TERM);
 		lp->right = makenode();
-		lp->right->type = NODE_LIST;
-		lp->left = cp;
 		lp = lp->right;
+		lp->type = NODE_LIST;
+		lp->left = np;
+		np = parsedecl();
+		match(SIGN_TERM);
 	}
+	lp->right = np;
 	fprintf(stderr, "done parsing decls\n");
 	return decls;
 }
@@ -136,30 +134,35 @@ static
 Node *
 parsestatements(void)
 {
-	Node *cp, *np, *op, *stmts;
+	Node *lp, *np, *stmts;
 
 	printfunc("parsestatements");
 	np = parsestatement();
-	if (np == NULL)
-		return NULL;
 	match(SIGN_TERM);
-	if ((cp = parsestatement()) == NULL)
+	/* nexttoken not element of FIRST(STATEMENT)? */
+	if ((nexttoken->type != IDENTIFIER) && (nexttoken->type != PRINT) &&
+		(nexttoken->type != READ) && (nexttoken->type != SIGN_CBOP) &&
+		(nexttoken->type != IF) && (nexttoken->type != WHILE)) {
+		fprintf(stderr, "%s\n", tokennames[nexttoken->type]);
 		return np;
-	match(SIGN_TERM);
-	stmts = makenode();
-	stmts->type = NODE_LIST;
-	stmts->left = np;
-	np = cp;
-	op = stmts;
-	for ( ; (cp = parsestatement()); np = cp) {
-		printfunc("parsestatements");
-		match(SIGN_TERM);
-		op->right = makenode();
-		op->right->type = NODE_LIST;
-		op->left = np;
-		op = op->right;
 	}
-	op->right = cp;
+	lp = makenode();
+	lp->type = NODE_LIST;
+	lp->left = np;
+	np = parsestatement();
+	match(SIGN_TERM);
+	stmts = lp;
+	while ((nexttoken->type == IDENTIFIER) || (nexttoken->type == PRINT) ||
+		(nexttoken->type == READ) || (nexttoken->type == SIGN_CBOP) ||
+		(nexttoken->type == IF) || (nexttoken->type == WHILE)) {
+		lp->right = makenode();
+		lp = lp->right;
+		lp->type = NODE_LIST;
+		lp->left = np;
+		np = parsestatement();
+		match(SIGN_TERM);
+	}
+	lp->right = np;
 	return stmts;
 }
 
@@ -235,7 +238,7 @@ parsestatement(void)
 		break;
 	default:
 		die(EXIT_FAILURE,
-			"%s:%u:%u: Error on Token %s: Expected Expected Identifier, if, while or }\n",
+			"%s:%u:%u: Error on Token %s: Expected Expected Identifier, if, while or {\n",
 			infile, nexttoken->row, nexttoken->col,
 			tokennames[nexttoken->type]);
 	}
