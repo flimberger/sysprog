@@ -343,7 +343,7 @@ mktok(void)
 	switch (last) {
 	case IDENT:
 		token.data.sym = storesym(symtab, buf);
-		if (token.data.sym->type == 0)
+		if (token.data.sym->type == NONE)
 			token.data.sym->type = IDENTIFIER;
 		token.type = token.data.sym->type;
 		break;

@@ -11,6 +11,7 @@
 #include "symtab.h"
 
 const char *const tokennames[] = {
+	"NONE",
 	"ELSE",
 	"END",
 	"ERROR",
@@ -126,6 +127,9 @@ printtoken(Token *tp)
 	if (tp == NULL)
 		return;
 	switch (tp->type) {
+	case NONE:
+		fprintf(stderr, "Token %-10s char %4d line %3d Char  %c\n", tokennames[tp->type], tp->col, tp->row, tp->data.lastchar);
+		break;
 	case END:
 		break;
 	case ERROR:

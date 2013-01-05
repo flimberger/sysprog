@@ -39,7 +39,7 @@ process(Symtab *restrict tab, const char *restrict const lexem, bool create)
 			return NULL;
 		}
 		entry->next = tab->symbols[h];
-		entry->type = 0;
+		entry->type = NONE;
 		tab->symbols[h] = entry;
 
 	}
