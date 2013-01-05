@@ -48,9 +48,9 @@ struct Node {
 	Node *right;
 	Nodetype type;
 	union {
-		vlong intval;
+		vlong  val;
 		Symbol *sym;
-		Optype operator;
+		Optype op;
 	} data;
 };
 

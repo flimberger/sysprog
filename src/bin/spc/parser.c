@@ -4,6 +4,20 @@
 #include "error.h"
 #include "spc.h"
 
+#define FIRST_STATEMENT ( \
+	(nexttoken->type == IDENTIFIER) || (nexttoken->type == PRINT) || \
+	(nexttoken->type == READ) || (nexttoken->type == SIGN_CBOP) || \
+	(nexttoken->type == IF) || (nexttoken->type == WHILE) \
+)
+
+#define FIRST_OP_EXP ( \
+	(nexttoken->type == SIGN_PLUS) || (nexttoken->type == SIGN_MINUS) || \
+	(nexttoken->type == SIGN_MULT) || (nexttoken->type == SIGN_DIV) || \
+	(nexttoken->type == SIGN_GRTR) || (nexttoken->type == SIGN_LESS) || \
+	(nexttoken->type == SIGN_EQUAL) || (nexttoken->type == SIGN_UNEQL) || \
+	(nexttoken->type == SIGN_AND) \
+)
+
 static Node* parsedecls(void);
 static Node* parsedecl(void);
 static Node* parsearray(void);
@@ -25,7 +39,7 @@ printfunc(char *mesg)
 		tokennames[nexttoken->type], mesg);
 }
 
-static inline
+static
 void
 match(Symboltype t)
 {
@@ -95,7 +109,8 @@ parsedecl(void)
 	np = NULL;
 	printfunc("parsedecl");
 	match(INT);
-	np = parsearray();
+	if (nexttoken->type == SIGN_BROP)
+		np = parsearray();
 	match(IDENTIFIER);
 	if (np != NULL)
 		np->left = NULL; /* TODO: identifier */
@@ -117,16 +132,12 @@ parsearray(void)
 {
 	Node *np;
 
-	np = NULL;
 	printfunc("parsearray");
-	if (nexttoken->type != SIGN_BROP)
-		return np;
 	match(SIGN_BROP);
 	match(INTEGER);
 	match(SIGN_BRCL);
 	np = makenode();
 	np->type = NODE_ARRAY;
-	np->right = NULL; /* TODO: size */
 	return np;
 }
 
@@ -139,10 +150,7 @@ parsestatements(void)
 	printfunc("parsestatements");
 	np = parsestatement();
 	match(SIGN_TERM);
-	/* nexttoken not element of FIRST(STATEMENT)? */
-	if ((nexttoken->type != IDENTIFIER) && (nexttoken->type != PRINT) &&
-		(nexttoken->type != READ) && (nexttoken->type != SIGN_CBOP) &&
-		(nexttoken->type != IF) && (nexttoken->type != WHILE))
+	if (!FIRST_STATEMENT)
 		return np;
 	lp = makenode();
 	lp->type = NODE_LIST;
@@ -150,9 +158,7 @@ parsestatements(void)
 	np = parsestatement();
 	match(SIGN_TERM);
 	stmts = lp;
-	while ((nexttoken->type == IDENTIFIER) || (nexttoken->type == PRINT) ||
-		(nexttoken->type == READ) || (nexttoken->type == SIGN_CBOP) ||
-		(nexttoken->type == IF) || (nexttoken->type == WHILE)) {
+	while (FIRST_STATEMENT) {
 		printfunc("parsestatements");
 		lp->right = makenode();
 		lp = lp->right;
@@ -177,17 +183,11 @@ parsestatement(void)
 	switch (nexttoken->type) {
 	case IDENTIFIER:
 		match(IDENTIFIER);
-		np->left = makenode();
-		if ((np->left->right = parseindex()) == NULL) {
-			np->left->type = NODE_IDENTIFIER;
-		} else {
-			/* TODO: Set type of np node */
-			np->left->left = makenode();
-			np->left->left->type = NODE_IDENTIFIER;
-		}
+		if (nexttoken->type == SIGN_BROP)
+			np->left = parseindex();
 		match(SIGN_EQUAL);
 		np->type = NODE_OPERATOR;
-		np->data.operator = OP_EQUAL;
+		np->data.op = OP_EQUAL;
 		np->right = parseexp();
 		break;
 	case PRINT:
@@ -202,14 +202,11 @@ parsestatement(void)
 		np->type = NODE_READ;
 		match(SIGN_PAROP);
 		match(IDENTIFIER);
-		np->left = makenode();
-		if ((np->left->right = parseindex()) == NULL) {
-			np->left->type = NODE_IDENTIFIER;
-		} else {
-			/* TODO: Set type of np node */
+		if (nexttoken->type == SIGN_BROP) {
 			np->left = makenode();
-			np->left->left->type = NODE_IDENTIFIER;
-		}	
+			np->left->right = parseindex();
+			np->left->type = NODE_IDENTIFIER;
+		}
 		match(SIGN_PARCL);
 		break;
 	case SIGN_CBOP:
@@ -253,8 +250,6 @@ parseindex(void)
 	Node *np;
 
 	printfunc("parseindex");
-	if (nexttoken->type != SIGN_BROP)
-		return NULL;
 	match(SIGN_BROP);
 	np = parseexp();
 	match(SIGN_BRCL);
@@ -269,7 +264,8 @@ parseexp(void)
 
 	printfunc("parseexp");
 	npexp2 = parseexp2();
-	if ((npopexp = parseop_exp()) != NULL) {
+	if (FIRST_OP_EXP) {
+		npopexp = parseop_exp();
 		npopexp->left = npexp2;
 		return npopexp;
 	}
@@ -291,14 +287,10 @@ parseexp2(void)
 		break;
 	case IDENTIFIER:
 		match(IDENTIFIER);
-		np = makenode();		
-		if ((np->right = parseindex()) == NULL) {
-			np->type = NODE_IDENTIFIER;
-		} else {
-			/* TODO: Set type of np node */
-			np->left = makenode();
-			np->left->type = NODE_IDENTIFIER;
-		}
+		np = makenode();
+		np->type = NODE_IDENTIFIER;
+		if (nexttoken->type == SIGN_BROP)
+			np->right = parseindex();
 		break;
 	case INTEGER:
 		match(INTEGER);
@@ -311,10 +303,10 @@ parseexp2(void)
 		np->type = NODE_OPERATOR;
 		if (nexttoken->type == SIGN_MINUS) {
 			match(SIGN_MINUS);
-			np->data.operator = OP_SUB;
+			np->data.op = OP_SUB;
 		} else {
 			match(SIGN_NOT);
-			np->data.operator = OP_NOT;		
+			np->data.op = OP_NOT;
 		}
 		np->left = parseexp2();
 		break;
@@ -348,39 +340,39 @@ parseop(void)
 	switch (nexttoken->type) {
 	case SIGN_PLUS:
 		match(SIGN_PLUS);
-		np->data.operator = OP_ADD;
+		np->data.op = OP_ADD;
 		break;
 	case SIGN_MINUS:
 		match(SIGN_MINUS);
-		np->data.operator = OP_SUB;
+		np->data.op = OP_SUB;
 		break;
 	case SIGN_MULT:
 		match(SIGN_MULT);
-		np->data.operator = OP_MUL;
+		np->data.op = OP_MUL;
 		break;
 	case SIGN_DIV:
 		match(SIGN_DIV);
-		np->data.operator = OP_DIV;
+		np->data.op = OP_DIV;
 		break;
 	case SIGN_LESS:
 		match(SIGN_LESS);
-		np->data.operator = OP_LESS;
+		np->data.op = OP_LESS;
 		break;
 	case SIGN_GRTR:
 		match(SIGN_GRTR);
-		np->data.operator = OP_GRTR;
+		np->data.op = OP_GRTR;
 		break;
 	case SIGN_EQUAL:
 		match(SIGN_EQUAL);
-		np->data.operator = OP_EQUAL;
+		np->data.op = OP_EQUAL;
 		break;
 	case SIGN_UNEQL:
 		match(SIGN_UNEQL);
-		np->data.operator = OP_UNEQ;
+		np->data.op = OP_UNEQ;
 		break;
 	case SIGN_AND:
 		match(SIGN_AND);
-		np->data.operator = OP_AND;
+		np->data.op = OP_AND;
 		break;
 	default:
 		free(np);
