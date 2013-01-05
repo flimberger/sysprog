@@ -58,6 +58,7 @@ parseprog(void)
 	fprintf(stderr, "parseprog: Begin parsing\n");
 	nexttoken = gettoken();
 	parsetree = makenode();
+	parsetree->type = NODE_ROOT;
 	parsetree->left = parsedecls();
 	parsetree->right = parsestatements();
 }
@@ -106,26 +107,19 @@ parsedecl(void)
 {
 	Node *np;
 
-	np = NULL;
 	printfunc("parsedecl");
 	match(INT);
-	if (nexttoken->type == SIGN_BROP)
-		np = parsearray();
-	match(IDENTIFIER);
-	if (np != NULL)
-		np->left = NULL; /* TODO: identifier */
-	else {
-		np = makenode();
-		np->type = NODE_IDENTIFIER;
+	np = makenode();
+	np->type = NODE_DECL;
+	if (nexttoken->type == SIGN_BROP) {
+		np->left = parsearray();
 	}
+	if (nexttoken->type == IDENTIFIER)
+		np->data.sym = nexttoken->data.sym;
+	match(IDENTIFIER);
 	return np;
 }
 
-/*
- *    Array
- *    /   \
- * name  length
- */
 static
 Node *
 parsearray(void)
@@ -134,10 +128,13 @@ parsearray(void)
 
 	printfunc("parsearray");
 	match(SIGN_BROP);
+	if (nexttoken->type == INTEGER) {
+		np = makenode();
+		np->type = NODE_ARRAY;
+		np->data.val = nexttoken->data.val;
+	}
 	match(INTEGER);
 	match(SIGN_BRCL);
-	np = makenode();
-	np->type = NODE_ARRAY;
 	return np;
 }
 
@@ -182,12 +179,12 @@ parsestatement(void)
 	#pragma GCC diagnostic ignored "-Wswitch"
 	switch (nexttoken->type) {
 	case IDENTIFIER:
+		np->data.sym = nexttoken->data.sym;
 		match(IDENTIFIER);
 		if (nexttoken->type == SIGN_BROP)
 			np->left = parseindex();
 		match(SIGN_EQUAL);
-		np->type = NODE_OPERATOR;
-		np->data.op = OP_EQUAL;
+		np->type = NODE_ASSGN;
 		np->right = parseexp();
 		break;
 	case PRINT:
@@ -201,12 +198,14 @@ parsestatement(void)
 		match(READ);
 		np->type = NODE_READ;
 		match(SIGN_PAROP);
-		match(IDENTIFIER);
-		if (nexttoken->type == SIGN_BROP) {
+		if (nexttoken->type == IDENTIFIER) {
 			np->left = makenode();
-			np->left->right = parseindex();
-			np->left->type = NODE_IDENTIFIER;
+			np->left->type = NODE_IDENT;
+			np->left->data.sym = nexttoken->data.sym;
 		}
+		match(IDENTIFIER);
+		if (nexttoken->type == SIGN_BROP)
+			np->left->right = parseindex();
 		match(SIGN_PARCL);
 		break;
 	case SIGN_CBOP:
@@ -221,6 +220,7 @@ parsestatement(void)
 		np->left = parseexp();
 		match(SIGN_PARCL);
 		np->right = makenode();
+		np->right->type = NODE_NONE;
 		np->right->left = parsestatement();
 		match(ELSE);
 		np->right->right = parsestatement();
@@ -242,7 +242,6 @@ parsestatement(void)
 	return np;
 }
 
-/* TODO: Fix index node */
 static
 Node *
 parseindex(void)
@@ -260,16 +259,16 @@ static
 Node *
 parseexp(void)
 {
-	Node *npopexp, *npexp2;
+	Node *np, *op;
 
 	printfunc("parseexp");
-	npexp2 = parseexp2();
+	np = parseexp2();
 	if (FIRST_OP_EXP) {
-		npopexp = parseop_exp();
-		npopexp->left = npexp2;
-		return npopexp;
+		op = parseop_exp();
+		op->left = np;
+		return op;
 	}
-	return npexp2;	
+	return np;
 }
 
 static
@@ -286,24 +285,26 @@ parseexp2(void)
 		match(SIGN_PARCL);
 		break;
 	case IDENTIFIER:
-		match(IDENTIFIER);
 		np = makenode();
-		np->type = NODE_IDENTIFIER;
+		np->data.sym = nexttoken->data.sym;
+		match(IDENTIFIER);
+		np->type = NODE_IDENT;
 		if (nexttoken->type == SIGN_BROP)
-			np->right = parseindex();
+			np->left = parseindex();
 		break;
 	case INTEGER:
-		match(INTEGER);
 		np = makenode();
-		np->type = NODE_CONSTANT;
+		np->type = NODE_CONST;
+		np->data.val = nexttoken->data.val;
+		match(INTEGER);
 		break;
 	case SIGN_MINUS:
 	case SIGN_NOT:
 		np = makenode();
-		np->type = NODE_OPERATOR;
+		np->type = NODE_OP;
 		if (nexttoken->type == SIGN_MINUS) {
 			match(SIGN_MINUS);
-			np->data.op = OP_SUB;
+			np->data.op = OP_NEG;
 		} else {
 			match(SIGN_NOT);
 			np->data.op = OP_NOT;
@@ -321,11 +322,9 @@ parseop_exp(void)
 	Node *np;
 
 	printfunc("parseop_exp");
-	if ((np = parseop()) != NULL) {
-		np->right = parseexp();
-		return np;
-	}
-	return NULL;
+	np = parseop();
+	np->right = parseexp();
+	return np;
 }
 
 static
@@ -336,7 +335,7 @@ parseop(void)
 
 	printfunc("parseop");
 	np = makenode();
-	np->type = NODE_OPERATOR;
+	np->type = NODE_OP;
 	switch (nexttoken->type) {
 	case SIGN_PLUS:
 		match(SIGN_PLUS);
@@ -374,9 +373,6 @@ parseop(void)
 		match(SIGN_AND);
 		np->data.op = OP_AND;
 		break;
-	default:
-		free(np);
-		return NULL;
 	}
 	return np;
 }

@@ -6,18 +6,23 @@
 #include "symtab.h"
 
 typedef enum {
-	NODE_ARRAY,
-	NODE_CONSTANT,
-	NODE_IDENTIFIER,
-	NODE_IF,
+	NODE_NONE,
+	NODE_ROOT,
 	NODE_LIST,
-	NODE_OPERATOR,
+	NODE_DECL,
+	NODE_ARRAY,
+	NODE_ASSGN,
+	NODE_IDENT,
+	NODE_CONST,
+	NODE_OP,
 	NODE_PRINT,
 	NODE_READ,
+	NODE_IF,
 	NODE_WHILE
 } Nodetype;
 
 typedef enum {
+	OP_NEG,	/* unary - */
 	OP_ADD,	/* + */
 	OP_SUB,	/* - */
 	OP_DIV,	/* / */
@@ -26,7 +31,7 @@ typedef enum {
 	OP_GRTR,	/* > */
 	OP_EQUAL,	/* = */
 	OP_UNEQ,	/* <!> */
-	OP_NOT,	/* ! */
+	OP_NOT,	/* ! (unary) */
 	OP_AND	/* & */
 } Optype;
 
