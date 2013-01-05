@@ -6,7 +6,7 @@ LIBP=$(ROOT)/lib
 BINP=$(ROOT)/bin
 
 HDR=$(NAME).h
-SRC=spc.c scanner.c parser.c btree.c
+SRC=spc.c scanner.c parser.c btree.c printtoken.c
 OBJ=$(SRC:.c=.o)
 
 INC=-I$(INCP)
