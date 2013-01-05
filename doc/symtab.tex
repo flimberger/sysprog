@@ -18,10 +18,12 @@ typedef struct Symbol Symbol;
 struct Symbol {
 	Symbol *next;
 	const char *lexem;
-	Symboltype type;
+	Symboltype symtype;
+	Datatype   datatype;
 };
 \end{lstlisting}
 Die Datenstruktur \texttt{Symbol} beeinhaltet das Lexem und den Symboltyp. Daneben wird ein Verweis auf das nächste Symbol angegeben, so dass eine einfach verkettete Liste der Symbole entsteht.
+Weiterhin wird in \texttt{datatype} der Datentyp des Symbols gespeichert.
 
 \begin{lstlisting}
 typedef struct {

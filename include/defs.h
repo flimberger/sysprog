@@ -11,34 +11,41 @@ typedef long long      vlong;
 typedef unsigned long long uvlong;
 
 typedef enum {
-	NONE,
-	ELSE,
-	END,
-	ERROR,
-	IDENTIFIER,
-	IF,
-	INT,
-	INTEGER,
-	PRINT,
-	READ,
-	WHILE,
-	SIGN_PLUS,	/* + */
-	SIGN_MINUS,	/* - */
-	SIGN_DIV,	/* / */
-	SIGN_MULT,	/* * */
-	SIGN_LESS,	/* < */
-	SIGN_GRTR,	/* > */
-	SIGN_EQUAL,	/* = */
-	SIGN_UNEQL,	/* <!> */
-	SIGN_NOT,	/* ! */
-	SIGN_AND,	/* & */
-	SIGN_TERM,	/* ; */
-	SIGN_PAROP,	/* ( */
-	SIGN_PARCL,	/* ) */
-	SIGN_CBOP,	/* { */
-	SIGN_CBCL,	/* } */
-	SIGN_BROP,	/* [ */
-	SIGN_BRCL	/* ] */
+	T_NONE,
+	T_BOOL,
+	T_INT,
+	T_INTARR
+} Datatype;
+
+typedef enum {
+	S_NONE,
+	S_ELSE,
+	S_END,
+	S_ERROR,
+	S_IDENT,
+	S_IF,
+	S_INT,   /* keyword "int" */
+	S_INTCONST,
+	S_PRINT,
+	S_READ,
+	S_WHILE,
+	S_PLUS,  /* + */
+	S_MINUS, /* - */
+	S_DIV,	 /* / */
+	S_MULT,	 /* * */
+	S_LESS,	 /* < */
+	S_GRTR,	 /* > */
+	S_EQUAL, /* = */
+	S_UNEQL, /* <!> */
+	S_NOT,	 /* ! */
+	S_AND,	 /* & */
+	S_TERM,	 /* ; */
+	S_PAROP, /* ( */
+	S_PARCL, /* ) */
+	S_CBOP,	 /* { */
+	S_CBCL,	 /* } */
+	S_BROP,	 /* [ */
+	S_BRCL	 /* ] */
 } Symboltype;
 
 #endif /* _DEFS_H_ */

@@ -44,7 +44,7 @@ typedef enum {
 static char buf[LEXLEN], c;
 static size_t col, i, tkcol, tkrow, row = 1;
 static State last;
-static Token token;
+Token token;
 
 static int
 getchar(void)
@@ -343,88 +343,88 @@ mktok(void)
 	switch (last) {
 	case IDENT:
 		token.data.sym = storesym(symtab, buf);
-		if (token.data.sym->type == NONE)
-			token.data.sym->type = IDENTIFIER;
-		token.type = token.data.sym->type;
+		if (token.data.sym->symtype == S_NONE)
+			token.data.sym->symtype = S_IDENT;
+		token.symtype = token.data.sym->symtype;
 		break;
 	case INTEG:
-		token.type = INTEGER;
+		token.symtype = S_INTCONST;
 		token.data.val = atol(buf);
 		break;
 	case OPADD:	/* + */
 		token.data.sign = "+";
-		token.type = SIGN_PLUS;
+		token.symtype = S_PLUS;
 		break;
 	case OPSUB:	/* - */
 		token.data.sign = "-";
-		token.type = SIGN_MINUS;
+		token.symtype = S_MINUS;
 		break;
 	case OPDIV:	/* / */
 		token.data.sign = "/";
-		token.type = SIGN_DIV;
+		token.symtype = S_DIV;
 		break;
 	case OPMUL:	/* * */
 		token.data.sign = "*";
-		token.type = SIGN_MULT;
+		token.symtype = S_MULT;
 		break;
 	case OLESS:	/* < */
 		token.data.sign = "<";
-		token.type = SIGN_LESS;
+		token.symtype = S_LESS;
 		break;
 	case OGRTR:	/* > */
 		token.data.sign = ">";
-		token.type = SIGN_GRTR;
+		token.symtype = S_GRTR;
 		break;
 	case OASGN:	/* = */
 		token.data.sign = "=";
-		token.type = SIGN_EQUAL;
+		token.symtype = S_EQUAL;
 		break;
 	case OUNEQ:	/* <!> */
 		token.data.sign = "<!>";
-		token.type = SIGN_UNEQL;
+		token.symtype = S_UNEQL;
 		break;
 	case OPNOT:	/* ! */
 		token.data.sign = "!";
-		token.type = SIGN_NOT;
+		token.symtype = S_NOT;
 		break;
 	case OPAND:	/* & */
 		token.data.sign = "&";
-		token.type = SIGN_AND;
+		token.symtype = S_AND;
 		break;
 	case OTERM:	/* ; */
 		token.data.sign = ";";
-		token.type = SIGN_TERM;
+		token.symtype = S_TERM;
 		break;
 	case OPAOP:	/* ( */
 		token.data.sign = "(";
-		token.type = SIGN_PAROP;
+		token.symtype = S_PAROP;
 		break;
 	case OPACL:	/* ) */
 		token.data.sign = ")";
-		token.type = SIGN_PARCL;
+		token.symtype = S_PARCL;
 		break;
 	case OCBOP:	/* { */
 		token.data.sign = "{";
-		token.type = SIGN_CBOP;
+		token.symtype = S_CBOP;
 		break;
 	case OCBCL:	/* } */
 		token.data.sign = "}";
-		token.type = SIGN_CBCL;
+		token.symtype = S_CBCL;
 		break;
 	case OBROP:	/* [ */
 		token.data.sign = "[";
-		token.type = SIGN_BROP;
+		token.symtype = S_BROP;
 		break;
 	case OBRCL:	/* ] */
 		token.data.sign = "]";
-		token.type = SIGN_BRCL;
+		token.symtype = S_BRCL;
 		break;
 	case LXERR:
 		token.data.lastchar = c;
-		token.type = ERROR;
+		token.symtype = S_ERROR;
 		break;
 	case LXEOF:
-		token.type = END;
+		token.symtype = S_END;
 		break;
 	default:
 		die(1, "acceptor ended up in an unexpected state");

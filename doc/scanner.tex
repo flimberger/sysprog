@@ -17,21 +17,21 @@ In der Headerdatei des Scanners wird ein Token als folgende Datenstruktur defini
 \begin{lstlisting}
 typedef struct {
 	union {
-		long long val;
+		vlong  val;
 		Symbol *sym;
 		const char *sign;
-		char lastchar;
+		char   lastchar;
 	} data;
-	uint	row;
-	uint	col;
-	Symboltype	type;
+	uint row;
+	uint col;
+	Symboltype symtype;
 } Token;
 \end{lstlisting}
 
 Weiterhin werden folgende Routinen deklariert:
 
 \begin{itemize}
-\item \texttt{compile} - Leitet den Scanvorgang ein
+\item \texttt{compile} - Leitet den Kompiliervorgang ein
 \item \texttt{gettoken} - Gibt das nächste Token aus der Eingabedatei zurück
 \item \texttt{printtoken} - Schreibt eine Menschenlesbare Repräsentation eines Tokens in die Ausgabedatei
 \item \texttt{syminit} - Reserviert den Speicherplatz für die Symboltabelle und trägt Schlüsselwörter ein

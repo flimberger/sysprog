@@ -11,7 +11,7 @@ INC=-I$(INCP)
 
 include $(ROOT)/src/sp.mak
 
-.PHONY: all clean test
+.PHONY: all clean
 
 all: symtabtest
 

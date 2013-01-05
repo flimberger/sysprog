@@ -14,7 +14,8 @@ typedef struct Symbol Symbol;
 struct Symbol {
 	Symbol *next;
 	const char *lexem;
-	Symboltype type;
+	Symboltype symtype;
+	Datatype   datatype;
 };
 
 typedef struct {

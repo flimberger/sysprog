@@ -39,7 +39,8 @@ process(Symtab *restrict tab, const char *restrict const lexem, bool create)
 			return NULL;
 		}
 		entry->next = tab->symbols[h];
-		entry->type = NONE;
+		entry->symtype = S_NONE;
+		entry->datatype = T_NONE;
 		tab->symbols[h] = entry;
 
 	}

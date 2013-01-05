@@ -37,14 +37,14 @@ typedef enum {
 
 typedef struct {
 	union {
-		vlong val;
+		vlong  val;
 		Symbol *sym;
 		const char *sign;
-		char lastchar;
+		char   lastchar;
 	} data;
-	uint	row;
-	uint	col;
-	Symboltype	type;
+	uint row;
+	uint col;
+	Symboltype symtype;
 } Token;
 
 typedef struct Node Node;
@@ -57,6 +57,7 @@ struct Node {
 		Symbol *sym;
 		Optype op;
 	} data;
+	Datatype datatype;
 };
 
 extern char *infile;
