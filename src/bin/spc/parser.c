@@ -142,10 +142,8 @@ parsestatements(void)
 	/* nexttoken not element of FIRST(STATEMENT)? */
 	if ((nexttoken->type != IDENTIFIER) && (nexttoken->type != PRINT) &&
 		(nexttoken->type != READ) && (nexttoken->type != SIGN_CBOP) &&
-		(nexttoken->type != IF) && (nexttoken->type != WHILE)) {
-		fprintf(stderr, "%s\n", tokennames[nexttoken->type]);
+		(nexttoken->type != IF) && (nexttoken->type != WHILE))
 		return np;
-	}
 	lp = makenode();
 	lp->type = NODE_LIST;
 	lp->left = np;
@@ -155,6 +153,7 @@ parsestatements(void)
 	while ((nexttoken->type == IDENTIFIER) || (nexttoken->type == PRINT) ||
 		(nexttoken->type == READ) || (nexttoken->type == SIGN_CBOP) ||
 		(nexttoken->type == IF) || (nexttoken->type == WHILE)) {
+		printfunc("parsestatements");
 		lp->right = makenode();
 		lp = lp->right;
 		lp->type = NODE_LIST;
@@ -202,6 +201,7 @@ parsestatement(void)
 		match(READ);
 		np->type = NODE_READ;
 		match(SIGN_PAROP);
+		match(IDENTIFIER);
 		np->left = makenode();
 		if ((np->left->right = parseindex()) == NULL) {
 			np->left->type = NODE_IDENTIFIER;
