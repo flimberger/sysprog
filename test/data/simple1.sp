@@ -11,7 +11,7 @@ bar = c[2];
 
 if (c = 2) {
 	print(c);
-} else if (foo <!> bar) {
+} else {
 	read(b);
 }
 
