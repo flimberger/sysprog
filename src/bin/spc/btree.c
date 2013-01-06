@@ -4,7 +4,7 @@
 #include "spc.h"
 
 Node *
-makenode(void)
+makenode(Nodetype type)
 {
 	Node *node;
 
@@ -13,5 +13,6 @@ makenode(void)
 	node->left = NULL;
 	node->right = NULL;
 	node->data.sym = NULL;
+	node->type = type;
 	return node;
 }

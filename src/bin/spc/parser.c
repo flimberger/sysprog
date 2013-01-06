@@ -56,8 +56,7 @@ parseprog(void)
 {
 	fprintf(stderr, "parseprog: Begin parsing\n");
 	nexttoken = gettoken();
-	parsetree = makenode();
-	parsetree->type = NODE_ROOT;
+	parsetree = makenode(NODE_ROOT);
 	parsetree->left = parsedecls();
 	parsetree->right = parsestatements();
 }
@@ -80,17 +79,15 @@ parsedecls(void)
 		return np;
 	}
 	fprintf(stderr, "more decls\n");
-	lp = makenode();
-	lp->type = NODE_LIST;
+	lp = makenode(NODE_LIST);
 	lp->left = np;
 	np = parsedecl();
 	match(S_TERM);
 	decls = lp;
 	while (nexttoken->symtype == S_INT) {
 		printfunc("parsedecls");
-		lp->right = makenode();
+		lp->right = makenode(NODE_LIST);
 		lp = lp->right;
-		lp->type = NODE_LIST;
 		lp->left = np;
 		np = parsedecl();
 		match(S_TERM);
@@ -108,8 +105,7 @@ parsedecl(void)
 
 	printfunc("parsedecl");
 	match(S_INT);
-	np = makenode();
-	np->type = NODE_DECL;
+	np = makenode(NODE_DECL);
 	if (nexttoken->symtype == S_BROP) {
 		np->left = parsearray();
 		np->datatype = T_INTARR;
@@ -132,8 +128,7 @@ parsearray(void)
 	printfunc("parsearray");
 	match(S_BROP);
 	if (nexttoken->symtype == S_INTCONST) {
-		np = makenode();
-		np->type = NODE_ARRAY;
+		np = makenode(NODE_ARRAY);
 		np->data.val = nexttoken->data.val;
 	}
 	match(S_INTCONST);
@@ -152,17 +147,15 @@ parsestatements(void)
 	match(S_TERM);
 	if (!FIRST_STATEMENT)
 		return np;
-	lp = makenode();
-	lp->type = NODE_LIST;
+	lp = makenode(NODE_LIST);
 	lp->left = np;
 	np = parsestatement();
 	match(S_TERM);
 	stmts = lp;
 	while (FIRST_STATEMENT) {
 		printfunc("parsestatements");
-		lp->right = makenode();
+		lp->right = makenode(NODE_LIST);
 		lp = lp->right;
-		lp->type = NODE_LIST;
 		lp->left = np;
 		np = parsestatement();
 		match(S_TERM);
@@ -177,7 +170,7 @@ parsestatement(void)
 {
 	Node *np;
 
-	np = makenode();
+	np = makenode(NODE_NONE);
 	printfunc("parsestatement");
 	#pragma GCC diagnostic ignored "-Wswitch"
 	switch (nexttoken->symtype) {
@@ -202,8 +195,7 @@ parsestatement(void)
 		np->type = NODE_READ;
 		match(S_PAROP);
 		if (nexttoken->symtype == S_IDENT) {
-			np->left = makenode();
-			np->left->type = NODE_IDENT;
+			np->left = makenode(NODE_IDENT);
 			np->left->data.sym = nexttoken->data.sym;
 		}
 		match(S_IDENT);
@@ -222,8 +214,7 @@ parsestatement(void)
 		match(S_PAROP);
 		np->left = parseexp();
 		match(S_PARCL);
-		np->right = makenode();
-		np->right->type = NODE_NONE;
+		np->right = makenode(NODE_NONE);
 		np->right->left = parsestatement();
 		match(S_ELSE);
 		np->right->right = parsestatement();
@@ -288,23 +279,20 @@ parseexp2(void)
 		match(S_PARCL);
 		break;
 	case S_IDENT:
-		np = makenode();
+		np = makenode(NODE_IDENT);
 		np->data.sym = nexttoken->data.sym;
 		match(S_IDENT);
-		np->type = NODE_IDENT;
 		if (nexttoken->symtype == S_BROP)
 			np->left = parseindex();
 		break;
 	case S_INTCONST:
-		np = makenode();
-		np->type = NODE_CONST;
+		np = makenode(NODE_CONST);
 		np->data.val = nexttoken->data.val;
 		match(S_INTCONST);
 		break;
 	case S_MINUS:
 	case S_NOT:
-		np = makenode();
-		np->type = NODE_OP;
+		np = makenode(NODE_OP);
 		if (nexttoken->symtype == S_MINUS) {
 			match(S_MINUS);
 			np->data.op = OP_NEG;
@@ -337,8 +325,7 @@ parseop(void)
 	Node *np;
 
 	printfunc("parseop");
-	np = makenode();
-	np->type = NODE_OP;
+	np = makenode(NODE_OP);
 	switch (nexttoken->symtype) {
 	case S_PLUS:
 		match(S_PLUS);

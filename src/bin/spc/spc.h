@@ -74,6 +74,6 @@ void syminit(void);
 void symterm(void);
 
 // Btree functions
-Node *makenode(void);
+Node *makenode(Nodetype type);
 
 #endif /* _SYSPROG_H_ */
