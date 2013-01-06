@@ -39,14 +39,13 @@ printfunc(char *mesg)
 		tokennames[nexttoken->symtype], mesg);
 }
 
-static
+static inline
 void
 match(Symboltype t)
 {
-	if (nexttoken->symtype == t) {
-		printtoken(nexttoken);
+	if (nexttoken->symtype == t)
 		nexttoken = gettoken();
-	} else
+	else
 		die(EXIT_FAILURE, "%s:%u:%u: Error on Token %s: Expected %s\n",
 			infile, nexttoken->row, nexttoken->col,
 			tokennames[nexttoken->symtype], tokennames[t]);
