@@ -22,11 +22,10 @@ static
 void
 writeword(word w)
 {
-	bputchar(out, w >> 8);
-	bputchar(out, w & 0xFF);
+	writebyte(w >> 8);
+	writebyte(w & 0xFF);
 }
 
-/*
 static
 void
 writedword(dword d)
@@ -35,6 +34,7 @@ writedword(dword d)
 	writeword(d & 0xFFFF);
 }
 
+/*
 static
 void
 writeqword(qword q)
@@ -48,12 +48,9 @@ static
 void
 writehead(word vmaj, word vmin)
 {
-	writebyte(0xCA);
-	writebyte(0xFE);
-	writebyte(0xBA);
-	writebyte(0xBE);
-	writeword(vmaj);
+	writedword(0xCAFEBABE);
 	writeword(vmin);
+	writeword(vmaj);
 }
 
 void
