@@ -114,21 +114,65 @@ makeclass(Buffer *file, const char *name)
 	c->vmaj = JVM_VERSION_MAJOR;
 	c->cpool.size = 0;
 	c->cpool.list = NULL;
+	c->accflags = 0;
 	cpaddarr(c, Cpid_Utf8, (byte *) name, strlen(name));
+	cpaddwords(c, Cpid_Class, c->cpool.size - 1, 0);
+	c->this = c->cpool.size - 1;
+	cpaddarr(c, Cpid_Utf8, (byte *) STR_JAVA_OBJECT, strlen(STR_JAVA_OBJECT));
+	cpaddwords(c, Cpid_Class, c->cpool.size - 1, 0);
+	c->super = c->cpool.size - 1;
+	c->interfaces.size = 0;
+	c->fields.size = 0;
+	c->methods.size = 0;
+	c->attrs.size = 0;
 	return c;
-}
-
-static
-void
-writehead(Class *c)
-{
-	writedword(c->file, 0xCAFEBABE);
-	writeword(c->file, c->vmin);
-	writeword(c->file, c->vmaj);
 }
 
 void
 writeclass(Class *c)
 {
-	writehead(c);
+	Celem *e;
+	word i, j;
+
+	writedword(c->file, 0xCAFEBABE);
+	writeword(c->file, c->vmin);
+	writeword(c->file, c->vmaj);
+	writeword(c->file, c->cpool.size);
+	for (i = 0; i < c->cpool.size; i++) {
+		e = c->cpool.list;
+		writebyte(c->file, e->id);
+		switch (e->id) {
+		case Cpid_Utf8:
+			writeword(c->file, e->data.array.size);
+			for (j = 0; j < e->data.array.size; j++)
+				writebyte(c->file, e->data.array.data[j]);
+			break;
+		case Cpid_Integer:
+			break;
+		case Cpid_Float:
+			break;
+		case Cpid_Long:
+			break;
+		case Cpid_Double:
+			break;
+		case Cpid_Class:
+			break;
+		case Cpid_String:
+			break;
+		case Cpid_Fieldref:
+			break;
+		case Cpid_Methodref:
+			break;
+		case Cpid_InterfaceMethodref:
+			break;
+		case Cpid_NameAndType:
+			break;
+		case Cpid_MethodHandle:
+			break;
+		case Cpid_MethodType:
+			break;
+		case Cpid_InvokeDynamic:
+			break;
+		}
+	}
 }

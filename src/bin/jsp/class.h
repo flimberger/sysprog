@@ -4,10 +4,33 @@
 #include "platform.h"
 #include "buffer.h"
 
+#define STR_JAVA_OBJECT "java/lang/Object"
+
 enum {
 	JVM_VERSION_MAJOR = 51,
 	JVM_VERSION_MINOR = 0
 };
+
+typedef enum {
+	Acc_Public     = 0x0001,
+	Acc_Private    = 0x0002,
+	Acc_Protected  = 0x0004,
+	Acc_Static     = 0x0008,
+	Acc_Final      = 0x0010,
+	Acc_Super      = 0x0020,
+	Acc_Synchronized = 0x0020,
+	Acc_Volatile   = 0x0040,
+	Acc_Bridged    = 0x0040,
+	Acc_Transient  = 0x0080,
+	Acc_Varargs    = 0x0080,
+	Acc_Native     = 0x0100,
+	Acc_Interface  = 0x0200,
+	Acc_Abstract   = 0x0400,
+	Acc_Strict     = 0x0800,
+	Acc_Synthetic  = 0x1000,
+	Acc_Annotation = 0x2000,
+	Acc_Enum       = 0x4000
+} Accmod;
 
 typedef enum {
 	Cpid_Utf8 = 1,
@@ -52,6 +75,61 @@ struct Celem {
 };
 
 typedef struct {
+	word index;
+} SourceFile;
+
+typedef struct {
+	word start;
+	word line;
+} Linenumber;
+
+typedef struct {
+	word        len;
+	Linenumber *tab;
+} LineNumberTable;
+
+typedef struct Attribute Attribute;
+
+typedef struct {
+	word start;
+	word end;
+	word handler;
+	word catch;
+} ExceptionTab;
+
+typedef struct {
+	Attribute *attrs;
+	byte *code;
+	ExceptionTab *exceptions;
+	dword codelen;
+	word maxstack;
+	word maxlocals;
+	word nattr;
+	word nexceptions;
+} Code;
+
+struct Attribute {
+	Attribute *next;
+	union {
+		Code    code;
+		LineNumberTable linetab;
+		SourceFile      sourcefile;
+	} info;
+	dword len;
+	word  name;
+};
+
+typedef struct Field Field;
+struct Field {
+	Field *next;
+	Attribute *attrs;
+	word nattr;
+	word accflags;
+	word name;
+	word desc;
+};
+
+typedef struct {
 	Buffer *file;
 	const char *name;
 	word vmin;
@@ -60,6 +138,25 @@ typedef struct {
 		word size;
 		Celem *list;
 	} cpool;
+	word accflags;
+	word this;
+	word super;
+	struct {
+		word size;
+		word *list;
+	} interfaces;
+	struct {
+		word size;
+		Field *list;
+	} fields;
+	struct {
+		word size;
+		Field *list;
+	} methods;
+	struct {
+		word size;
+		Attribute *list;
+	} attrs;
 } Class;
 
 void cpaddarr(Class *c, Cpoolid id, const byte *const data, word size);
