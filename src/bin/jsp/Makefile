@@ -7,8 +7,8 @@ LIBP=$(ROOT)/lib
 BINP=$(ROOT)/bin
 SPCDIR=../spc
 
-HDR=jvm.h $(PLATFORM)/platform.h $(SPCDIR)/spc.h
-SRC=generator.c
+HDR=class.h $(PLATFORM)/platform.h $(SPCDIR)/spc.h
+SRC=generator.c class.c
 OBJ=$(SPCDIR)/spc.o $(SPCDIR)/btree.o $(SPCDIR)/scanner.o $(SPCDIR)/parser.o $(SRC:.c=.o)
 
 INC=-I$(INCP) -I$(PLATFORM) -I$(SPCDIR)
@@ -24,7 +24,7 @@ all: $(NAME)
 	$(CC) $(CFLAGS) -c $<
 
 spc:
-	$(MAKE) -C $(SPCDIR) .c.o
+	$(MAKE) -C $(SPCDIR) obj
 
 $(NAME): $(HDR) $(OBJ) spc
 	$(LD) $(LDFLAGS) $(OBJ) -o $(NAME) $(LIB)
@@ -34,6 +34,7 @@ install: all
 
 clean:
 	rm -f $(OBJ) $(NAME)
+	$(MAKE) -C $(SPCDIR) clean
 
 nuke: clean
-	rm -f $(BINP)/spc
+	rm -f $(BINP)/jsp

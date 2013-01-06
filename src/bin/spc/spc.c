@@ -1,5 +1,6 @@
 #include <fcntl.h>
 
+#include <stdbool.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,6 +73,7 @@ main(int argc, char *argv[])
 int
 compile(char *outfile)
 {
+	bool fof;
 	char *b, *e;
 	ptrdiff_t nl;
 	size_t el;
@@ -84,15 +86,19 @@ compile(char *outfile)
 		outfile = calloc(nl + el, sizeof(char));
 		strncpy(outfile, b, nl);
 		strncat(outfile, ext, el);
-	}
+		fof = true;
+	} else
+		fof = false;
 	if ((src = bopen(infile, O_RDONLY)) == NULL)
 		die(1, "failed to allocate input buffer:");
 	if ((out = bopen(outfile, O_WRONLY)) == NULL)
 		die(1, "failed to allocate output buffer:");
 	parseprog();
-	gencode();
+	gencode(outfile);
 	bclose(out);
 	bclose(src);
+	if (fof)
+		free(outfile);
 	return 0;
 }
 

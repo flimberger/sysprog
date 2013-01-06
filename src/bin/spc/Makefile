@@ -18,6 +18,8 @@ include ../../sp.mak
 
 all: $(NAME)
 
+obj: $(HDR) $(OBJ)
+
 .c.o: $(HDR) $(INCP)/defs.h
 	$(CC) $(CFLAGS) -c $<
 

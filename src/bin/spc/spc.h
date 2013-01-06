@@ -72,7 +72,7 @@ void parseprog(void);
 void printtoken(Token *tp);
 void syminit(void);
 void symterm(void);
-void gencode(void);
+void gencode(char *outfile);
 
 // Btree functions
 Node *makenode(void);

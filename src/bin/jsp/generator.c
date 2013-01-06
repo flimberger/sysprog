@@ -1,65 +1,36 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "platform.h"
-
 #include "defs.h"
 #include "spc.h"
-#include "jvm.h"
 
-#include "buffer.h"
+#include "class.h"
 #include "error.h"
 
 char *ext = "class";
 
-static
 void
-writebyte(byte b)
+gencode(char *outfile)
 {
-	bputchar(out, b);
-}
+	char *nameend, *classname;
+	Class *class;
+	ptrdiff_t len;
 
-static
-void
-writeword(word w)
-{
-	writebyte(w >> 8);
-	writebyte(w & 0xFF);
-}
-
-static
-void
-writedword(dword d)
-{
-	writeword(d >> 16);
-	writeword(d & 0xFFFF);
-}
-
-/*
-static
-void
-writeqword(qword q)
-{
-	writedword(q >> 32);
-	writedword(q & 0xFFFFFFFF);
-}
-*/
-
-static
-void
-writehead(word vmaj, word vmin)
-{
-	writedword(0xCAFEBABE);
-	writeword(vmin);
-	writeword(vmaj);
-}
-
-void
-gencode(void)
-{
 	fprintf(stderr, "Generating class file...\n");
-	writehead(JVM_VERSION_MAJOR, JVM_VERSION_MINOR);
+	nameend = strrchr(outfile, '.') + 1;
+	if (strcmp(nameend, "class") != 0)
+		die(1, "Output file must have a '.class' extension.");
+	len = nameend - 1 - outfile;
+	classname = calloc(len, sizeof(char));
+	strncpy(classname, outfile, len);
+	class = makeclass(out, classname);
+	writeclass(class);
 	/*
 	gendecls(parsetree->left);
 	genstmts(parsetree->right);
 	*/
+	free(class);
+	free(classname);
 }
