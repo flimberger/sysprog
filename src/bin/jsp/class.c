@@ -135,9 +135,11 @@ makeclass(Buffer *file, const char *name)
 	c->cpool.size = 0;
 	c->cpool.list = NULL;
 	c->accflags = 0;
+	/* Add class to constant pool */
 	cpaddarr(c, Cpid_Utf8, (byte *) name, strlen(name));
 	cpaddwords(c, Cpid_Class, c->cpool.size, 0);
 	c->this = c->cpool.size;
+	/* Add super class to constant pool */
 	cpaddarr(c, Cpid_Utf8, (byte *) STR_JAVA_OBJECT, strlen(STR_JAVA_OBJECT));
 	cpaddwords(c, Cpid_Class, c->cpool.size, 0);
 	c->super = c->cpool.size;
@@ -145,6 +147,11 @@ makeclass(Buffer *file, const char *name)
 	c->fields.size = 0;
 	c->methods.size = 0;
 	c->attrs.size = 0;
+	/* Add superclass constructor */
+	cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_NAME, strlen(STR_CONSTR_NAME));
+	cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_TYPE, strlen(STR_CONSTR_TYPE));
+	cpaddwords(c, Cpid_NameAndType, c->cpool.size - 1, c->cpool.size);
+	cpaddwords(c, Cpid_Methodref, c->super, c->cpool.size);
 	return c;
 }
 
@@ -161,10 +168,10 @@ writeclass(Class *c)
 	fprintf(stderr, "%u\n", c->cpool.size);
 	e = c->cpool.list;
 	while (e != NULL) {
-		fprintf(stderr, "write: %d\n", i);
 		writebyte(c->file, e->id);
 		switch (e->id) {
 		case Cpid_Utf8:
+			fprintf(stderr, "writing Cpid_Utf8: %s\n", (char *) e->data.array.data);
 			writeword(c->file, e->data.array.size);
 			for (i = 0; i < e->data.array.size; i++)
 				writebyte(c->file, e->data.array.data[i]);
@@ -178,6 +185,7 @@ writeclass(Class *c)
 		case Cpid_Double:
 			break;
 		case Cpid_Class:
+			fprintf(stderr, "writing Cpid_Class: name=%u\n", e->data.words[0]);
 			writeword(c->file, e->data.words[0]);
 			break;
 		case Cpid_String:
@@ -185,10 +193,16 @@ writeclass(Class *c)
 		case Cpid_Fieldref:
 			break;
 		case Cpid_Methodref:
+			fprintf(stderr, "writing Cpid_InterfaceMethodref: class=%u; methodref=%u\n", e->data.words[0], e->data.words[0]);
+			writeword(c->file, e->data.words[0]);
+			writeword(c->file, e->data.words[1]);
 			break;
 		case Cpid_InterfaceMethodref:
 			break;
 		case Cpid_NameAndType:
+			fprintf(stderr, "writing Cpid_NameAndType: name=%u; type=%u\n", e->data.words[0], e->data.words[0]);
+			writeword(c->file, e->data.words[0]);
+			writeword(c->file, e->data.words[1]);
 			break;
 		case Cpid_MethodHandle:
 			break;

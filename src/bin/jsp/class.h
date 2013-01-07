@@ -5,6 +5,8 @@
 #include "buffer.h"
 
 #define STR_JAVA_OBJECT "java/lang/Object"
+#define STR_CONSTR_NAME "<init>"
+#define STR_CONSTR_TYPE "V()"
 
 enum {
 	JVM_VERSION_MAJOR = 51,
