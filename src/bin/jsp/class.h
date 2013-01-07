@@ -8,11 +8,19 @@
 
 #define STR_ATTR_CODE   "Code"
 #define STR_ATTR_LNTBL  "LineNumberTable"
+#define STR_CONSTR_DESC "()V"
 #define STR_CONSTR_NAME "<init>"
-#define STR_CONSTR_TYPE "()V"
-#define STR_JAVA_OBJECT "java/lang/Object"
+#define STR_MAIN_DESC   "([Ljava/lang/String;)V"
 #define STR_MAIN_NAME   "main"
-#define STR_MAIN_TYPE   "([Ljava/lang/String;)V"
+#define STR_OBJECT_NAME "java/lang/Object"
+#define STR_OUT_DESC    "Ljava/io/PrintStream;"
+#define STR_OUT_NAME    "out"
+#define STR_PRNT_DESC   "(I)V"
+#define STR_PRNT_NAME   "print"
+#define STR_PRNTLN_NAME "println"
+#define STR_PRNTSTRM_NAME "java/io/PrintStream"
+#define STR_SYSTEM_NAME "java/lang/System"
+
 
 enum {
 	DEF_CONSTR_LEN = 5,
@@ -150,6 +158,10 @@ typedef struct {
 	const char *name;
 	word vmin;
 	word vmaj;
+	word print;
+	word read;
+	word code;
+	word sys;
 	struct {
 		word size;
 		Celem *list;
@@ -176,11 +188,13 @@ typedef struct {
 } Class;
 
 void addfield(Class *c, word acc, word nameidx, word descidx, word nattr, Attribute *lattr, bool fld);
-void cpaddarr(Class *c, Cpoolid id, const byte *const data, word size);
-void cpaddtup(Class *c, Cpoolid id, word w, byte b);
-void cpaddwords(Class *c, Cpoolid id, word a, word b);
-void cpadddwords(Class *c, Cpoolid id, dword a, dword b);
+word cpaddarr(Class *c, Cpoolid id, const byte *const data, word size);
+word cpaddtup(Class *c, Cpoolid id, word w, byte b);
+word cpaddwords(Class *c, Cpoolid id, word a, word b);
+word cpadddwords(Class *c, Cpoolid id, dword a, dword b);
 void freeclass(Class *c);
+word getprint(Class *c);
+word getsys(Class *c);
 Attribute *makeattr(Attrid id, word nameidx);
 Class* makeclass(Buffer *file, const char *name);
 void setattrsize(Attribute *a);

@@ -88,7 +88,7 @@ makeelem(Cpoolid id)
 }
 
 static inline
-void
+word
 insert(Class *c, Celem *e)
 {
 	Celem *end;
@@ -99,10 +99,10 @@ insert(Class *c, Celem *e)
 			;
 		end->next = e;
 	}
-	c->cpool.size++;
+	return ++c->cpool.size;
 }
 
-void
+word
 cpaddarr(Class *c, Cpoolid id, const byte *const data, word size)
 {
 	Celem *e;
@@ -110,37 +110,99 @@ cpaddarr(Class *c, Cpoolid id, const byte *const data, word size)
 	e = makeelem(id);
 	e->data.array.size = size;
 	e->data.array.data = data;
-	insert(c, e);
+	return insert(c, e);
 }
 
-void cpaddtup(Class *c, Cpoolid id, word w, byte b)
+word
+cpaddtup(Class *c, Cpoolid id, word w, byte b)
 {
 	Celem *e;
 
 	e = makeelem(id);
 	e->data.tuple.w = w;
 	e->data.tuple.b = b;
-	insert(c, e);
+	return insert(c, e);
 }
 
-void cpaddwords(Class *c, Cpoolid id, word a, word b)
+word
+cpaddwords(Class *c, Cpoolid id, word a, word b)
 {
 	Celem *e;
 
 	e = makeelem(id);
 	e->data.words[0] = a;
 	e->data.words[1] = b;
-	insert(c, e);
+	return insert(c, e);
 }
 
-void cpadddwords(Class *c, Cpoolid id, dword a, dword b)
+word
+cpadddwords(Class *c, Cpoolid id, dword a, dword b)
 {
 	Celem *e;
 
 	e = makeelem(id);
 	e->data.dwords[0] = a;
 	e->data.dwords[1] = b;
-	insert(c, e);
+	return insert(c, e);
+}
+
+word
+getprint(Class *c)
+{
+	Attribute *a;
+	word name, desc, fldref, mtdref, i, n, d;
+
+	if (c->print == 0) {
+		/* method this.print */
+		name = cpaddarr(c, Cpid_Utf8, (byte *) STR_PRNT_NAME, strlen(STR_PRNT_NAME));
+		desc = cpaddarr(c, Cpid_Utf8, (byte *) STR_PRNT_DESC, strlen(STR_PRNT_DESC));
+		i = cpaddwords(c, Cpid_NameAndType, name, desc);
+		c->print = cpaddwords(c, Cpid_Methodref, c->this, i);
+		/* field System.out */
+		n = cpaddarr(c, Cpid_Utf8, (byte *) STR_OUT_NAME, strlen(STR_OUT_NAME));
+		d = cpaddarr(c, Cpid_Utf8, (byte *) STR_OUT_DESC, strlen(STR_OUT_DESC));
+		i = cpaddwords(c, Cpid_NameAndType, n, d);
+		fldref = cpaddwords(c, Cpid_Fieldref, getsys(c), i);
+		/* class PrintStream*/
+		n = cpaddarr(c, Cpid_Utf8, (byte *) STR_PRNTSTRM_NAME, strlen(STR_PRNTSTRM_NAME));
+		i = cpaddwords(c, Cpid_Class, n, 0);
+		/* method PrintStream.println, has the same descriptor as this.print */
+		n = cpaddarr(c, Cpid_Utf8, (byte *) STR_PRNTLN_NAME, strlen(STR_PRNTLN_NAME));
+		d = cpaddwords(c, Cpid_NameAndType, n, desc);
+		mtdref = cpaddwords(c, Cpid_Methodref, i, d);
+		/* generate code attribute for this.print */
+		a = makeattr(Attr_Code, c->code);
+		a->info.code.maxstack = 1;
+		a->info.code.maxlocals = 1;
+		a->info.code.len = 8;
+		if ((a->info.code.code = calloc(8, sizeof(byte))) == NULL)
+			die(2, "No memory:");
+		a->info.code.code[0] = GETSTATIC;
+		a->info.code.code[1] = fldref >> 8;
+		a->info.code.code[2] = fldref & 0xFF;
+		a->info.code.code[3] = ILOAD_0;
+		a->info.code.code[4] = mtdref >> 8;
+		a->info.code.code[5] = mtdref & 0xFF;
+		a->info.code.code[6] = INVOKEVIRTUAL;
+		a->info.code.code[7] = RETURN;
+		a->info.code.nexceptions = 0;
+		a->info.code.nattr = 0;
+		setattrsize(a);
+		addfield(c, Acc_Private | Acc_Static, name, desc, 1, a, false);
+	}
+	return c->print;
+}
+
+word
+getsys(Class *c)
+{
+	word name;
+
+	if (c->sys == 0) {
+		name = cpaddarr(c, Cpid_Utf8, (byte *) STR_SYSTEM_NAME, strlen(STR_SYSTEM_NAME));
+		c->sys = cpaddwords(c, Cpid_Class, name, 0);
+	}
+	return c->sys;
 }
 
 void
@@ -180,38 +242,39 @@ makeattr(Attrid id, word nameidx)
 }
 
 Class *
-makeclass(Buffer *file, const char *name)
+makeclass(Buffer *file, const char *classname)
 {
 	Attribute *a;
 	Class *c;
+	word desc, i, mref, name;
 
 	c = malloc(sizeof(Class));
 	c->file = file;
 	c->vmin = JVM_VERSION_MINOR;
 	c->vmaj = JVM_VERSION_MAJOR;
+	c->print = 0;
+	c->read  = 0;
 	c->cpool.size = 0;
 	c->cpool.list = NULL;
 	c->acc = Acc_Super;
 	/* Add class to constant pool */
-	cpaddarr(c, Cpid_Utf8, (byte *) name, strlen(name));
-	cpaddwords(c, Cpid_Class, c->cpool.size, 0);
-	c->this = c->cpool.size;
+	name = cpaddarr(c, Cpid_Utf8, (byte *) classname, strlen(classname));
+	c->this = cpaddwords(c, Cpid_Class, name, 0);
 	/* Add super class to constant pool */
-	cpaddarr(c, Cpid_Utf8, (byte *) STR_JAVA_OBJECT, strlen(STR_JAVA_OBJECT));
-	cpaddwords(c, Cpid_Class, c->cpool.size, 0);
-	c->super = c->cpool.size;
+	name = cpaddarr(c, Cpid_Utf8, (byte *) STR_OBJECT_NAME, strlen(STR_OBJECT_NAME));
+	c->super = cpaddwords(c, Cpid_Class, name, 0);
 	c->interfaces.size = 0;
 	c->fields.size = 0;
 	c->methods.size = 0;
 	c->attrs.size = 0;
 	/* Add superclass constructor */
-	cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_NAME, strlen(STR_CONSTR_NAME));
-	cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_TYPE, strlen(STR_CONSTR_TYPE));
-	cpaddwords(c, Cpid_NameAndType, c->cpool.size - 1, c->cpool.size);
-	cpaddwords(c, Cpid_Methodref, c->super, c->cpool.size);
+	name = cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_NAME, strlen(STR_CONSTR_NAME));
+	desc = cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_DESC, strlen(STR_CONSTR_DESC));
+	i = cpaddwords(c, Cpid_NameAndType, name, desc);
+	mref = cpaddwords(c, Cpid_Methodref, c->super, i);
 	/* Add constructor */
-	cpaddarr(c, Cpid_Utf8, (byte *) STR_ATTR_CODE, strlen(STR_ATTR_CODE));
-	a = makeattr(Attr_Code, c->cpool.size);
+	c->code = cpaddarr(c, Cpid_Utf8, (byte *) STR_ATTR_CODE, strlen(STR_ATTR_CODE));
+	a = makeattr(Attr_Code, c->code);
 	a->info.code.maxstack = 1;
 	a->info.code.maxlocals = 1;
 	a->info.code.len = DEF_CONSTR_LEN;
@@ -219,27 +282,32 @@ makeclass(Buffer *file, const char *name)
 		die(2, "No memory:");
 	a->info.code.code[0] = ALOAD_0;
 	a->info.code.code[1] = INVOKESPECIAL;
-	a->info.code.code[2] = (c->cpool.size - 1) >> 8;
-	a->info.code.code[3] = (c->cpool.size - 1) & 0xFF;
+	a->info.code.code[2] = mref >> 8;
+	a->info.code.code[3] = mref & 0xFF;
 	a->info.code.code[4] = RETURN;
 	a->info.code.nexceptions = 0;
 	a->info.code.nattr = 0;
 	setattrsize(a);
-	addfield(c, Acc_None, c->cpool.size - 4, c->cpool.size - 3, 1, a, false);
+	addfield(c, Acc_None, name, desc, 1, a, false);
 	/* Add main method (empty) */
-	a = makeattr(Attr_Code, c->cpool.size);
+	a = makeattr(Attr_Code, c->code);
 	a->info.code.maxstack = 1;
 	a->info.code.maxlocals = 1;
-	a->info.code.len = 1;
-	if ((a->info.code.code = calloc(1, sizeof(byte))) == NULL)
+	a->info.code.len = 5;
+	if ((a->info.code.code = calloc(5, sizeof(byte))) == NULL)
 		die(2, "No memory:");
-	a->info.code.code[0] = RETURN;
+	/* just for testing */
+	a->info.code.code[0] = ICONST_0;
+	a->info.code.code[1] = INVOKESTATIC;
+	a->info.code.code[2] = getprint(c) >> 8;;
+	a->info.code.code[3] = c->print & 0xFF;
+	a->info.code.code[4] = RETURN;
 	a->info.code.nexceptions = 0;
 	a->info.code.nattr = 0;
 	setattrsize(a);
-	cpaddarr(c, Cpid_Utf8, (byte *) STR_MAIN_NAME, strlen(STR_MAIN_NAME));
-	cpaddarr(c, Cpid_Utf8, (byte *) STR_MAIN_TYPE, strlen(STR_MAIN_TYPE));
-	addfield(c, Acc_Public | Acc_Static, c->cpool.size - 1, c->cpool.size, 1, a, false);
+	name = cpaddarr(c, Cpid_Utf8, (byte *) STR_MAIN_NAME, strlen(STR_MAIN_NAME));
+	desc = cpaddarr(c, Cpid_Utf8, (byte *) STR_MAIN_DESC, strlen(STR_MAIN_DESC));
+	addfield(c, Acc_Public | Acc_Static, name, desc, 1, a, false);
 	return c;
 }
 
@@ -360,9 +428,12 @@ writeclass(Class *c)
 		case Cpid_String:
 			break;
 		case Cpid_Fieldref:
+			fprintf(stderr, "Cpid_Fieldref: class=%u; nameandtype=%u\n", e->data.words[0], e->data.words[1]);
+			writeword(b, e->data.words[0]);
+			writeword(b, e->data.words[1]);
 			break;
 		case Cpid_Methodref:
-			fprintf(stderr, "Cpid_Methodref: class=%u; methodref=%u\n", e->data.words[0], e->data.words[1]);
+			fprintf(stderr, "Cpid_Methodref: class=%u; nameandtype=%u\n", e->data.words[0], e->data.words[1]);
 			writeword(b, e->data.words[0]);
 			writeword(b, e->data.words[1]);
 			break;
