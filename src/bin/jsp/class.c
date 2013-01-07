@@ -191,7 +191,7 @@ makeclass(Buffer *file, const char *name)
 	c->vmaj = JVM_VERSION_MAJOR;
 	c->cpool.size = 0;
 	c->cpool.list = NULL;
-	c->acc = 0;
+	c->acc = Acc_Super;
 	/* Add class to constant pool */
 	cpaddarr(c, Cpid_Utf8, (byte *) name, strlen(name));
 	cpaddwords(c, Cpid_Class, c->cpool.size, 0);
@@ -367,7 +367,7 @@ writeclass(Class *c)
 			break;
 		}
 	}
-	fprintf(stderr, "Access flags: %u\n", c->acc);
+	fprintf(stderr, "Access flags: %04x\n", c->acc);
 	writeword(b, c->acc);
 	fprintf(stderr, "Class index: %u\n", c->this);
 	writeword(b, c->this);
