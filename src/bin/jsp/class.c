@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -49,6 +50,7 @@ makeelem(Cpoolid id)
 	if ((e = malloc(sizeof(Celem))) == NULL)
 		die(2, "No memory:");
 	e->id = id;
+	e->next = NULL;
 	return e;
 }
 
@@ -56,8 +58,14 @@ static inline
 void
 insert(Class *c, Celem *e)
 {
-	e->next = c->cpool.list;
-	c->cpool.list = e;
+	Celem *end;
+	if (c->cpool.list == NULL)
+		c->cpool.list = e;
+	else {
+		for (end = c->cpool.list; end->next != NULL; end = end->next)
+			;
+		end->next = e;
+	}
 	c->cpool.size += 1;
 }
 
@@ -102,6 +110,18 @@ void cpadddwords(Class *c, Cpoolid id, dword a, dword b)
 	insert(c, e);
 }
 
+void
+freeclass(Class *c)
+{
+	Celem *e;
+	
+	while (c->cpool.list != NULL) {
+		e = c->cpool.list;
+		free(e);
+		c->cpool.list = c->cpool.list->next;
+	}
+	free(c);
+}
 
 Class *
 makeclass(Buffer *file, const char *name)
@@ -116,11 +136,11 @@ makeclass(Buffer *file, const char *name)
 	c->cpool.list = NULL;
 	c->accflags = 0;
 	cpaddarr(c, Cpid_Utf8, (byte *) name, strlen(name));
-	cpaddwords(c, Cpid_Class, c->cpool.size - 1, 0);
-	c->this = c->cpool.size - 1;
+	cpaddwords(c, Cpid_Class, c->cpool.size, 0);
+	c->this = c->cpool.size;
 	cpaddarr(c, Cpid_Utf8, (byte *) STR_JAVA_OBJECT, strlen(STR_JAVA_OBJECT));
-	cpaddwords(c, Cpid_Class, c->cpool.size - 1, 0);
-	c->super = c->cpool.size - 1;
+	cpaddwords(c, Cpid_Class, c->cpool.size, 0);
+	c->super = c->cpool.size;
 	c->interfaces.size = 0;
 	c->fields.size = 0;
 	c->methods.size = 0;
@@ -132,20 +152,22 @@ void
 writeclass(Class *c)
 {
 	Celem *e;
-	word i, j;
+	word i;
 
 	writedword(c->file, 0xCAFEBABE);
 	writeword(c->file, c->vmin);
 	writeword(c->file, c->vmaj);
-	writeword(c->file, c->cpool.size);
-	for (i = 0; i < c->cpool.size; i++) {
-		e = c->cpool.list;
+	writeword(c->file, c->cpool.size + 1);
+	fprintf(stderr, "%u\n", c->cpool.size);
+	e = c->cpool.list;
+	while (e != NULL) {
+		fprintf(stderr, "write: %d\n", i);
 		writebyte(c->file, e->id);
 		switch (e->id) {
 		case Cpid_Utf8:
 			writeword(c->file, e->data.array.size);
-			for (j = 0; j < e->data.array.size; j++)
-				writebyte(c->file, e->data.array.data[j]);
+			for (i = 0; i < e->data.array.size; i++)
+				writebyte(c->file, e->data.array.data[i]);
 			break;
 		case Cpid_Integer:
 			break;
@@ -156,6 +178,7 @@ writeclass(Class *c)
 		case Cpid_Double:
 			break;
 		case Cpid_Class:
+			writeword(c->file, e->data.words[0]);
 			break;
 		case Cpid_String:
 			break;
@@ -174,5 +197,13 @@ writeclass(Class *c)
 		case Cpid_InvokeDynamic:
 			break;
 		}
+		e = e->next;
 	}
+	writeword(c->file, c->accflags);
+	writeword(c->file, c->this);
+	writeword(c->file, c->super);
+	writeword(c->file, c->interfaces.size);
+	writeword(c->file, c->fields.size);
+	writeword(c->file, c->methods.size);
+	writeword(c->file, c->attrs.size);
 }

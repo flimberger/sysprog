@@ -31,6 +31,6 @@ gencode(char *outfile)
 	gendecls(parsetree->left);
 	genstmts(parsetree->right);
 	*/
-	free(class);
+	freeclass(class);
 	free(classname);
 }

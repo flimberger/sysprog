@@ -163,6 +163,7 @@ void cpaddarr(Class *c, Cpoolid id, const byte *const data, word size);
 void cpaddtup(Class *c, Cpoolid id, word w, byte b);
 void cpaddwords(Class *c, Cpoolid id, word a, word b);
 void cpadddwords(Class *c, Cpoolid id, dword a, dword b);
+void freeclass(Class *c);
 Class* makeclass(Buffer *file, const char *name);
 void writeclass(Class *c);
 
