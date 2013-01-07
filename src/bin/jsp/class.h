@@ -9,8 +9,10 @@
 #define STR_ATTR_CODE   "Code"
 #define STR_ATTR_LNTBL  "LineNumberTable"
 #define STR_CONSTR_NAME "<init>"
-#define STR_CONSTR_TYPE "V()"
+#define STR_CONSTR_TYPE "()V"
 #define STR_JAVA_OBJECT "java/lang/Object"
+#define STR_MAIN_NAME   "main"
+#define STR_MAIN_TYPE   "([Ljava/lang/String;)V"
 
 enum {
 	DEF_CONSTR_LEN = 5,
@@ -19,6 +21,7 @@ enum {
 };
 
 typedef enum {
+	Acc_None,
 	Acc_Public     = 0x0001,
 	Acc_Private    = 0x0002,
 	Acc_Protected  = 0x0004,

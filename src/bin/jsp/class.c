@@ -225,7 +225,21 @@ makeclass(Buffer *file, const char *name)
 	a->info.code.nexceptions = 0;
 	a->info.code.nattr = 0;
 	setattrsize(a);
-	addfield(c, 0x00, c->cpool.size - 4, c->cpool.size - 3, 1, a, false);
+	addfield(c, Acc_None, c->cpool.size - 4, c->cpool.size - 3, 1, a, false);
+	/* Add main method (empty) */
+	a = makeattr(Attr_Code, c->cpool.size);
+	a->info.code.maxstack = 1;
+	a->info.code.maxlocals = 1;
+	a->info.code.len = 1;
+	if ((a->info.code.code = calloc(1, sizeof(byte))) == NULL)
+		die(2, "No memory:");
+	a->info.code.code[0] = RETURN;
+	a->info.code.nexceptions = 0;
+	a->info.code.nattr = 0;
+	setattrsize(a);
+	cpaddarr(c, Cpid_Utf8, (byte *) STR_MAIN_NAME, strlen(STR_MAIN_NAME));
+	cpaddarr(c, Cpid_Utf8, (byte *) STR_MAIN_TYPE, strlen(STR_MAIN_TYPE));
+	addfield(c, Acc_Public | Acc_Static, c->cpool.size - 1, c->cpool.size, 1, a, false);
 	return c;
 }
 
@@ -239,8 +253,8 @@ setattrsize(Attribute *a)
 	switch (a->id) {
 	case Attr_Code:
 		for (al = a->info.code.attrs; al != NULL; al = al->next)
-			s += al->len;
-		s += 8 + a->info.code.len + 8 * a->info.code.nexceptions;
+			s += 6 + al->len;
+		s += 12 + a->info.code.len + 8 * a->info.code.nexceptions;
 		break;
 	case Attr_Lntbl:
 		break;
