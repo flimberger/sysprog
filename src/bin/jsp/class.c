@@ -8,6 +8,7 @@
 
 #include "buffer.h"
 #include "error.h"
+#include "opcodes.h"
 
 static
 void
@@ -166,9 +167,22 @@ freeclass(Class *c)
 	free(c);
 }
 
+Attribute *
+makeattr(Attrid id, word nameidx)
+{
+	Attribute *a;
+
+	if ((a = malloc(sizeof(Attribute))) == NULL)
+		die(2, "No memory:");
+	a->id = id;
+	a->name = nameidx;
+	return a;
+}
+
 Class *
 makeclass(Buffer *file, const char *name)
 {
+	Attribute *a;
 	Class *c;
 
 	c = malloc(sizeof(Class));
@@ -196,20 +210,82 @@ makeclass(Buffer *file, const char *name)
 	cpaddwords(c, Cpid_NameAndType, c->cpool.size - 1, c->cpool.size);
 	cpaddwords(c, Cpid_Methodref, c->super, c->cpool.size);
 	/* Add constructor */
-
-	addfield(c, 0x00, c->cpool.size - 3, c->cpool.size - 2, 0, NULL, false);
+	cpaddarr(c, Cpid_Utf8, (byte *) STR_ATTR_CODE, strlen(STR_ATTR_CODE));
+	a = makeattr(Attr_Code, c->cpool.size);
+	a->info.code.maxstack = 1;
+	a->info.code.maxlocals = 1;
+	a->info.code.len = DEF_CONSTR_LEN;
+	if ((a->info.code.code = calloc(DEF_CONSTR_LEN, sizeof(byte))) == NULL)
+		die(2, "No memory:");
+	a->info.code.code[0] = ALOAD_0;
+	a->info.code.code[1] = INVOKESPECIAL;
+	a->info.code.code[2] = (c->cpool.size - 1) >> 8;
+	a->info.code.code[3] = (c->cpool.size - 1) & 0xFF;
+	a->info.code.code[4] = RETURN;
+	a->info.code.nexceptions = 0;
+	a->info.code.nattr = 0;
+	setattrsize(a);
+	addfield(c, 0x00, c->cpool.size - 4, c->cpool.size - 3, 1, a, false);
 	return c;
+}
+
+void
+setattrsize(Attribute *a)
+{
+	Attribute *al;
+	dword s;
+
+	s = 0;
+	switch (a->id) {
+	case Attr_Code:
+		for (al = a->info.code.attrs; al != NULL; al = al->next)
+			s += al->len;
+		s += 8 + a->info.code.len + 8 * a->info.code.nexceptions;
+		break;
+	case Attr_Lntbl:
+		break;
+	}
+	a->len = s;
 }
 
 static
 void
 writeattrs(Buffer *b, Attribute *alist)
 {
+	dword i;
+
 	for ( ; alist != NULL; alist = alist->next) {
-		fprintf(stderr, "Writing attribute:\n\tName index:%u\n", alist->name);
+		fprintf(stderr, "\tWriting attribute:\n\tName index:%u\n", alist->name);
 		writeword(b, alist->name);
-		fprintf(stderr, "\tLenght%u\n", alist->len);
+		fprintf(stderr, "\tLength: %u\n", alist->len);
 		writedword(b, alist->len);
+		switch (alist->id) {
+		case Attr_Code:
+			fprintf(stderr, "\tCode:\n\t\tMax stack: %u\n", alist->info.code.maxstack);
+			writeword(b, alist->info.code.maxstack);
+			fprintf(stderr, "\t\tMax locals: %u\n", alist->info.code.maxlocals);
+			writeword(b, alist->info.code.maxlocals);
+			fprintf(stderr, "\t\tLength: %u\n", alist->info.code.len);
+			writedword(b, alist->info.code.len);
+			for (i = 0; i < alist->info.code.len; i++) {
+				fprintf(stderr, "\t\t\t%04x: %02x\n", i, alist->info.code.code[i]);
+				writebyte(b, alist->info.code.code[i]);
+			}
+			fprintf(stderr, "\t\tExceptions: %u elements\n", alist->info.code.nexceptions);
+			writeword(b, alist->info.code.nexceptions);
+			for (i = 0; i < alist->info.code.nexceptions; i++) {
+				writeword(b, alist->info.code.exceptions[i].start);
+				writeword(b, alist->info.code.exceptions[i].end);
+				writeword(b, alist->info.code.exceptions[i].handler);
+				writeword(b, alist->info.code.exceptions[i].catch);
+			}
+			fprintf(stderr, "\t\tAttributes: %u elements\n", alist->info.code.nattr);
+			writeword(b, alist->info.code.nattr);
+			writeattrs(b, alist->info.code.attrs);
+			break;
+		case Attr_Lntbl:
+			break;
+		}
 	}
 }
 
@@ -235,7 +311,7 @@ writeclass(Class *c)
 {
 	Buffer *b;
 	Celem *e;
-	word i;
+	word i, cpi;
 
 	b = c->file;
 	writedword(b, 0xCAFEBABE);
@@ -244,7 +320,9 @@ writeclass(Class *c)
 	writeword(b, c->vmaj);
 	fprintf(stderr, "Constant pool: %u elements\n", c->cpool.size);
 	writeword(b, c->cpool.size + 1);
+	cpi = 0;
 	for (e = c->cpool.list; e != NULL; e = e->next) {
+		fprintf(stderr, "[%u]", cpi+++1);
 		writebyte(b, e->id);
 		switch (e->id) {
 		case Cpid_Utf8:
@@ -270,14 +348,14 @@ writeclass(Class *c)
 		case Cpid_Fieldref:
 			break;
 		case Cpid_Methodref:
-			fprintf(stderr, "Cpid_InterfaceMethodref: class=%u; methodref=%u\n", e->data.words[0], e->data.words[0]);
+			fprintf(stderr, "Cpid_Methodref: class=%u; methodref=%u\n", e->data.words[0], e->data.words[1]);
 			writeword(b, e->data.words[0]);
 			writeword(b, e->data.words[1]);
 			break;
 		case Cpid_InterfaceMethodref:
 			break;
 		case Cpid_NameAndType:
-			fprintf(stderr, "Cpid_NameAndType: name=%u; type=%u\n", e->data.words[0], e->data.words[0]);
+			fprintf(stderr, "Cpid_NameAndType: name=%u; type=%u\n", e->data.words[0], e->data.words[1]);
 			writeword(b, e->data.words[0]);
 			writeword(b, e->data.words[1]);
 			break;

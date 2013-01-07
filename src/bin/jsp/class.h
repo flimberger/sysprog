@@ -6,11 +6,14 @@
 #include "platform.h"
 #include "buffer.h"
 
-#define STR_JAVA_OBJECT "java/lang/Object"
+#define STR_ATTR_CODE   "Code"
+#define STR_ATTR_LNTBL  "LineNumberTable"
 #define STR_CONSTR_NAME "<init>"
 #define STR_CONSTR_TYPE "V()"
+#define STR_JAVA_OBJECT "java/lang/Object"
 
 enum {
+	DEF_CONSTR_LEN = 5,
 	JVM_VERSION_MAJOR = 51,
 	JVM_VERSION_MINOR = 0
 };
@@ -35,6 +38,11 @@ typedef enum {
 	Acc_Annotation = 0x2000,
 	Acc_Enum       = 0x4000
 } Accmod;
+
+typedef enum {
+	Attr_Code,
+	Attr_Lntbl
+} Attrid;
 
 typedef enum {
 	Cpid_Utf8 = 1,
@@ -105,7 +113,7 @@ typedef struct {
 	Attribute *attrs;
 	byte *code;
 	ExceptionTab *exceptions;
-	dword codelen;
+	dword len;
 	word maxstack;
 	word maxlocals;
 	word nattr;
@@ -121,6 +129,7 @@ struct Attribute {
 	} info;
 	dword len;
 	word  name;
+	Attrid id;
 };
 
 typedef struct Field Field;
@@ -169,7 +178,9 @@ void cpaddtup(Class *c, Cpoolid id, word w, byte b);
 void cpaddwords(Class *c, Cpoolid id, word a, word b);
 void cpadddwords(Class *c, Cpoolid id, dword a, dword b);
 void freeclass(Class *c);
+Attribute *makeattr(Attrid id, word nameidx);
 Class* makeclass(Buffer *file, const char *name);
+void setattrsize(Attribute *a);
 void writeclass(Class *c);
 
 #endif /* _JVM_H_ */
