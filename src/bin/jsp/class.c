@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,37 @@ writeqword(Buffer *b, qword q)
 }
 */
 
+void
+addfield(Class *c, word acc, word nameidx, word descidx, word nattr, Attribute *lattr, bool fld)
+{
+	Field *f;
+
+	if ((f = malloc(sizeof(Field))) == NULL)
+		die(2, "No memory:");
+	f->acc = acc;
+	f->name = nameidx;
+	f->desc = descidx;
+	f->nattr = nattr;
+	f->attrs = lattr;
+	if (fld == true) {
+		if (c->fields.size == 0)
+			c->fields.list = f;
+		else {
+			f->next = c->fields.list;
+			c->fields.list = f;
+		}
+		c->fields.size++;
+	} else {
+		if (c->methods.size == 0)
+			c->methods.list = f;
+		else {
+			f->next = c->methods.list;
+			c->methods.list = f;
+		}
+		c->methods.size++;
+	}
+}
+
 static inline
 Celem *
 makeelem(Cpoolid id)
@@ -66,7 +98,7 @@ insert(Class *c, Celem *e)
 			;
 		end->next = e;
 	}
-	c->cpool.size += 1;
+	c->cpool.size++;
 }
 
 void
@@ -114,11 +146,22 @@ void
 freeclass(Class *c)
 {
 	Celem *e;
-	
+	Field *f;
+
+	while (c->fields.list != NULL) {
+		f = c->fields.list;
+		c->fields.list = c->fields.list->next;
+		free(f);
+	}
+	while (c->methods.list != NULL) {
+		f = c->methods.list;
+		c->methods.list = c->methods.list->next;
+		free(f);
+	}
 	while (c->cpool.list != NULL) {
 		e = c->cpool.list;
-		free(e);
 		c->cpool.list = c->cpool.list->next;
+		free(e);
 	}
 	free(c);
 }
@@ -134,7 +177,7 @@ makeclass(Buffer *file, const char *name)
 	c->vmaj = JVM_VERSION_MAJOR;
 	c->cpool.size = 0;
 	c->cpool.list = NULL;
-	c->accflags = 0;
+	c->acc = 0;
 	/* Add class to constant pool */
 	cpaddarr(c, Cpid_Utf8, (byte *) name, strlen(name));
 	cpaddwords(c, Cpid_Class, c->cpool.size, 0);
@@ -152,29 +195,63 @@ makeclass(Buffer *file, const char *name)
 	cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_TYPE, strlen(STR_CONSTR_TYPE));
 	cpaddwords(c, Cpid_NameAndType, c->cpool.size - 1, c->cpool.size);
 	cpaddwords(c, Cpid_Methodref, c->super, c->cpool.size);
+	/* Add constructor */
+
+	addfield(c, 0x00, c->cpool.size - 3, c->cpool.size - 2, 0, NULL, false);
 	return c;
+}
+
+static
+void
+writeattrs(Buffer *b, Attribute *alist)
+{
+	for ( ; alist != NULL; alist = alist->next) {
+		fprintf(stderr, "Writing attribute:\n\tName index:%u\n", alist->name);
+		writeword(b, alist->name);
+		fprintf(stderr, "\tLenght%u\n", alist->len);
+		writedword(b, alist->len);
+	}
+}
+
+static
+void
+writefields(Buffer *b, Field *flist)
+{
+	for ( ; flist != NULL; flist = flist->next) {
+		fprintf(stderr, "Writing field:\n\tAccess flags: %u\n", flist->acc);
+		writeword(b, flist->acc);
+		fprintf(stderr, "\tName index: %u\n", flist->name);
+		writeword(b, flist->name);
+		fprintf(stderr, "\tDescriptor index: %u\n", flist->desc);
+		writeword(b, flist->desc);
+		fprintf(stderr, "\tAttributes: %u elements\n", flist->nattr);
+		writeword(b, flist->nattr);
+		writeattrs(b, flist->attrs);
+	}
 }
 
 void
 writeclass(Class *c)
 {
+	Buffer *b;
 	Celem *e;
 	word i;
 
-	writedword(c->file, 0xCAFEBABE);
-	writeword(c->file, c->vmin);
-	writeword(c->file, c->vmaj);
-	writeword(c->file, c->cpool.size + 1);
-	fprintf(stderr, "%u\n", c->cpool.size);
-	e = c->cpool.list;
-	while (e != NULL) {
-		writebyte(c->file, e->id);
+	b = c->file;
+	writedword(b, 0xCAFEBABE);
+	fprintf(stderr, "Java version: %u.%u\n", c->vmaj, c->vmin);
+	writeword(b, c->vmin);
+	writeword(b, c->vmaj);
+	fprintf(stderr, "Constant pool: %u elements\n", c->cpool.size);
+	writeword(b, c->cpool.size + 1);
+	for (e = c->cpool.list; e != NULL; e = e->next) {
+		writebyte(b, e->id);
 		switch (e->id) {
 		case Cpid_Utf8:
-			fprintf(stderr, "writing Cpid_Utf8: %s\n", (char *) e->data.array.data);
-			writeword(c->file, e->data.array.size);
+			fprintf(stderr, "Cpid_Utf8: %s\n", (char *) e->data.array.data);
+			writeword(b, e->data.array.size);
 			for (i = 0; i < e->data.array.size; i++)
-				writebyte(c->file, e->data.array.data[i]);
+				writebyte(b, e->data.array.data[i]);
 			break;
 		case Cpid_Integer:
 			break;
@@ -185,24 +262,24 @@ writeclass(Class *c)
 		case Cpid_Double:
 			break;
 		case Cpid_Class:
-			fprintf(stderr, "writing Cpid_Class: name=%u\n", e->data.words[0]);
-			writeword(c->file, e->data.words[0]);
+			fprintf(stderr, "Cpid_Class: name=%u\n", e->data.words[0]);
+			writeword(b, e->data.words[0]);
 			break;
 		case Cpid_String:
 			break;
 		case Cpid_Fieldref:
 			break;
 		case Cpid_Methodref:
-			fprintf(stderr, "writing Cpid_InterfaceMethodref: class=%u; methodref=%u\n", e->data.words[0], e->data.words[0]);
-			writeword(c->file, e->data.words[0]);
-			writeword(c->file, e->data.words[1]);
+			fprintf(stderr, "Cpid_InterfaceMethodref: class=%u; methodref=%u\n", e->data.words[0], e->data.words[0]);
+			writeword(b, e->data.words[0]);
+			writeword(b, e->data.words[1]);
 			break;
 		case Cpid_InterfaceMethodref:
 			break;
 		case Cpid_NameAndType:
-			fprintf(stderr, "writing Cpid_NameAndType: name=%u; type=%u\n", e->data.words[0], e->data.words[0]);
-			writeword(c->file, e->data.words[0]);
-			writeword(c->file, e->data.words[1]);
+			fprintf(stderr, "Cpid_NameAndType: name=%u; type=%u\n", e->data.words[0], e->data.words[0]);
+			writeword(b, e->data.words[0]);
+			writeword(b, e->data.words[1]);
 			break;
 		case Cpid_MethodHandle:
 			break;
@@ -211,13 +288,22 @@ writeclass(Class *c)
 		case Cpid_InvokeDynamic:
 			break;
 		}
-		e = e->next;
 	}
-	writeword(c->file, c->accflags);
-	writeword(c->file, c->this);
-	writeword(c->file, c->super);
-	writeword(c->file, c->interfaces.size);
-	writeword(c->file, c->fields.size);
-	writeword(c->file, c->methods.size);
-	writeword(c->file, c->attrs.size);
+	fprintf(stderr, "Access flags: %u\n", c->acc);
+	writeword(b, c->acc);
+	fprintf(stderr, "Class index: %u\n", c->this);
+	writeword(b, c->this);
+	fprintf(stderr, "Superclass index: %u\n", c->super);
+	writeword(b, c->super);
+	fprintf(stderr, "Interfaces: %u elements\n", c->interfaces.size);
+	writeword(b, c->interfaces.size);
+	fprintf(stderr, "Fields: %u elements\n", c->fields.size);
+	writeword(b, c->fields.size);
+	writefields(b, c->fields.list);
+	fprintf(stderr, "Methods: %u elements\n", c->methods.size);
+	writeword(b, c->methods.size);
+	writefields(b, c->methods.list);
+	fprintf(stderr, "Attributes: %u elements\n", c->attrs.size);
+	writeword(b, c->attrs.size);
+	writeattrs(b, c->attrs.list);
 }

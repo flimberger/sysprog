@@ -1,6 +1,8 @@
 #ifndef _JVM_H_
 #define _JVM_H_
 
+#include <stdbool.h>
+
 #include "platform.h"
 #include "buffer.h"
 
@@ -126,7 +128,7 @@ struct Field {
 	Field *next;
 	Attribute *attrs;
 	word nattr;
-	word accflags;
+	word acc;
 	word name;
 	word desc;
 };
@@ -140,7 +142,7 @@ typedef struct {
 		word size;
 		Celem *list;
 	} cpool;
-	word accflags;
+	word acc;
 	word this;
 	word super;
 	struct {
@@ -161,6 +163,7 @@ typedef struct {
 	} attrs;
 } Class;
 
+void addfield(Class *c, word acc, word nameidx, word descidx, word nattr, Attribute *lattr, bool fld);
 void cpaddarr(Class *c, Cpoolid id, const byte *const data, word size);
 void cpaddtup(Class *c, Cpoolid id, word w, byte b);
 void cpaddwords(Class *c, Cpoolid id, word a, word b);
