@@ -6,6 +6,8 @@
 #include "platform.h"
 #include "buffer.h"
 
+/* http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html */
+
 #define STR_ATTR_CODE   "Code"
 #define STR_ATTR_LNTBL  "LineNumberTable"
 #define STR_CONSTR_DESC "()V"
