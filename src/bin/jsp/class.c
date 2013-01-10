@@ -172,7 +172,7 @@ getprint(Class *c)
 		mtdref = cpaddwords(c, Cpid_Methodref, i, d);
 		/* generate code attribute for this.print */
 		a = makeattr(Attr_Code, c->code);
-		a->info.code.maxstack = 1;
+		a->info.code.maxstack = 2;
 		a->info.code.maxlocals = 1;
 		a->info.code.len = 8;
 		if ((a->info.code.code = calloc(8, sizeof(byte))) == NULL)
@@ -181,9 +181,9 @@ getprint(Class *c)
 		a->info.code.code[1] = fldref >> 8;
 		a->info.code.code[2] = fldref & 0xFF;
 		a->info.code.code[3] = ILOAD_0;
-		a->info.code.code[4] = mtdref >> 8;
-		a->info.code.code[5] = mtdref & 0xFF;
-		a->info.code.code[6] = INVOKEVIRTUAL;
+		a->info.code.code[4] = INVOKEVIRTUAL;
+		a->info.code.code[5] = mtdref >> 8;
+		a->info.code.code[6] = mtdref & 0xFF;
 		a->info.code.code[7] = RETURN;
 		a->info.code.nexceptions = 0;
 		a->info.code.nattr = 0;
@@ -297,9 +297,9 @@ makeclass(Buffer *file, const char *classname)
 	if ((a->info.code.code = calloc(5, sizeof(byte))) == NULL)
 		die(2, "No memory:");
 	/* just for testing */
-	a->info.code.code[0] = ICONST_0;
+	a->info.code.code[0] = ICONST_1;
 	a->info.code.code[1] = INVOKESTATIC;
-	a->info.code.code[2] = getprint(c) >> 8;;
+	a->info.code.code[2] = getprint(c) >> 8;
 	a->info.code.code[3] = c->print & 0xFF;
 	a->info.code.code[4] = RETURN;
 	a->info.code.nexceptions = 0;
