@@ -170,7 +170,7 @@ parsestatement(void)
 {
 	Node *np;
 
-	np = makenode(NODE_NONE);
+	np = makenode(NODE_STATEMENT);
 	printfunc("parsestatement");
 	#pragma GCC diagnostic ignored "-Wswitch"
 	switch (nexttoken->symtype) {
@@ -242,6 +242,7 @@ parseindex(void)
 {
 	Node *np;
 
+	np = makenode(NODE_INDEX);
 	printfunc("parseindex");
 	match(S_BROP);
 	np = parseexp();
@@ -253,14 +254,13 @@ static
 Node *
 parseexp(void)
 {
-	Node *np, *op;
+	Node *np;
 
+	np = makenode(NODE_EXP);
 	printfunc("parseexp");
-	np = parseexp2();
+	np->left = parseexp2();
 	if (FIRST_OP_EXP) {
-		op = parseop_exp();
-		op->left = np;
-		return op;
+		np->right = parseop_exp();
 	}
 	return np;
 }
@@ -271,6 +271,7 @@ parseexp2(void)
 {
 	Node *np;
 
+	np = makenode(NODE_EXP2);
 	printfunc("parseexp2");
 	switch (nexttoken->symtype) {
 	case S_PAROP:
@@ -279,14 +280,12 @@ parseexp2(void)
 		match(S_PARCL);
 		break;
 	case S_IDENT:
-		np = makenode(NODE_IDENT);
 		np->data.sym = nexttoken->data.sym;
 		match(S_IDENT);
 		if (nexttoken->symtype == S_BROP)
 			np->left = parseindex();
 		break;
 	case S_INTCONST:
-		np = makenode(NODE_CONST);
 		np->data.val = nexttoken->data.val;
 		match(S_INTCONST);
 		break;
@@ -312,8 +311,9 @@ parseop_exp(void)
 {
 	Node *np;
 
+	np = makenode(NODE_OPEXP);
 	printfunc("parseop_exp");
-	np = parseop();
+	np->left = parseop();
 	np->right = parseexp();
 	return np;
 }
