@@ -10,6 +10,9 @@
 #include "error.h"
 #include "opcodes.h"
 
+#define LOBYTE(w) ((w) >> 8)
+#define HIBYTE(w) ((w) & 0xFF)
+
 static
 void
 writebyte(Buffer *buf, byte b)
@@ -154,8 +157,8 @@ getprint(Class *c)
 
 	if (c->print == 0) {
 		/* method this.print */
-		name = cpaddarr(c, Cpid_Utf8, (byte *) STR_PRNT_NAME, strlen(STR_PRNT_NAME));
-		desc = cpaddarr(c, Cpid_Utf8, (byte *) STR_PRNT_DESC, strlen(STR_PRNT_DESC));
+		name = cpaddarr(c, Cpid_Utf8, (byte *) STR_PRINT_NAME, strlen(STR_PRINT_NAME));
+		desc = cpaddarr(c, Cpid_Utf8, (byte *) STR_PRINT_DESC, strlen(STR_PRINT_DESC));
 		i = cpaddwords(c, Cpid_NameAndType, name, desc);
 		c->print = cpaddwords(c, Cpid_Methodref, c->this, i);
 		/* field System.out */
@@ -203,6 +206,90 @@ getsys(Class *c)
 		c->sys = cpaddwords(c, Cpid_Class, name, 0);
 	}
 	return c->sys;
+}
+
+word
+getread(Class *c)
+{
+	Attribute *a;
+	word constr, d, desc, except, i, n, name, nextint, pstrace, scanner, sysin;
+
+	if (c->read == 0) {
+		/* this.read() */
+		name = cpaddarr(c, Cpid_Utf8, (byte *) STR_READ_NAME, strlen(STR_READ_NAME));
+		desc = cpaddarr(c, Cpid_Utf8, (byte *) STR_READ_DESC, strlen(STR_READ_DESC));
+		i = cpaddwords(c, Cpid_NameAndType, name, desc);
+		c->read = cpaddwords(c, Cpid_Methodref, c->this, i);
+		/* System.in */
+		n = cpaddarr(c, Cpid_Utf8, (byte *) STR_IN_NAME, strlen(STR_IN_NAME));
+		d = cpaddarr(c, Cpid_Utf8, (byte *) STR_IN_DESC, strlen(STR_IN_DESC));
+		i = cpaddwords(c, Cpid_NameAndType, n, d);
+		sysin = cpaddwords(c, Cpid_Fieldref, getsys(c), i);
+		/* java.util.Scanner */
+		n = cpaddarr(c, Cpid_Utf8, (byte *) STR_SCANNER_NAME, strlen(STR_SCANNER_NAME));
+		scanner = cpaddwords(c, Cpid_Class, n, 0);
+		/* Scanner.Scanner() */
+		d = cpaddarr(c, Cpid_Utf8, (byte *) STR_SCANNER_CSIG, strlen(STR_SCANNER_CSIG));
+		i = cpaddwords(c, Cpid_NameAndType, c->init, d);
+		constr = cpaddwords(c, Cpid_Methodref, scanner, i);
+		/* Scanner.nextInt() */
+		n = cpaddarr(c, Cpid_Utf8, (byte *) STR_NEXTINT_NAME, strlen(STR_NEXTINT_NAME));
+		i = cpaddwords(c, Cpid_NameAndType, n, desc);
+		nextint = cpaddwords(c, Cpid_Methodref, scanner, i);
+		/* java.lang.Exception */
+		n = cpaddarr(c, Cpid_Utf8, (byte *) STR_EXCEPT_NAME, strlen(STR_EXCEPT_NAME));
+		except = cpaddwords(c, Cpid_Class, n, 0);
+		/* Exception.printStackTrace() */
+		n = cpaddarr(c, Cpid_Utf8, (byte *) STR_PSTRACE_NAME, strlen(STR_PSTRACE_NAME));
+		i = cpaddwords(c, Cpid_NameAndType, n, c->init + 1);
+		pstrace = cpaddwords(c, Cpid_Methodref, except, i);
+		/* code */
+		a = makeattr(Attr_Code, c->code);
+		a->info.code.maxstack = 3;
+		a->info.code.maxlocals = 2;
+		a->info.code.len = 28;
+		if ((a->info.code.code = calloc(a->info.code.len, sizeof(byte))) == NULL)
+			die(2, "No memory:");
+		a->info.code.code[0] = ICONST_0;
+		a->info.code.code[1] = ISTORE_0;
+		a->info.code.code[2] = NEW;
+		a->info.code.code[3] = HIBYTE(scanner);
+		a->info.code.code[4] = LOBYTE(scanner);
+		a->info.code.code[5] = DUP;
+		a->info.code.code[6] = GETSTATIC;
+		a->info.code.code[7] = HIBYTE(sysin);
+		a->info.code.code[8] = LOBYTE(sysin);
+		a->info.code.code[9] = INVOKESPECIAL;
+		a->info.code.code[10] = HIBYTE(constr);
+		a->info.code.code[11] = LOBYTE(constr);
+		a->info.code.code[12] = ASTORE_1;
+		a->info.code.code[13] = ALOAD_1;
+		a->info.code.code[14] = INVOKEVIRTUAL;
+		a->info.code.code[15] = HIBYTE(nextint);
+		a->info.code.code[16] = LOBYTE(nextint);
+		a->info.code.code[17] = ISTORE_0;
+		a->info.code.code[18] = GOTO;
+		a->info.code.code[19] = /* TODO */ 0;
+		a->info.code.code[20] = /* TODO */ 26;
+		a->info.code.code[21] = ASTORE_1;
+		a->info.code.code[22] = ALOAD_1;
+		a->info.code.code[23] = INVOKEVIRTUAL;
+		a->info.code.code[24] = HIBYTE(pstrace);
+		a->info.code.code[25] = LOBYTE(pstrace);
+		a->info.code.code[26] = ILOAD_0;
+		a->info.code.code[27] = IRETURN;
+		a->info.code.nexceptions = 1;
+		if ((a->info.code.exceptions = calloc(a->info.code.nexceptions, sizeof(ExceptionTab))) == 0)
+			die(2, "No memory:");
+		a->info.code.exceptions[0].start   = 2;
+		a->info.code.exceptions[0].end     = 18;
+		a->info.code.exceptions[0].handler = /* TODO */ 21;
+		a->info.code.exceptions[0].catch   = except;
+		a->info.code.nattr = 0;
+		setattrsize(a);
+		addfield(c, Acc_Private | Acc_Static, name, desc, 1, a, false);
+	}
+	return c->read;
 }
 
 void
@@ -268,9 +355,9 @@ makeclass(Buffer *file, const char *classname)
 	c->methods.size = 0;
 	c->attrs.size = 0;
 	/* Add superclass constructor */
-	name = cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_NAME, strlen(STR_CONSTR_NAME));
+	c->init = cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_NAME, strlen(STR_CONSTR_NAME));
 	desc = cpaddarr(c, Cpid_Utf8, (byte *) STR_CONSTR_DESC, strlen(STR_CONSTR_DESC));
-	i = cpaddwords(c, Cpid_NameAndType, name, desc);
+	i = cpaddwords(c, Cpid_NameAndType, c->init, desc);
 	mref = cpaddwords(c, Cpid_Methodref, c->super, i);
 	/* Add constructor */
 	c->code = cpaddarr(c, Cpid_Utf8, (byte *) STR_ATTR_CODE, strlen(STR_ATTR_CODE));
@@ -293,15 +380,26 @@ makeclass(Buffer *file, const char *classname)
 	a = makeattr(Attr_Code, c->code);
 	a->info.code.maxstack = 1;
 	a->info.code.maxlocals = 1;
+	/*
 	a->info.code.len = 5;
 	if ((a->info.code.code = calloc(5, sizeof(byte))) == NULL)
 		die(2, "No memory:");
-	/* just for testing */
 	a->info.code.code[0] = ICONST_1;
 	a->info.code.code[1] = INVOKESTATIC;
 	a->info.code.code[2] = getprint(c) >> 8;
 	a->info.code.code[3] = c->print & 0xFF;
 	a->info.code.code[4] = RETURN;
+	*/
+	a->info.code.len = 7;
+	if ((a->info.code.code = calloc(a->info.code.len, sizeof(byte))) == NULL)
+		die(2, "No memory:");
+	a->info.code.code[0] = ICONST_0;
+	a->info.code.code[1] = ISTORE_1;
+	a->info.code.code[2] = INVOKESTATIC;
+	a->info.code.code[3] = HIBYTE(getread(c));
+	a->info.code.code[4] = LOBYTE(c->read);
+	a->info.code.code[5] = ISTORE_1;
+	a->info.code.code[6] = RETURN;
 	a->info.code.nexceptions = 0;
 	a->info.code.nattr = 0;
 	setattrsize(a);

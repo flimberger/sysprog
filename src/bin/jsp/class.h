@@ -12,17 +12,25 @@
 #define STR_ATTR_LNTBL  "LineNumberTable"
 #define STR_CONSTR_DESC "()V"
 #define STR_CONSTR_NAME "<init>"
+#define STR_EXCEPT_NAME "java/lang/Exception"
+#define STR_IN_NAME     "in"
+#define STR_IN_DESC     "Ljava/io/InputStream;"
 #define STR_MAIN_DESC   "([Ljava/lang/String;)V"
 #define STR_MAIN_NAME   "main"
+#define STR_NEXTINT_NAME "nextInt"
 #define STR_OBJECT_NAME "java/lang/Object"
 #define STR_OUT_DESC    "Ljava/io/PrintStream;"
 #define STR_OUT_NAME    "out"
-#define STR_PRNT_DESC   "(I)V"
-#define STR_PRNT_NAME   "print"
+#define STR_PRINT_DESC  "(I)V"
+#define STR_PRINT_NAME  "print"
 #define STR_PRNTLN_NAME "println"
 #define STR_PRNTSTRM_NAME "java/io/PrintStream"
+#define STR_PSTRACE_NAME "printStackTrace"
+#define STR_READ_DESC   "()I"
+#define STR_READ_NAME   "read"
+#define STR_SCANNER_NAME "java/lang/Scanner"
+#define STR_SCANNER_CSIG "(Ljava/io/InputStream;)V"
 #define STR_SYSTEM_NAME "java/lang/System"
-
 
 enum {
 	DEF_CONSTR_LEN = 5,
@@ -160,6 +168,7 @@ typedef struct {
 	const char *name;
 	word vmin;
 	word vmaj;
+	word init;
 	word print;
 	word read;
 	word code;
