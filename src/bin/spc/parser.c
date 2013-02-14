@@ -106,15 +106,12 @@ parsedecl(void)
 	printfunc("parsedecl");
 	match(S_INT);
 	np = makenode(NODE_DECL);
-	if (nexttoken->symtype == S_BROP) {
+	if (nexttoken->symtype == S_BROP)
 		np->left = parsearray();
-		np->datatype = T_INTARR;
-	} else
-		np->datatype = T_INT;
-	if (nexttoken->symtype == S_IDENT) {
+	
+	if (nexttoken->symtype == S_IDENT)
 		np->data.sym = nexttoken->data.sym;
-		np->data.sym->datatype = np->datatype;
-	}
+
 	match(S_IDENT);
 	return np;
 }
@@ -245,7 +242,7 @@ parseindex(void)
 	np = makenode(NODE_INDEX);
 	printfunc("parseindex");
 	match(S_BROP);
-	np = parseexp();
+	np->left = parseexp();
 	match(S_BRCL);
 	return np;
 }
@@ -276,30 +273,32 @@ parseexp2(void)
 	switch (nexttoken->symtype) {
 	case S_PAROP:
 		match(S_PAROP);
-		np = parseexp();
+		np->left = parseexp();
 		match(S_PARCL);
 		break;
 	case S_IDENT:
-		np->data.sym = nexttoken->data.sym;
+		np->left = makenode(NODE_IDENT);
+		np->left->data.sym = nexttoken->data.sym;
 		match(S_IDENT);
 		if (nexttoken->symtype == S_BROP)
-			np->left = parseindex();
+			np->right = parseindex();
 		break;
-	case S_INTCONST:
-		np->data.val = nexttoken->data.val;
+	case S_INTCONST:		
+		np->left = makenode(NODE_INTCONST);
+		np->left->data.val = nexttoken->data.val;
 		match(S_INTCONST);
 		break;
 	case S_MINUS:
 	case S_NOT:
-		np = makenode(NODE_OP);
+		np->left = makenode(NODE_OP);
 		if (nexttoken->symtype == S_MINUS) {
 			match(S_MINUS);
-			np->data.op = OP_NEG;
+			np->left->data.op = OP_NEG;
 		} else {
 			match(S_NOT);
-			np->data.op = OP_NOT;
+			np->left->data.op = OP_NOT;
 		}
-		np->left = parseexp2();
+		np->right = parseexp2();
 		break;
 	}
 	return np;

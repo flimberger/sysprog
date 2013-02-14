@@ -22,7 +22,8 @@ typedef enum {
 	NODE_READ,
 	NODE_IF,
 	NODE_WHILE,
-	NODE_IDENT
+	NODE_IDENT,
+	NODE_INTCONST
 } Nodetype;
 
 typedef enum {
@@ -79,5 +80,8 @@ void symterm(void);
 
 // Btree functions
 Node *makenode(Nodetype type);
+
+// checktype functions
+void checkprog(Node *node);
 
 #endif /* _SYSPROG_H_ */

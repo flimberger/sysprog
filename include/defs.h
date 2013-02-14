@@ -12,9 +12,10 @@ typedef unsigned long long uvlong;
 
 typedef enum {
 	T_NONE,
-	T_BOOL,
+	T_ERROR,
 	T_INT,
-	T_INTARR
+	T_INTARR,
+	T_ARRAY
 } Datatype;
 
 typedef enum {
