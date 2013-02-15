@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "error.h"
 #include "spc.h"
@@ -20,7 +21,7 @@ checkprog(Node *node)
 	if (node == NULL)
 		die(EXIT_FAILURE, "Unexpected Nullpointer in checkprog");
 
-	if (node->type != NODE_ROOT)
+	if (node->type != NODE_PROG)
 		die(EXIT_FAILURE, "Root Node expected in checkprog");
 
 	checkdecls(node->left);
@@ -35,15 +36,11 @@ checkdecls(Node *node)
 	if (node == NULL)
 		return;
 
-	if (node->type == NODE_LIST) {
-		checkdecl(node->left);
-		checkdecls(node->right);
-		node->datatype = T_NONE;		
-	} else if (node->type == NODE_DECL) {
-		checkdecl(node);
-	} else {
-		die(EXIT_FAILURE, "Expected NODE_LIST in checkdecls");		
-	}	
+	if (node->type != NODE_DECLS)
+		die(EXIT_FAILURE, "Expected NODE_DECLS in checkdecls");
+	checkdecl(node->left);
+	checkdecls(node->right);
+	node->datatype = T_NONE;
 }
 
 static
@@ -51,7 +48,7 @@ void
 checkdecl(Node *node)
 {
 	if (node == NULL)
-		die(EXIT_FAILURE, "Unexpected Nullpointer in checkdecl");
+		panic("Unexpected Nullpointer in checkdecl");
 
 	if (node->datatype != T_NONE) {
 		warn("Identifier %s already definied", node->data.sym->lexem);
@@ -73,7 +70,7 @@ void
 checkarray(Node *node)
 {
 	if (node == NULL)
-		die(EXIT_FAILURE, "Unexpected Nullpointer in checkarray");
+		panic("Unexpected Nullpointer in checkarray");
 
 	if (node->data.val > 0) {
 		node->datatype = T_ARRAY;
@@ -100,18 +97,19 @@ void
 checkstatement(Node *node)
 {
 	if (node == NULL)
-		die(EXIT_FAILURE, "Unexpected Nullpointer in checkstatement");
+		panic("Unexpected Nullpointer in checkstatement");
 
-	switch (node->type) {
-	case NODE_ASSGN:
-		checkindex(node->left);
-		checkexp(node->right);
-		if (node->data.sym->datatype == T_NONE) {
-			warn("Identifier %s not definied", node->data.sym->lexem);
-		} else if ((node->right->datatype == T_INT) &&
-					(((node->data.sym->datatype == T_INT) && (node->left == NULL)) ||
-					((node->data.sym->datatype == T_INTARR) && (node->left != NULL)
-						&& node->left->datatype == T_ARRAY))) {
+	fprintf(stderr, "%d\n", node->left->type);
+	switch (node->left->type) {
+	case NODE_IDENT:
+		checkindex(node->right->left);
+		checkexp(node->right->right);
+		if (node->left->data.sym->datatype == T_NONE) {
+			warn("Identifier %s not definied", node->left->data.sym->lexem);
+		} else if ((node->right->right->datatype == T_INT) &&
+					(((node->left->data.sym->datatype == T_INT) && (node->right->left == NULL)) ||
+					((node->left->data.sym->datatype == T_INTARR) && (node->right->left != NULL)
+						&& node->right->left->datatype == T_ARRAY))) {
 			node->datatype = T_NONE;
 		} else {
 			node->datatype = T_ERROR;
@@ -119,15 +117,15 @@ checkstatement(Node *node)
 		}
 		break;
 	case NODE_PRINT:
-		checkexp(node->left);
+		checkexp(node->left->left);
 		node->datatype = T_NONE;
 		break;
 	case NODE_READ:
 		checkindex(node->left->right);
-		if (node->data.sym->datatype == T_NONE) {
-			warn("Identifier %s not definied", node->data.sym->lexem);
-		} else if (((node->left->data.sym->datatype == T_INT) && (node->left->right == NULL)) ||
-					((node->left->data.sym->datatype == T_INTARR) && (node->left->right != NULL)
+		if (node->left->left->data.sym->datatype == T_NONE) {
+			warn("Identifier %s not definied", node->left->left->data.sym->lexem);
+		} else if (((node->left->left->data.sym->datatype == T_INT) && (node->left->right == NULL)) ||
+					((node->left->left->data.sym->datatype == T_INTARR) && (node->left->right != NULL)
 						&& node->left->right->datatype == T_ARRAY)) {
 			node->datatype = T_NONE;
 		} else {
@@ -135,28 +133,28 @@ checkstatement(Node *node)
 			warn("Incompatible types");
 		}
 		break;
+	case NODE_STATEMENTS:
+		checkstatements(node);
+		break;
 	case NODE_IF:
-		checkexp(node->left);
-		checkstatement(node->right->left); /* IF */
-		checkstatement(node->right->right); /* ELSE */
-		if (node->left->datatype == T_ERROR)
+		checkexp(node->right);
+		checkstatement(node->left->left); /* IF */
+		checkstatement(node->left->right); /* ELSE */
+		if (node->right->datatype == T_ERROR)
 			node->datatype = T_ERROR;
 		else
 			node->datatype = T_NONE;
 		break;
 	case NODE_WHILE:
-		checkexp(node->left);
-		checkstatement(node->right);
-		if (node->left->datatype == T_ERROR)
+		checkexp(node->right);
+		checkstatement(node->left->left);
+		if (node->right->datatype == T_ERROR)
 			node->datatype = T_ERROR;
 		else
 			node->datatype = T_NONE;
 		break;
 	default:
-		if (node->type == NODE_LIST)
-			checkstatements(node);
-		else /* Prematurely optimized tree */
-			checkstatement(node);
+		warn("Unexpected node type in checkstatement().");
 	}
 }
 
@@ -178,6 +176,13 @@ static
 void
 checkexp(Node *node)
 {
+	if (node == NULL)
+		panic("Unexpected Nullpointer in checkexp");
+
+	fprintf(stderr, "%d\n", node->type);
+	fprintf(stderr, "%p\n", (void*)node->left);
+	fprintf(stderr, "%p\n", (void*)node->right);
+	fprintf(stderr, "%s\n", node->data.sym->lexem);
 	checkexp2(node->left);
 	checkop_exp(node->right);
 
@@ -193,13 +198,21 @@ static
 void
 checkexp2(Node *node)
 {
+	if (node == NULL)
+		panic("Unexpected Nullpointer in checkexp2");
+
 	switch (node->left->type) {
+	case NODE_EXP:
+		checkexp(node->left);
+		node->datatype = node->left->datatype;
+		break;
 	case NODE_IDENT:
 		if (node->left->data.sym->datatype == T_NONE) {
 			node->datatype = T_ERROR;
 			warn("Identifier %s not definied", node->left->data.sym->lexem);
 		} else if (((node->left->datatype == T_INT) && (node->right == NULL)) ||
-					(node->left->datatype == T_INTARR && node->right->datatype == T_ARRAY)) {
+					((node->left->datatype == T_INTARR) && (node->right != NULL)
+						&& (node->right->datatype == T_ARRAY))) {
 			node->datatype = T_INT; /* Not expandable, but less special cases */
 		} else {
 			node->datatype = T_ERROR;
@@ -221,8 +234,7 @@ checkexp2(Node *node)
 		}
 		break;
 	default:
-		checkexp(node->left);
-		node->datatype = node->left->datatype;
+		warn("Unexpected node type in checkexp2().");
 	}
 }
 
@@ -242,5 +254,8 @@ static
 void
 checkop(Node *node)
 {
+	if (node == NULL)
+		panic("Unexpected Nullpointer in checkop");
+
 	node->datatype = T_NONE;
 }

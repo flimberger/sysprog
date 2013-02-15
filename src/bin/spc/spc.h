@@ -7,17 +7,19 @@
 
 typedef enum {
 	NODE_NONE,
-	NODE_ROOT,
-	NODE_LIST,
+	/* nonterminal symbols */
+	NODE_PROG,
+	NODE_DECLS,
 	NODE_DECL,
 	NODE_ARRAY,
-	NODE_ASSGN,
+	NODE_STATEMENTS,
 	NODE_STATEMENT,
 	NODE_EXP,
 	NODE_EXP2,
 	NODE_INDEX,
 	NODE_OPEXP,
 	NODE_OP,
+	/* terminal symbols */
 	NODE_PRINT,
 	NODE_READ,
 	NODE_IF,

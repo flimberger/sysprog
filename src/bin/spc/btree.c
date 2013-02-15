@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "error.h"
 #include "spc.h"
@@ -14,5 +15,6 @@ makenode(Nodetype type)
 	node->right = NULL;
 	node->data.sym = NULL;
 	node->type = type;
+	fprintf(stderr, "%d\n", type);
 	return node;
 }

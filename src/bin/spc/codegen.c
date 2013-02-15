@@ -45,13 +45,12 @@ gendecls(Node *node)
 {
 	if (node == NULL)
 		return;
-	if (node->type == NODE_LIST) {
-		gendecl(node->left);
-		gendecls(node->right);
-	} else if (node->type == NODE_DECL)
-		gendecl(node);
-	else
-		die(EXIT_FAILURE, "Unexpected nodetype in gendecl().");
+
+	if (node->type != NODE_DECLS)
+		die(EXIT_FAILURE, "Unexpected nodetype in gendecls().");
+
+	gendecl(node->left);
+	gendecls(node->right);		
 }
 
 static
@@ -59,7 +58,7 @@ void
 gendecl(Node *node)
 {
 	if (node == NULL)
-		panic("Unexpected nullpointer in gendecl.");
+		panic("Unexpected nullpointer in gendecl().");
 	bprintf(out, "%s $%s ", spvm_op[DS], node->data.sym->lexem);
 	genarray(node->left);
 }
@@ -93,11 +92,11 @@ genstatement(Node *node)
 
 	if (node == NULL)
 		panic("Unexpected nullpointer in genstatement().");
-	switch(node->type) {
-	case NODE_ASSGN:
-		genexp(node->right);
-		bprintf(out, "%s $%s ", spvm_op[LA], node->data.sym->lexem);
-		genindex(node->left);
+	switch(node->left->type) {
+	case NODE_IDENT:
+		genexp(node->right->right);
+		bprintf(out, "%s $%s ", spvm_op[LA], node->left->data.sym->lexem);
+		genindex(node->right->left);
 		bprintf(out, "%s\n", spvm_op[STR]);
 		break;
 	case NODE_PRINT:
@@ -106,19 +105,22 @@ genstatement(Node *node)
 		break;
 	case NODE_READ:
 		bprintf(out, "%s\n%s $%S ", spvm_op[REA], spvm_op[LA],
-		        node->left->data.sym->lexem);
-		genindex(node->left->left);
+		        node->left->left->data.sym->lexem);
+		genindex(node->left->right);
 		bprintf(out, "%s\n", spvm_op[STR]);
+		break;
+	case NODE_STATEMENTS: 
+		genstatements(node->left);
 		break;
 	case NODE_IF:
 		lbl1 = newlabel();
 		lbl2 = newlabel();
-		genexp(node->left);
+		genexp(node->right);
 		bprintf(out, "%s #%s\n", spvm_op[JIN], lbl1);
-		genstatement(node->right->left);
+		genstatement(node->left->left);
 		bprintf(out, "%s #%s\n#%s %s\n", spvm_op[JMP], lbl2, lbl1,
 		        spvm_op[NOP]);
-		genstatement(node->right->right);
+		genstatement(node->left->right);
 		bprintf(out, "#%s %s\n", lbl2, spvm_op[NOP]);
 		free(lbl2);
 		free(lbl1);
@@ -127,16 +129,16 @@ genstatement(Node *node)
 		lbl1 = newlabel();
 		lbl2 = newlabel();
 		bprintf(out, "#%s %s\n", lbl1, spvm_op[NOP]);
-		genexp(node->left);
+		genexp(node->right);
 		bprintf(out, "%s #%s\n", spvm_op[JIN], lbl2);
-		genstatement(node->right);
+		genstatement(node->left->left);
 		bprintf(out, "%s #%s\n#%s %s", spvm_op[JMP], lbl1, lbl2,
 		        spvm_op[NOP]);
 		free(lbl2);
 		free(lbl1);
 		break;
 	default:
-		genstatements(node);
+		warn("Unexpected node type in genstatement().");
 	}
 }
 
@@ -148,7 +150,7 @@ genexp(Node *node)
 		panic("Unexpected nullpointer in genexp().");
 	if (node->right == NULL)
 		genexp2(node->left);
-	else if (node->right->left->data.op == OP_UNEQ) { /* fugly spec */
+	else if (node->right->left->data.op == OP_GRTR) { /* fugly spec */
 		genop_exp(node->right);
 		genexp2(node->left);
 		bprintf(out, "%s\n", spvm_op[LES]);
@@ -176,7 +178,7 @@ genexp2(Node *node)
 {
 	if (node == NULL)
 		panic("Unexpected nullpointer in genexp2().");
-	switch (node->type) {
+	switch (node->left->type) {
 	case NODE_IDENT:
 		bprintf(out, "%s $%s ", spvm_op[LA],
 		        node->left->data.sym->lexem);
@@ -197,8 +199,11 @@ genexp2(Node *node)
 			bprintf(out, "%s\n", spvm_op[NOT]);
 		}
 		break;
-	default:
+	case NODE_EXP:
 		genexp(node->left);
+		break;
+	default:
+		warn("Unexpected node type in genstatement().");
 	}
 }
 
