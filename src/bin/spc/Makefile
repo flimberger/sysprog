@@ -6,7 +6,7 @@ LIBP=$(ROOT)/lib
 BINP=$(ROOT)/bin
 
 HDR=$(NAME).h
-SRC=spc.c scanner.c parser.c btree.c printtoken.c typecheck.c
+SRC=spc.c scanner.c parser.c btree.c printtoken.c typecheck.c spvm_opcodes.c codegen.c
 OBJ=$(SRC:.c=.o)
 
 INC=-I$(INCP)
@@ -20,6 +20,10 @@ all: $(NAME)
 
 .c.o: $(HDR) $(INCP)/defs.h
 	$(CC) $(CFLAGS) -c $<
+
+spvm_opcodes.c: spvm_opcodes.h
+
+codegen.c: spvm_opcodes.h
 
 $(NAME): $(HDR) $(OBJ)
 	$(LD) $(LDFLAGS) $(OBJ) -o $(NAME) $(LIB)

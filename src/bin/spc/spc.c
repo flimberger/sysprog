@@ -88,6 +88,8 @@ compile(char *outfile)
 	if ((out = bopen(outfile, O_WRONLY)) == NULL)
 		die(1, "failed to allocate output buffer:");
 	parseprog();
+	checkprog(parsetree);
+	genprog(parsetree);
 	bclose(out);
 	bclose(src);
 	return 0;

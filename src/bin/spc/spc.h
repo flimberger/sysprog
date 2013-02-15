@@ -78,10 +78,13 @@ void printtoken(Token *tp);
 void syminit(void);
 void symterm(void);
 
-// Btree functions
+/* btree.c */
 Node *makenode(Nodetype type);
 
-// checktype functions
+/* typecheck.c */
 void checkprog(Node *node);
+
+/* codegen.c */
+void genprog(Node *node);
 
 #endif /* _SYSPROG_H_ */
