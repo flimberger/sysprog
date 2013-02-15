@@ -15,7 +15,8 @@ static void checkop_exp(Node *node);
 static void checkop(Node *node);
 
 void
-checkprog(Node *node) {
+checkprog(Node *node)
+{
 	if (node == NULL)
 		die(EXIT_FAILURE, "Unexpected Nullpointer in checkprog");
 
@@ -29,7 +30,8 @@ checkprog(Node *node) {
 
 static
 void
-checkdecls(Node *node) {
+checkdecls(Node *node)
+{
 	if (node == NULL)
 		return;
 
@@ -46,7 +48,8 @@ checkdecls(Node *node) {
 
 static
 void
-checkdecl(Node *node) {
+checkdecl(Node *node)
+{
 	if (node == NULL)
 		die(EXIT_FAILURE, "Unexpected Nullpointer in checkdecl");
 
@@ -67,7 +70,8 @@ checkdecl(Node *node) {
 
 static
 void
-checkarray(Node *node) {
+checkarray(Node *node)
+{
 	if (node == NULL)
 		die(EXIT_FAILURE, "Unexpected Nullpointer in checkarray");
 
@@ -81,7 +85,8 @@ checkarray(Node *node) {
 
 static
 void
-checkstatements(Node *node) {
+checkstatements(Node *node)
+{
 	if (node == NULL)
 		return;
 
@@ -92,7 +97,8 @@ checkstatements(Node *node) {
 
 static
 void
-checkstatement(Node *node) {
+checkstatement(Node *node)
+{
 	if (node == NULL)
 		die(EXIT_FAILURE, "Unexpected Nullpointer in checkstatement");
 
@@ -156,7 +162,8 @@ checkstatement(Node *node) {
 
 static
 void
-checkindex(Node *node) {
+checkindex(Node *node)
+{
 	if (node == NULL)
 		return;
 
@@ -169,7 +176,8 @@ checkindex(Node *node) {
 
 static
 void
-checkexp(Node *node) {
+checkexp(Node *node)
+{
 	checkexp2(node->left);
 	checkop_exp(node->right);
 
@@ -183,7 +191,8 @@ checkexp(Node *node) {
 
 static
 void
-checkexp2(Node *node) {
+checkexp2(Node *node)
+{
 	switch (node->left->type) {
 	case NODE_IDENT:
 		if (node->left->data.sym->datatype == T_NONE) {
@@ -219,7 +228,8 @@ checkexp2(Node *node) {
 
 static
 void
-checkop_exp(Node *node) {
+checkop_exp(Node *node)
+{
 	if (node == NULL)
 		return;
 
@@ -230,6 +240,7 @@ checkop_exp(Node *node) {
 
 static
 void
-checkop(Node *node) {
+checkop(Node *node)
+{
 	node->datatype = T_NONE;
 }
