@@ -126,8 +126,8 @@ parsestatements(void)
 		return NULL;
 	node = makenode(NODE_STATEMENTS);
 	node->left = parsestatement();
-	node->right = parsestatements();
 	match(S_TERM);
+	node->right = parsestatements();
 	return node;
 }
 
@@ -145,15 +145,11 @@ parsestatement(void)
 		node->left = makenode(NODE_IDENT);
 		node->left->data.sym = nexttoken->data.sym;
 		match(S_IDENT);
-		if (nexttoken->symtype == S_BROP) {
-			node->right = makenode(NODE_NONE);
+		node->right = makenode(NODE_NONE);
+		if (nexttoken->symtype == S_BROP)
 			node->right->left = parseindex();
-			match(S_EQUAL);
-			node->right->right = parseexp();
-		} else {
-			match(S_EQUAL);
-			node->right = parseexp();
-		}		
+		match(S_EQUAL);
+		node->right->right = parseexp();
 		break;
 	case S_PRINT:
 		match(S_PRINT);

@@ -20,7 +20,6 @@ checkprog(Node *node)
 {
 	if (node == NULL)
 		die(EXIT_FAILURE, "Unexpected Nullpointer in checkprog");
-
 	if (node->type != NODE_PROG)
 		die(EXIT_FAILURE, "Root Node expected in checkprog");
 
@@ -86,7 +85,6 @@ checkstatements(Node *node)
 {
 	if (node == NULL)
 		return;
-
 	checkstatement(node->left);
 	checkstatements(node->right);
 	node->datatype = T_NONE;
@@ -98,8 +96,6 @@ checkstatement(Node *node)
 {
 	if (node == NULL)
 		panic("Unexpected Nullpointer in checkstatement");
-
-	fprintf(stderr, "%d\n", node->left->type);
 	switch (node->left->type) {
 	case NODE_IDENT:
 		checkindex(node->right->left);
@@ -164,7 +160,6 @@ checkindex(Node *node)
 {
 	if (node == NULL)
 		return;
-
 	checkexp(node->left);
 	if (node->left->datatype == T_ERROR)
 		node->datatype = T_ERROR;
@@ -178,14 +173,8 @@ checkexp(Node *node)
 {
 	if (node == NULL)
 		panic("Unexpected Nullpointer in checkexp");
-
-	fprintf(stderr, "%d\n", node->type);
-	fprintf(stderr, "%p\n", (void*)node->left);
-	fprintf(stderr, "%p\n", (void*)node->right);
-	fprintf(stderr, "%s\n", node->data.sym->lexem);
 	checkexp2(node->left);
 	checkop_exp(node->right);
-
 	if (node->right == NULL)
 		node->datatype = node->left->datatype;
 	else if (node->left->datatype != node->right->datatype)

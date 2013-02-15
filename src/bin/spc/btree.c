@@ -4,6 +4,29 @@
 #include "error.h"
 #include "spc.h"
 
+const char *nodename[] = {
+	"NODE_NONE",
+	/* nonterminal symbols */
+	"NODE_PROG",
+	"NODE_DECLS",
+	"NODE_DECL",
+	"NODE_ARRAY",
+	"NODE_STATEMENTS",
+	"NODE_STATEMENT",
+	"NODE_EXP",
+	"NODE_EXP2",
+	"NODE_INDEX",
+	"NODE_OPEXP",
+	"NODE_OP",
+	/* terminal symbols */
+	"NODE_PRINT",
+	"NODE_READ",
+	"NODE_IF",
+	"NODE_WHILE",
+	"NODE_IDENT",
+	"NODE_INTCONST"
+};
+
 Node *
 makenode(Nodetype type)
 {
@@ -15,6 +38,12 @@ makenode(Nodetype type)
 	node->right = NULL;
 	node->data.sym = NULL;
 	node->type = type;
-	fprintf(stderr, "%d\n", type);
 	return node;
+}
+
+
+void
+printnode(Node *node)
+{
+	fprintf(stderr, "type: %s; addr: %p; left: %p; right: %p\n", nodename[node->type], (void *) node, (void *) node->left, (void *) node->right);
 }
