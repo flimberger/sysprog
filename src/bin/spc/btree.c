@@ -4,7 +4,7 @@
 #include "error.h"
 #include "spc.h"
 
-const char *nodename[] = {
+const char *nodenames[] = {
 	"NODE_NONE",
 	/* nonterminal symbols */
 	"NODE_PROG",
@@ -28,7 +28,7 @@ const char *nodename[] = {
 };
 
 Node *
-makenode(Nodetype type)
+makenode(Nodetype type, uint row, uint col)
 {
 	Node *node;
 
@@ -38,6 +38,8 @@ makenode(Nodetype type)
 	node->right = NULL;
 	node->data.sym = NULL;
 	node->type = type;
+	node->col = col;
+	node->row = row;
 	return node;
 }
 
@@ -45,5 +47,5 @@ makenode(Nodetype type)
 void
 printnode(Node *node)
 {
-	fprintf(stderr, "type: %s; addr: %p; left: %p; right: %p\n", nodename[node->type], (void *) node, (void *) node->left, (void *) node->right);
+	fprintf(stderr, "type: %s; addr: %p; left: %p; right: %p\n", nodenames[node->type], (void *) node, (void *) node->left, (void *) node->right);
 }

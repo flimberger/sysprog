@@ -64,6 +64,8 @@ struct Node {
 		Symbol *sym;
 		Optype op;
 	} data;
+	uint col;
+	uint row;
 	Datatype datatype;
 };
 
@@ -82,7 +84,7 @@ void symterm(void);
 
 /* btree.c */
 extern const char *nodenames[];
-Node *makenode(Nodetype type);
+Node *makenode(Nodetype type, uint row, uint col);
 void printnode(Node *node);
 
 /* typecheck.c */

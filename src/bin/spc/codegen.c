@@ -138,7 +138,7 @@ genstatement(Node *node)
 		free(lbl1);
 		break;
 	default:
-		warn("Unexpected node type in genstatement().");
+		warn("Unexpected node type %s in genstatement().", nodenames[node->type]);
 	}
 }
 
@@ -203,7 +203,7 @@ genexp2(Node *node)
 		genexp(node->left);
 		break;
 	default:
-		warn("Unexpected node type in genstatement().");
+		warn("Unexpected node type %s in genexp2().", nodenames[node->type]);
 	}
 }
 

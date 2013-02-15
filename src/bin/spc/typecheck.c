@@ -19,9 +19,9 @@ void
 checkprog(Node *node)
 {
 	if (node == NULL)
-		die(EXIT_FAILURE, "Unexpected Nullpointer in checkprog");
+		die(EXIT_FAILURE, "Unexpected Nullpointer in checkprog()");
 	if (node->type != NODE_PROG)
-		die(EXIT_FAILURE, "Root Node expected in checkprog");
+		die(EXIT_FAILURE, "Root Node expected in checkprog()");
 
 	checkdecls(node->left);
 	checkstatements(node->right);
@@ -36,7 +36,7 @@ checkdecls(Node *node)
 		return;
 
 	if (node->type != NODE_DECLS)
-		die(EXIT_FAILURE, "Expected NODE_DECLS in checkdecls");
+		die(EXIT_FAILURE, "Expected NODE_DECLS in checkdecls()");
 	checkdecl(node->left);
 	checkdecls(node->right);
 	node->datatype = T_NONE;
@@ -47,10 +47,11 @@ void
 checkdecl(Node *node)
 {
 	if (node == NULL)
-		panic("Unexpected Nullpointer in checkdecl");
+		panic("Unexpected Nullpointer in checkdecl()");
 
 	if (node->datatype != T_NONE) {
-		warn("Identifier %s already definied", node->data.sym->lexem);
+		warn("%s:%u:%u: identifier %s already definied", infile,
+		     node->row, node->col, node->data.sym->lexem);
 		node->datatype = node->data.sym->datatype = T_ERROR;
 	} else if (node->left == NULL) {
 		node->datatype = node->data.sym->datatype = T_INT;
@@ -69,12 +70,13 @@ void
 checkarray(Node *node)
 {
 	if (node == NULL)
-		panic("Unexpected Nullpointer in checkarray");
+		panic("Unexpected Nullpointer in checkarray()");
 
 	if (node->data.val > 0) {
 		node->datatype = T_ARRAY;
 	} else {
-		warn("%lu is not a valid dimension", node->data.val);
+		warn("%s:%u:%u: %lu is not a valid dimension", infile,
+		     node->row, node->col, node->data.val);
 		node->datatype = T_ERROR;
 	}
 }
@@ -95,13 +97,14 @@ void
 checkstatement(Node *node)
 {
 	if (node == NULL)
-		panic("Unexpected Nullpointer in checkstatement");
+		panic("Unexpected Nullpointer in checkstatement()");
 	switch (node->left->type) {
 	case NODE_IDENT:
 		checkindex(node->right->left);
 		checkexp(node->right->right);
 		if (node->left->data.sym->datatype == T_NONE) {
-			warn("Identifier %s not definied", node->left->data.sym->lexem);
+			warn("%s:%u:%u: identifier %s not definied", infile,
+			     node->row, node->col, node->left->data.sym->lexem);
 		} else if ((node->right->right->datatype == T_INT) &&
 					(((node->left->data.sym->datatype == T_INT) && (node->right->left == NULL)) ||
 					((node->left->data.sym->datatype == T_INTARR) && (node->right->left != NULL)
@@ -109,7 +112,7 @@ checkstatement(Node *node)
 			node->datatype = T_NONE;
 		} else {
 			node->datatype = T_ERROR;
-			warn("Incompatible types");
+			warn("%s:%u:%u: incompatible types", infile, node->row, node->col);
 		}
 		break;
 	case NODE_PRINT:
@@ -119,18 +122,19 @@ checkstatement(Node *node)
 	case NODE_READ:
 		checkindex(node->left->right);
 		if (node->left->left->data.sym->datatype == T_NONE) {
-			warn("Identifier %s not definied", node->left->left->data.sym->lexem);
+			warn("%s:%u:%u: identifier %s not definied", infile,
+			     node->row, node->col, node->left->left->data.sym->lexem);
 		} else if (((node->left->left->data.sym->datatype == T_INT) && (node->left->right == NULL)) ||
 					((node->left->left->data.sym->datatype == T_INTARR) && (node->left->right != NULL)
 						&& node->left->right->datatype == T_ARRAY)) {
 			node->datatype = T_NONE;
 		} else {
 			node->datatype = T_ERROR;
-			warn("Incompatible types");
+			warn("%s:%u:%u: incompatible types", infile, node->row, node->col);
 		}
 		break;
 	case NODE_STATEMENTS:
-		checkstatements(node);
+		checkstatements(node->left);
 		break;
 	case NODE_IF:
 		checkexp(node->right);
@@ -150,7 +154,7 @@ checkstatement(Node *node)
 			node->datatype = T_NONE;
 		break;
 	default:
-		warn("Unexpected node type in checkstatement().");
+		warn("Unexpected node type %s in checkstatement()", nodenames[node->type]);
 	}
 }
 
@@ -172,7 +176,7 @@ void
 checkexp(Node *node)
 {
 	if (node == NULL)
-		panic("Unexpected Nullpointer in checkexp");
+		panic("Unexpected Nullpointer in checkexp()");
 	checkexp2(node->left);
 	checkop_exp(node->right);
 	if (node->right == NULL)
@@ -188,7 +192,7 @@ void
 checkexp2(Node *node)
 {
 	if (node == NULL)
-		panic("Unexpected Nullpointer in checkexp2");
+		panic("Unexpected Nullpointer in checkexp2()");
 
 	switch (node->left->type) {
 	case NODE_EXP:
@@ -198,14 +202,16 @@ checkexp2(Node *node)
 	case NODE_IDENT:
 		if (node->left->data.sym->datatype == T_NONE) {
 			node->datatype = T_ERROR;
-			warn("Identifier %s not definied", node->left->data.sym->lexem);
+			warn("%s:%u:%u: identifier %s not definied", infile,
+			     node->row, node->col, node->left->data.sym->lexem);
 		} else if (((node->left->datatype == T_INT) && (node->right == NULL)) ||
 					((node->left->datatype == T_INTARR) && (node->right != NULL)
 						&& (node->right->datatype == T_ARRAY))) {
 			node->datatype = T_INT; /* Not expandable, but less special cases */
 		} else {
 			node->datatype = T_ERROR;
-			warn("No primitive type");			
+			warn("%s:%u:%u: no primitive type", infile, node->row,
+			     node->col);			
 		}
 		break;
 	case NODE_INTCONST:
@@ -223,7 +229,7 @@ checkexp2(Node *node)
 		}
 		break;
 	default:
-		warn("Unexpected node type in checkexp2().");
+		warn("Unexpected node type %s in checkexp2()", nodenames[node->type]);
 	}
 }
 
@@ -244,7 +250,7 @@ void
 checkop(Node *node)
 {
 	if (node == NULL)
-		panic("Unexpected Nullpointer in checkop");
+		panic("Unexpected Nullpointer in checkop()");
 
 	node->datatype = T_NONE;
 }

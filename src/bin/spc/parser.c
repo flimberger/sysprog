@@ -56,7 +56,7 @@ parseprog(void)
 {
 	fprintf(stderr, "parseprog: Begin parsing\n");
 	nexttoken = gettoken();
-	parsetree = makenode(NODE_PROG);
+	parsetree = makenode(NODE_PROG, nexttoken->row, nexttoken->col);
 	parsetree->left = parsedecls();
 	parsetree->right = parsestatements();
 }
@@ -72,7 +72,7 @@ parsedecls(void)
 		return NULL;
 	}
 
-	node = makenode(NODE_DECLS);
+	node = makenode(NODE_DECLS, nexttoken->row, nexttoken->col);
 	node->left = parsedecl();
 	match(S_TERM);
 	node->right = parsedecls();
@@ -83,36 +83,35 @@ static
 Node *
 parsedecl(void)
 {
-	Node *np;
+	Node *node;
 
 	printfunc("parsedecl");
+	node = makenode(NODE_DECL, nexttoken->row, nexttoken->col);
 	match(S_INT);
-	np = makenode(NODE_DECL);
 	if (nexttoken->symtype == S_BROP)
-		np->left = parsearray();
+		node->left = parsearray();
 	
 	if (nexttoken->symtype == S_IDENT)
-		np->data.sym = nexttoken->data.sym;
-
+		node->data.sym = nexttoken->data.sym;
 	match(S_IDENT);
-	return np;
+	return node;
 }
 
 static
 Node *
 parsearray(void)
 {
-	Node *np;
+	Node *node;
 
 	printfunc("parsearray");
 	match(S_BROP);
 	if (nexttoken->symtype == S_INTCONST) {
-		np = makenode(NODE_ARRAY);
-		np->data.val = nexttoken->data.val;
+		node = makenode(NODE_ARRAY, nexttoken->row, nexttoken->col);
+		node->data.val = nexttoken->data.val;
 	}
 	match(S_INTCONST);
 	match(S_BRCL);
-	return np;
+	return node;
 }
 
 static
@@ -124,7 +123,7 @@ parsestatements(void)
 	printfunc("parsestatements");	
 	if (!FIRST_STATEMENT)
 		return NULL;
-	node = makenode(NODE_STATEMENTS);
+	node = makenode(NODE_STATEMENTS, nexttoken->row, nexttoken->col);
 	node->left = parsestatement();
 	match(S_TERM);
 	node->right = parsestatements();
@@ -138,32 +137,32 @@ parsestatement(void)
 	Node *node;
 
 	printfunc("parsestatement");
-	node = makenode(NODE_STATEMENT);
+	node = makenode(NODE_STATEMENT, nexttoken->row, nexttoken->col);
 	#pragma GCC diagnostic ignored "-Wswitch"
 	switch (nexttoken->symtype) {
 	case S_IDENT:
-		node->left = makenode(NODE_IDENT);
+		node->left = makenode(NODE_IDENT, nexttoken->row, nexttoken->col);
 		node->left->data.sym = nexttoken->data.sym;
 		match(S_IDENT);
-		node->right = makenode(NODE_NONE);
+		node->right = makenode(NODE_NONE, nexttoken->row, nexttoken->col);
 		if (nexttoken->symtype == S_BROP)
 			node->right->left = parseindex();
 		match(S_EQUAL);
 		node->right->right = parseexp();
 		break;
 	case S_PRINT:
+		node->left = makenode(NODE_PRINT, nexttoken->row, nexttoken->col);
 		match(S_PRINT);
-		node->left = makenode(NODE_PRINT);
 		match(S_PAROP);
 		node->left->left = parseexp();
 		match(S_PARCL);
 		break;
 	case S_READ:
+		node->left = makenode(NODE_READ, nexttoken->row, nexttoken->col);
 		match(S_READ);
-		node->left = makenode(NODE_READ);
 		match(S_PAROP);
 		if (nexttoken->symtype == S_IDENT) {
-			node->left->left = makenode(NODE_IDENT);
+			node->left->left = makenode(NODE_IDENT, nexttoken->row, nexttoken->col);
 			node->left->left->data.sym = nexttoken->data.sym;
 		}
 		match(S_IDENT);
@@ -177,8 +176,8 @@ parsestatement(void)
 		match(S_CBCL);
 		break;
 	case S_IF:
+		node->left = makenode(NODE_IF, nexttoken->row, nexttoken->col);
 		match(S_IF);
-		node->left = makenode(NODE_IF);
 		match(S_PAROP);
 		node->right = parseexp();
 		match(S_PARCL);
@@ -187,8 +186,8 @@ parsestatement(void)
 		node->left->right = parsestatement();
 		break;
 	case S_WHILE:
+		node->left = makenode(NODE_WHILE, nexttoken->row, nexttoken->col);
 		match(S_WHILE);
-		node->left = makenode(NODE_WHILE);
 		match(S_PAROP);
 		node->right = parseexp();
 		match(S_PARCL);
@@ -210,7 +209,7 @@ parseindex(void)
 	Node *node;
 
 	printfunc("parseindex");
-	node = makenode(NODE_INDEX);
+	node = makenode(NODE_INDEX, nexttoken->row, nexttoken->col);
 	match(S_BROP);	
 	node->left = parseexp();
 	match(S_BRCL);
@@ -224,7 +223,7 @@ parseexp(void)
 	Node *node;
 
 	printfunc("parseexp");
-	node = makenode(NODE_EXP);
+	node = makenode(NODE_EXP, nexttoken->row, nexttoken->col);
 	node->left = parseexp2();
 	if (FIRST_OP_EXP) {
 		node->right = parseop_exp();
@@ -238,7 +237,7 @@ parseexp2(void)
 {
 	Node *node;
 
-	node = makenode(NODE_EXP2);
+	node = makenode(NODE_EXP2, nexttoken->row, nexttoken->col);
 	printfunc("parseexp2");
 	switch (nexttoken->symtype) {
 	case S_PAROP:
@@ -247,20 +246,20 @@ parseexp2(void)
 		match(S_PARCL);
 		break;
 	case S_IDENT:
-		node->left = makenode(NODE_IDENT);
+		node->left = makenode(NODE_IDENT, nexttoken->row, nexttoken->col);
 		node->left->data.sym = nexttoken->data.sym;
 		match(S_IDENT);
 		if (nexttoken->symtype == S_BROP)
 			node->right = parseindex();
 		break;
 	case S_INTCONST:		
-		node->left = makenode(NODE_INTCONST);
+		node->left = makenode(NODE_INTCONST, nexttoken->row, nexttoken->col);
 		node->left->data.val = nexttoken->data.val;
 		match(S_INTCONST);
 		break;
 	case S_MINUS:
 	case S_NOT:
-		node->left = makenode(NODE_OP);
+		node->left = makenode(NODE_OP, nexttoken->row, nexttoken->col);
 		if (nexttoken->symtype == S_MINUS) {
 			match(S_MINUS);
 			node->left->data.op = OP_NEG;
@@ -280,7 +279,7 @@ parseop_exp(void)
 {
 	Node *node;
 
-	node = makenode(NODE_OPEXP);
+	node = makenode(NODE_OPEXP, nexttoken->row, nexttoken->col);
 	printfunc("parseop_exp");
 	node->left = parseop();
 	node->right = parseexp();
@@ -294,7 +293,9 @@ parseop(void)
 	Node *node;
 
 	printfunc("parseop");
-	node = makenode(NODE_OP);
+	node = makenode(NODE_OP, nexttoken->row, nexttoken->col);
+	node->col = nexttoken->col;
+	node->row = nexttoken->row;
 	switch (nexttoken->symtype) {
 	case S_PLUS:
 		match(S_PLUS);
