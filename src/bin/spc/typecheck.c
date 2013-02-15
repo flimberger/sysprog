@@ -154,7 +154,7 @@ checkstatement(Node *node)
 			node->datatype = T_NONE;
 		break;
 	default:
-		warn("Unexpected node type %s in checkstatement()", nodenames[node->type]);
+		warn("Unexpected node type %s in checkstatement()", nodenames[node->left->type]);
 	}
 }
 
@@ -229,7 +229,7 @@ checkexp2(Node *node)
 		}
 		break;
 	default:
-		warn("Unexpected node type %s in checkexp2()", nodenames[node->type]);
+		warn("Unexpected node type %s in checkexp2()", nodenames[node->left->type]);
 	}
 }
 
