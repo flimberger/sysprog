@@ -206,10 +206,10 @@ checkexp2(Node *node)
 			node->datatype = T_ERROR;
 			warn("%s:%u:%u: identifier %s not definied", infile,
 			     node->row, node->col, node->left->data.sym->lexem);
-		} else if ((node->left->datatype == T_INT) && (node->right == NULL)) {
+		} else if ((node->left->data.sym->datatype == T_INT) && (node->right == NULL)) {
 			node->datatype = T_INT;
-		} else if ((node->left->datatype == T_INTARR) && (node->right != NULL)
-					&& (node->right->datatype == T_ARRAY)) {
+		} else if ((node->left->data.sym->datatype == T_INTARR) && (node->right != NULL)
+					&& (node->right->data.sym->datatype == T_ARRAY)) {
 			node->datatype = T_INTARR;
 		} else {
 			node->datatype = T_ERROR;
