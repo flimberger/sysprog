@@ -174,7 +174,7 @@ parsestatement(void)
 		match(S_CBOP);
 		node->left = parsestatements();
 		if (node->left == NULL)
-			node->left = makenode(NODE_STATEMENTS, 0, 0);
+			node->left = makenode(NODE_STATEMENTS, nexttoken->row, nexttoken->col);
 		match(S_CBCL);
 		break;
 	case S_IF:

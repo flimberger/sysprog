@@ -63,6 +63,7 @@ checkdecl(Node *node)
 			node->datatype = node->data.sym->datatype = T_INTARR;
 		}
 	}
+	fprintf(stderr, "line %u: type %d\n", node->row, node->datatype);
 }
 
 static
@@ -204,10 +205,11 @@ checkexp2(Node *node)
 			node->datatype = T_ERROR;
 			warn("%s:%u:%u: identifier %s not definied", infile,
 			     node->row, node->col, node->left->data.sym->lexem);
-		} else if (((node->left->datatype == T_INT) && (node->right == NULL)) ||
-					((node->left->datatype == T_INTARR) && (node->right != NULL)
-						&& (node->right->datatype == T_ARRAY))) {
-			node->datatype = T_INT; /* Not expandable, but less special cases */
+		} else if ((node->left->datatype == T_INT) && (node->right == NULL))
+			node->datatype = T_INT;
+		else if ((node->left->datatype == T_INTARR) && (node->right != NULL)
+						&& (node->right->datatype == T_ARRAY)) {
+			node->datatype = T_INTARR;
 		} else {
 			node->datatype = T_ERROR;
 			warn("%s:%u:%u: no primitive type", infile, node->row,
