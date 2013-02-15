@@ -85,7 +85,7 @@ static
 void
 checkstatements(Node *node)
 {
-	if (node == NULL)
+	if ((node == NULL) || (node->left == NULL))
 		return;
 	checkstatement(node->left);
 	checkstatements(node->right);

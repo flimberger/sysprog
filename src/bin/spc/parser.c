@@ -173,6 +173,8 @@ parsestatement(void)
 	case S_CBOP:
 		match(S_CBOP);
 		node->left = parsestatements();
+		if (node->left == NULL)
+			node->left = makenode(NODE_STATEMENTS, 0, 0);
 		match(S_CBCL);
 		break;
 	case S_IF:
