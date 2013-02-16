@@ -77,7 +77,7 @@ static
 void
 genstatements(Node *node)
 {
-	if (node == NULL)
+	if ((node == NULL) || (node->left == NULL))
 		return;
 	genstatement(node->left);
 	genstatements(node->right);
@@ -100,7 +100,7 @@ genstatement(Node *node)
 		bprintf(out, "%s\n", spvm_op[STR]);
 		break;
 	case NODE_PRINT:
-		genexp(node->left);
+		genexp(node->left->left);
 		bprintf(out, "%s\n", spvm_op[PRI]);
 		break;
 	case NODE_READ:
@@ -148,9 +148,9 @@ genexp(Node *node)
 {
 	if (node == NULL)
 		panic("Unexpected nullpointer in genexp().");
-	if (node->right == NULL)
+	if (node->right == NULL) {
 		genexp2(node->left);
-	else if (node->right->left->data.op == OP_GRTR) { /* fugly spec */
+	} else if (node->right->left->data.op == OP_GRTR) { /* fugly spec */
 		genop_exp(node->right);
 		genexp2(node->left);
 		bprintf(out, "%s\n", spvm_op[LES]);
@@ -160,6 +160,7 @@ genexp(Node *node)
 		if (node->right->left->data.op == OP_UNEQ)
 			bprintf(out, "%s\n", spvm_op[NOT]);
 	}
+	
 }
 
 static
