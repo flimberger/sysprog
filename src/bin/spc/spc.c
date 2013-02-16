@@ -77,6 +77,8 @@ compile(char *outfile)
 
 	if (outfile == NULL) {
 		b = strrchr(infile, '/') + 1;
+		if (b == (char *) 1)
+			b = infile;
 		e = strrchr(infile, '.') + 1;
 		l = e - b;
 		outfile = calloc(l + 3, sizeof(char));
