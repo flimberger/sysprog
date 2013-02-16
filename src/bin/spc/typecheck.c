@@ -49,21 +49,22 @@ checkdecl(Node *node)
 	if (node == NULL)
 		panic("Unexpected Nullpointer in checkdecl()");
 
-	if (node->datatype != T_NONE) {
+	if (node->left != NULL)
+		checkarray(node->left);
+	if (node->data.sym->datatype != T_NONE) {
 		warn("%s:%u:%u: identifier %s already definied", infile,
 		     node->row, node->col, node->data.sym->lexem);
-		node->datatype = node->data.sym->datatype = T_ERROR;
-	} else if (node->left == NULL) {
-		node->datatype = node->data.sym->datatype = T_INT;
+		node->datatype = T_ERROR;
+	} else if ((node->left != NULL) && (node->left->datatype == T_ERROR)) {
+		node->datatype = T_ERROR;
 	} else {
-		checkarray(node->left);
-		if (node->left->datatype == T_ERROR) {
-			node->datatype = node->data.sym->datatype = T_ERROR;
+		node->datatype = T_NONE;
+		if ((node->left != NULL) && (node->left->datatype == T_ARRAY)) {
+			node->data.sym->datatype = T_INTARR;
 		} else {
-			node->datatype = node->data.sym->datatype = T_INTARR;
+			node->data.sym->datatype = T_INT;
 		}
 	}
-	fprintf(stderr, "line %u: type %d\n", node->row, node->datatype);
 }
 
 static
@@ -71,7 +72,7 @@ void
 checkarray(Node *node)
 {
 	if (node == NULL)
-		panic("Unexpected Nullpointer in checkarray()");
+		return;
 
 	if (node->data.val > 0) {
 		node->datatype = T_ARRAY;
@@ -104,6 +105,7 @@ checkstatement(Node *node)
 		checkindex(node->right->left);
 		checkexp(node->right->right);
 		if (node->left->data.sym->datatype == T_NONE) {
+			node->datatype = T_ERROR;
 			warn("%s:%u:%u: identifier %s not definied", infile,
 			     node->row, node->col, node->left->data.sym->lexem);
 		} else if ((node->right->right->datatype == T_INT) &&
@@ -123,6 +125,7 @@ checkstatement(Node *node)
 	case NODE_READ:
 		checkindex(node->left->right);
 		if (node->left->left->data.sym->datatype == T_NONE) {
+			node->datatype = T_ERROR;
 			warn("%s:%u:%u: identifier %s not definied", infile,
 			     node->row, node->col, node->left->left->data.sym->lexem);
 		} else if (((node->left->left->data.sym->datatype == T_INT) && (node->left->right == NULL)) ||
@@ -166,9 +169,7 @@ checkindex(Node *node)
 	if (node == NULL)
 		return;
 	checkexp(node->left);
-	if (node->left == NULL)
-		node->datatype = T_NONE;
-	else if (node->left->datatype == T_ERROR)
+	if (node->left->datatype == T_ERROR)
 		node->datatype = T_ERROR;
 	else
 		node->datatype = T_ARRAY;
@@ -203,15 +204,18 @@ checkexp2(Node *node)
 		node->datatype = node->left->datatype;
 		break;
 	case NODE_IDENT:
+		if (node->right != NULL) {
+			checkindex(node->right);
+		}
 		if (node->left->data.sym->datatype == T_NONE) {
 			node->datatype = T_ERROR;
 			warn("%s:%u:%u: identifier %s not definied", infile,
 			     node->row, node->col, node->left->data.sym->lexem);
 		} else if ((node->left->data.sym->datatype == T_INT) && (node->right == NULL)) {
-			node->datatype = T_INT;
+			node->datatype = T_INT; /* == node->left->data.sym->datatype */
 		} else if ((node->left->data.sym->datatype == T_INTARR) && (node->right != NULL)
-		            && (node->right->data.sym->datatype == T_ARRAY)) {
-			node->datatype = T_INTARR;
+					&& (node->right->datatype == T_ARRAY)) {
+			node->datatype = T_INT;
 		} else {
 			node->datatype = T_ERROR;
 			warn("%s:%u:%u: no primitive type", infile, node->row,
