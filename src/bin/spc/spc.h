@@ -85,7 +85,6 @@ void symterm(void);
 /* btree.c */
 extern const char *nodenames[];
 Node *makenode(Nodetype type, uint row, uint col);
-void printnode(Node *node);
 
 /* typecheck.c */
 void checkprog(Node *node);

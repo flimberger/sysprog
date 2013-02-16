@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "error.h"
 #include "spc.h"
@@ -41,11 +40,4 @@ makenode(Nodetype type, uint row, uint col)
 	node->col = col;
 	node->row = row;
 	return node;
-}
-
-
-void
-printnode(Node *node)
-{
-	fprintf(stderr, "type: %s; addr: %p; left: %p; right: %p\n", nodenames[node->type], (void *) node, (void *) node->left, (void *) node->right);
 }
