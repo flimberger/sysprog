@@ -155,7 +155,7 @@ checkstatement(Node *node)
 			node->datatype = T_NONE;
 		break;
 	default:
-		warn("Unexpected node type %s in checkstatement()", nodenames[node->type]);
+		warn("Unexpected node type %s in checkstatement()", nodenames[node->left->type]);
 	}
 }
 
@@ -166,10 +166,12 @@ checkindex(Node *node)
 	if (node == NULL)
 		return;
 	checkexp(node->left);
-	if (node->left->datatype == T_ERROR)
+	if (node->left == NULL)
+		node->datatype = T_NONE;
+	else if (node->left->datatype == T_ERROR)
 		node->datatype = T_ERROR;
 	else
-		node->datatype = T_NONE;
+		node->datatype = T_ARRAY;
 }
 
 static
@@ -205,10 +207,10 @@ checkexp2(Node *node)
 			node->datatype = T_ERROR;
 			warn("%s:%u:%u: identifier %s not definied", infile,
 			     node->row, node->col, node->left->data.sym->lexem);
-		} else if ((node->left->datatype == T_INT) && (node->right == NULL))
+		} else if ((node->left->data.sym->datatype == T_INT) && (node->right == NULL)) {
 			node->datatype = T_INT;
-		else if ((node->left->datatype == T_INTARR) && (node->right != NULL)
-						&& (node->right->datatype == T_ARRAY)) {
+		} else if ((node->left->data.sym->datatype == T_INTARR) && (node->right != NULL)
+		            && (node->right->data.sym->datatype == T_ARRAY)) {
 			node->datatype = T_INTARR;
 		} else {
 			node->datatype = T_ERROR;
@@ -231,7 +233,7 @@ checkexp2(Node *node)
 		}
 		break;
 	default:
-		warn("Unexpected node type %s in checkexp2()", nodenames[node->type]);
+		warn("Unexpected node type %s in checkexp2()", nodenames[node->left->type]);
 	}
 }
 
