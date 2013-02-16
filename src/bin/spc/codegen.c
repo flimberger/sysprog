@@ -77,11 +77,15 @@ static
 void
 genstatements(Node *node)
 {
+	/*
+	 * Fuck the specs, who needs NOPs?
+	 * if (node == NULL)
+	 *	bprintf(out, "%s\n", spvm_op[NOP]);
+	 */
 	if ((node == NULL) || (node->left == NULL))
 		return;
 	genstatement(node->left);
 	genstatements(node->right);
-	/* Fuck the specs, who needs NOPs? */
 }
 
 static
@@ -95,7 +99,7 @@ genstatement(Node *node)
 	switch(node->left->type) {
 	case NODE_IDENT:
 		genexp(node->right->right);
-		bprintf(out, "%s $%s ", spvm_op[LA], node->left->data.sym->lexem);
+		bprintf(out, "%s $%s\n", spvm_op[LA], node->left->data.sym->lexem);
 		genindex(node->right->left);
 		bprintf(out, "%s\n", spvm_op[STR]);
 		break;
@@ -104,7 +108,7 @@ genstatement(Node *node)
 		bprintf(out, "%s\n", spvm_op[PRI]);
 		break;
 	case NODE_READ:
-		bprintf(out, "%s\n%s $%S ", spvm_op[REA], spvm_op[LA],
+		bprintf(out, "%s\n%s $%s\n", spvm_op[REA], spvm_op[LA],
 		        node->left->left->data.sym->lexem);
 		genindex(node->left->right);
 		bprintf(out, "%s\n", spvm_op[STR]);
@@ -132,7 +136,7 @@ genstatement(Node *node)
 		genexp(node->right);
 		bprintf(out, "%s #%s\n", spvm_op[JIN], lbl2);
 		genstatement(node->left->left);
-		bprintf(out, "%s #%s\n#%s %s", spvm_op[JMP], lbl1, lbl2,
+		bprintf(out, "%s #%s\n#%s %s\n", spvm_op[JMP], lbl1, lbl2,
 		        spvm_op[NOP]);
 		free(lbl2);
 		free(lbl1);
@@ -160,7 +164,6 @@ genexp(Node *node)
 		if (node->right->left->data.op == OP_UNEQ)
 			bprintf(out, "%s\n", spvm_op[NOT]);
 	}
-	
 }
 
 static
@@ -181,7 +184,7 @@ genexp2(Node *node)
 		panic("Unexpected nullpointer in genexp2().");
 	switch (node->left->type) {
 	case NODE_IDENT:
-		bprintf(out, "%s $%s ", spvm_op[LA],
+		bprintf(out, "%s $%s\n", spvm_op[LA],
 		        node->left->data.sym->lexem);
 		genindex(node->right);
 		bprintf(out, "%s\n", spvm_op[LV]);
@@ -214,8 +217,8 @@ genop_exp(Node *node)
 {
 	if (node == NULL)
 		return;
-	genop(node->left);
 	genexp(node->right);
+	genop(node->left);
 }
 
 static
