@@ -140,7 +140,6 @@ Die schematische Darstellung ist mit in \hyperref[fig:declnode]{Abbildung~\ref{f
 Ein Anweisungslistenknoten gleicht im Aufbau einem \hyperref[sec:declsnode]{Deklarationslistenknoten},
 mit dem Unterschied dass \texttt{left} immer auf einen \hyperref[sec:stmtnode]{Anweisungsknoten} zeigt.
 Im Sonderfall der \texttt{\{\ldots\}}-Anweisung sind aber beide Zeiger \texttt{NULL}.
-Weitere Informationen finden sich in der Dokumentation der \hyperref[sec:parsestatement]{entsprechenden Funktion}.
 
 Eine schematische Darstellung steht in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:stmtsnode}} zur Verfügung.
 
@@ -372,7 +371,8 @@ Eine schematische Darstellung findet sich in \hyperref[fig:opnode]{Abbildung~\re
 \subsection{Funktionen}
 
 Für den Parsebaum steht nur eine einzige Funktion zur Verfügung,
-welche einen Konstruktor für die einzelnen Knoten repräsentiert
+welche einen Konstruktor für die einzelnen Knoten repräsentiert.
+Diese Funktion ist zusammen mit einem durch den \texttt{Nodetype} indizierbaren String-Array für die Knotennamen in der Datei \texttt{btree.c} definiert.
 
 \begin{lstlisting}
 Node *makenode(Nodetype type, uint row, uint col);
@@ -381,4 +381,44 @@ Node *makenode(Nodetype type, uint row, uint col);
 Als Argumente akzeptiert sie den Knotentyp sowie die Zeile und Spalte des ersten Tokens,
 welche durch den Knoten repräsentiert werden.
 
+\clearpage
+
 \section{Parser}
+
+\subsection{Übersicht}
+Bei diesem Parser handelt sich es um einen linksrekursiv absteigenden Parser.
+Er stellt nur eine einzige Funktion öffentlich zur Verfügung:
+
+\begin{lstlisting}
+void parseprog(void);
+\end{lstlisting}
+
+Diese Routine legt den Wurzelknoten \texttt{NODE\_PROG} neu an und speichert diesen in der Variable \texttt{parsetree},
+welche eine globale Variable des Compilerprogrammes ist.
+Dann wird das erste Token vom Scanner angefordert,
+damit dies in der nichtöffentlichen Variable \texttt{nexttoken} zur Verfügung steht.
+Dadurch kann diese zum Vorrausschauen auf das nächste Symbol verwendet werden.
+Dann werden der linke und der rechte Teilbaum mit den für die Knoten passenden Prozeduren aufgebaut.
+Jeder Knoten, welcher einem Nichtterminalsymbol der Sprache spricht,
+hat eine entsprechende \texttt{parse\ldots}-Funktion,
+welche wiederrum ihre Teilbäume aufbaut.
+
+Wenn eine dieser Funktionen Tokens konsumieren möchte,
+dann ruft sie dazu die statische Funktion \texttt{match} auf,
+welche ein \texttt{Symboltype} als Argmument nimmt.
+Wenn der Symboltyp des nächsten Tokens mit diesem übereinstimmt,
+dann wird ein neues Token angefordert.
+Daher werden Operationen wie beispielsweise das Auslesen des Symbols der Symboltabelle von Variablen vor dem Aufruf von \texttt{match()} durchgeführt,
+da diese Informationen danach verloren sind.
+
+Die Vorrausschau wird auch bei Nichtterminalen eingesetzt,
+welche zu ε expandieren.
+Wenn das Lookahead-Symbol nicht passt,
+wird der Zeiger auf den entsprechenden Kindknoten auf \texttt{NULL} belassen.
+Für \texttt{STATEMENT} und \texttt{OP\_EXP} sind diese Mengen jedoch relativ umfangreich,
+weshalb für diesen Zweck die Macros \texttt{FIRST\_STATEMENT} und \texttt{FIRST\_OP\_EXP} zum Einsatz kommen.
+Diese expandieren lediglich zu einem Wahrheitswert,
+welcher die Verfügbarkeit eines passenden Tokens repräsentiert.
+
+Die übrigen Funktionen stellen lediglich den in \hyperref[sec:parsetree]{Abschnitt~\ref{sec:parsetree}} zusammen,
+weshalb die dortige Dokumentation als ausreichend eingeschätzt wird.
