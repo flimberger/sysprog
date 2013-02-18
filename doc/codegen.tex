@@ -1,0 +1,26 @@
+\chapter{Codegen}
+\label{chap:codegen}
+
+\section{Übersicht}
+\label{sec:codegen_overview}
+Der Codegenerator, welcher in der Datei \texttt{codegen.c} implementiert ist,
+erzeugt abhängig von den Knoten des Parse-Baums und deren Datentypen, den definierten Assembler Code. 
+Aufgerufen wird der Codegenerator mit der Funktion \texttt{genprog}, welche rekursiv die
+anderen Funktion aufruft.
+
+\section{Funktionsweise}
+\label{sec:codegen_func}
+
+Nachdem die Typisierung und der Typ-Check erfolgreich abgeschlossen wurde, beginnt der Codegenerator mit der Generierung des definierten Assembler Codes.
+
+Der Codegenerator wird mit der Funktion \texttt{genprog} aufgerufen und gestartet, diese Funktion
+ruft rekursiv die anderen Funktionen auf.
+
+Für jeden Knotentyp im Parse-Baum gibt es eine Funktion welche die Kinder des Knotents überprüft und dementsprechend deren Funktionen rekursiv aufruft.
+
+\section{Besonderheiten}
+\label{sec:codegen_special}
+
+Bei einem Statement-Knoten wird kein NOP erzeugt, da ein NOP-Befehl keine Funktion besitzt und somit ignoriert werden kann.
+
+Beim Erzeugen eines Labels wird direkt ein NOP erzeugt, da hinter einem Label Programmcode stehen muss, wird hierdurch die Generierung des Codes erleichtert.
