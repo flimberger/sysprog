@@ -1,0 +1,45 @@
+\chapter{Erweiterungen}
+
+\section{Allgemeine Definitionen}
+\label{sec:gendef}
+
+Projektweit wurde der Datentyp \texttt{Datatype} eingeführt,
+welcher eine Enumeration aller in der Programmiersprache verfügbaren Datentypen ist.
+Dieser Datentyp ist in der projektweit sichtbaren \texttt{defs.h} deklariert,
+da er nicht nur vom Compilerprogramm,
+sondern auch von der Symboltabellenbibliothek verwendet wird.
+
+Folgende Datentypen stehen in der Sprache zur Verfügung:
+\begin{itemize}
+\item \texttt{T\_NONE}: kein Datentyp zugewiesen
+\item \texttt{T\_ERROR}: Fehler-Typ, es ist ein Typfehler aufgetreten
+\item \texttt{T\_INT}: Integer
+\item \texttt{T\_INTARR}: Integer-Array
+\item \texttt{T\_ARRAY}: Array-Datentyp, eine gültige Array-Indizierung
+\end{itemize}
+
+\begin{lstlisting}
+typedef enum {
+	T_NONE,
+	T_ERROR,
+	T_INT,
+	T_INTARR,
+	T_ARRAY
+} Datatype;
+\end{lstlisting}
+
+\section{Symboltabelle}
+
+Die Grundstruktur der Symboltabelle, das \texttt{Symbol},
+wurde um ein Feld für den Datentyp erweitert,
+wobei es sich um eine Variable des in Abschnitt~\ref{sec:gendef} beschrieben Typs \texttt{Symbol} handelt.
+
+\begin{lstlisting}
+typedef struct Symbol Symbol;
+struct Symbol {
+	Symbol *next;
+	const char *lexem;
+	Symboltype symtype;
+	Datatype   datatype;
+};
+\end{lstlisting}

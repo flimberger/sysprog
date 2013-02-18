@@ -5,10 +5,32 @@
 \label{sec:parsetree}
 
 \subsection{Aufbau}
-Ein Parsebaum besteht aus Knoten.
-Jeder Knoten hat ein rechtes und ein linkes Kind sowie einen Typ und eine Datensektion.
+Der Parsebaum ist ein reiner Binärbaum,
+welcher bei Bedarf um Zwischenknoten erweitert wird.
+Jeder Knoten hat ein rechtes und ein linkes Kind,
+einen Knotentyp, einen Datentyp,
+eine Datensektion für Nutzdaten sowie Felder für die Dateikoordinaten des ersten Tokens. \\
+Die Interpretation der Inhalte der Datensektion sind Abhängig vom Typ des Knotens.
+Enthalten sind ein Feld \texttt{val},
+um Integerwerte zu speichern,
+ein Feld \texttt{sym} als Zeiger auf ein Element der Symboltabelle
+und in \texttt{op} ist der Operator gespeichert.
 
 \begin{lstlisting}
+typedef enum {
+	OP_NEG,	/* unary - */
+	OP_ADD,	/* + */
+	OP_SUB,	/* - */
+	OP_DIV,	/* / */
+	OP_MUL,	/* * */
+	OP_LESS,	/* < */
+	OP_GRTR,	/* > */
+	OP_EQUAL,	/* = */
+	OP_UNEQ,	/* <!> */
+	OP_NOT,	/* ! (unary) */
+	OP_AND	/* & */
+} Optype;
+
 typedef struct Node Node;
 struct Node {
 	Node *left;
@@ -19,75 +41,344 @@ struct Node {
 		Symbol *sym;
 		Optype op;
 	} data;
+	uint col;
+	uint row;
+	Datatype datatype;
 };
 \end{lstlisting}
 
 \subsection{Knotentypen}
 
-\subsubsection{Wurzelknoten}
+\begin{lstlisting}
+typedef enum {
+	NODE_NONE,
+	/* nonterminal symbols */
+	NODE_PROG,
+	NODE_DECLS,
+	NODE_DECL,
+	NODE_ARRAY,
+	NODE_STATEMENTS,
+	NODE_STATEMENT,
+	NODE_EXP,
+	NODE_EXP2,
+	NODE_INDEX,
+	NODE_OPEXP,
+	NODE_OP,
+	/* terminal symbols */
+	NODE_PRINT,
+	NODE_READ,
+	NODE_IF,
+	NODE_WHILE,
+	NODE_IDENT,
+	NODE_INTCONST
+} Nodetype;
+\end{lstlisting}
+
+\subsubsection{Leerer Knoten \texttt{NODE\_NONE}}
+\label{sec:nonenode}
+Dieser Knotentyp beschreib einen Knoten ohne semantische Bedeutung.
+Daher wird er als Zwischenknoten eingesetzt,
+wenn ein Knotentyp mehr als zwei Kindknoten benötigt.
+Da er in der Enumeration den Wert \texttt{0} annimmt ist er außerdem der Standardtyp für Knoten,
+bei welchen kein anderer Typ gesetzt wurde.
+
+\subsubsection{Wurzelknoten \texttt{NODE\_PROG}}
+\label{sec:prognode}
 \texttt{left} enthält die Liste aller Deklarationen,
 \texttt{right} die Liste aller Ausdrücke.
-Der Wurzelknoten wird durch die Konstante \texttt{NODE_ROOT} gekennzeichnet.
+Daher wird von den übrigen Programmteilen erwartet,
+dass es sich beim linken Kindknoten um einen \hyperref[sec:declsnode]{Deklarationslistenknoten} und beim rechten Kindknoten um einen \hyperref[sec:stmtsnode]{Anweisungslistenknoten} handelt.
 
-\subsubsection{Listenknoten}
-Listenknoten werden sowohl für Deklarationen als auch Ausdrücke verwendet,
-da sie sich lediglich in den Typen ihrer Blätter unterscheiden.
-Jeder Listenknoten enthält in \texttt{left} ein Blatt
-und in \texttt{right} entweder ein Blatt oder einen weiteren Listenknoten.
-Listenknoten mit nur einem Element werden durch dieses Element ersetzt.
-Ein Listenknoten wird durch \texttt{NODE_LIST} identifiziert.
+Eine schematische Darstellung findet sich in \hyperref[fig:prognode]{Abbildung~\ref{fig:prognode}}.
 
-\subsubsection{Deklarationsknoten}
+\begin{figure}[h!]
+\label{fig:prognode}
+\centering
+\includegraphics[width=0.7\linewidth]{PROG}
+\caption{\texttt{PROG}-Knoten}
+\end{figure}
+
+\subsubsection{Deklarationslistenknoten \texttt{NODE\_DECLS}}
+\label{sec:declsnode}
+Deklarationslistenknoten enthalten als linkes Kind einen \hyperref[sec:declnode]{Deklarationsknoten} und rechts einen weiteren Deklarationslistenknoten.
+Wenn kein weiterer Listenknoten folgt,
+dann ist der Zeiger \texttt{NULL}.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:declsnode]{Abbildung~\ref{fig:declsnode}}.
+
+\begin{figure}[h!]
+\label{fig:declsnode}
+\centering
+\includegraphics[width=0.7\linewidth]{DECLS}
+\caption{\texttt{DECLS}-Knoten}
+\end{figure}
+
+\subsubsection{Deklarationsknoten \texttt{NODE\_DECL}}
+\label{sec:declnode}
 Ein Deklarationsknoten enthält in \texttt{data.sym} einen Zeiger auf ein Element der Symboltabelle.
 Wenn es sich bei der deklarierten Variable um ein Array handelt,
-dann erzeugt \texttt{parsearray} einen Knoten vom Typ \texttt{NODE_ARRAY},
-welcher in \texttt{left} eingehängt wird.
-Ein Deklarationsknoten hat den Typ \texttt{NODE_DECL}.
+dann zeit \texttt{left} auf einen \hyperref[sec:arraynode]{Arrayknoten},
+ansonsten sind beide Kinder \texttt{NULL}.
 
-\subsubsection{Arrayknoten}
+Eine schematische Darstellung mitsamt einem \hyperref[sec:arraynode]{Arrayknoten} findet sich in \hyperref[fig:declnode]{Abbildung~\ref{fig:declnode}}.
+
+\begin{figure}[h!]
+\label{fig:declnode}
+\centering
+\includegraphics[width=0.7\linewidth]{DECL_ARRAY}
+\caption{\texttt{DECL}-Knoten mit einem angeschlossenen \texttt{ARRAY}-Knoten}
+\end{figure}
+
+\subsubsection{Arrayknoten \texttt{NODE\_ARRAY}}
+\label{sec:arraynode}
 Ein Arrayknoten enthält lediglich die Deklarationsgröße in \texttt{data.val}.
-Ein Arrayknoten wird durch \texttt{NODE_ARRAY} gekennzeichnet.
 
-\subsubsection{Zusweisungsknoten}
-Ein Zusweisungsknoten speichert in \texttt{data.sym} einen Zeiger auf ein Symbol in der Symboltabelle,
-sowie einen 
-% TODO NODE_EXP
-in \texttt{right}.
-Wenn es sich um ein Array handelt,
-dann wird in \texttt{left} ein weiterer
-% TODO NODE_EXP
-eingehängt,
-welcher den Index des Arrays beschreibt.
-Zuweisungsknoten sind vom Typ \texttt{NODE_ASSGN}.
-% EXP: entweder identifier, constant, operator oder group
+Die schematische Darstellung ist mit in \hyperref[fig:declnode]{Abbildung~\ref{fig:declnode}} enthalten.
 
-\subsubsection{Variablenknoten}
-\texttt{NODE_IDENT}
+\subsubsection{Anweisungslistenknoten \texttt{NODE\_STATEMENTS}}
+\label{sec:stmtsnode}
+Ein Anweisungslistenknoten gleicht im Aufbau einem \hyperref[sec:declsnode]{Deklarationslistenknoten},
+mit dem Unterschied dass \texttt{left} immer auf einen \hyperref[sec:stmtnode]{Anweisungsknoten} zeigt.
+Im Sonderfall der \texttt{\{\ldots\}}-Anweisung sind aber beide Zeiger \texttt{NULL}.
+Weitere Informationen finden sich in der Dokumentation der \hyperref[sec:parsestatement]{entsprechenden Funktion}.
 
-\subsubsection{Konstantenknoten}
-\texttt{NODE_CONST}
+Eine schematische Darstellung steht in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:stmtsnode}} zur Verfügung.
 
-\subsubsection{Operatorknoten}
-\texttt{NODE_OP}
+\begin{figure}[h!]
+\label{fig:stmtsnode}
+\centering
+\includegraphics[width=0.7\linewidth]{STATEMENTS}
+\caption{\texttt{STATEMENTS}-Knoten}
+\end{figure}
 
-\subsubsection{Ausgabeknoten}
-Ein Ausgabeknoten enthält den auszugebenden Ausdruck in \texttt{left}
-und wird durch den Typ \texttt{NODE_PRINT} gekennzeichnet.
+\subsubsection{Anweisungsknoten \texttt{NODE\_STATEMENT}}
+\label{sec:stmt}
+Ein Anweisungsknoten verfügt immer über verschiedene Unterknoten im linken Teilbaum:
 
-\subsubsection{Eingabeknoten}
+\begin{itemize}
+\item \texttt{NODE\_IDENT}
+
+Ein Zuweisungsknoten enthält in seinem Datensegment einen Zeiger auf ein Symbol in der Symboltabelle.
+Der rechte Teilbaum des Anweisungsknotens enthält in diesem Fall zunächst einen \hyperref[sec:nonenode]{leeren Knoten},
+welcher mit \texttt{left} wiederrum auf einen \hyperref[sec:indexnode]{Indexknoten} und mit \texttt{right} auf einen \hyperref[sec:expnode]{Ausdrucksknoten} zeigt.
+Der Indexknoten kann auch \texttt{NULL} sein,
+wenn es sich bei der durch \texttt{NODE\_IDENT->data.sym} beschriebenen Variable nicht um ein Array handelt.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:assign}}.
+
+\item \texttt{NODE\_PRINT}
+
+Ein Ausgabeknoten enthält den auszugebenden \hyperref[sec:expnode]{Ausdruck} in \texttt{left}.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:print}}.
+
+\item \texttt{NODE\_READ}
+
 Ein Eingabeknoten enthält in \texttt{left} einen Variablenknoten,
 in welchem die Eingabe gespeichert wird.
-Er wird über \texttt{NODE_PRINT} identifiziert.
+Da es sich bei der Variable um ein Array handeln kann,
+befindet sich in \texttt{right} eventuell ein \hyperref[sec:indexnode]{Indexknoten}.
 
-\subsubsection{Verzweigungsknoten}
-Ein Verzweigungsknoten enthält in \texttt{left} einen
-%TODO NODE_EXP
-und in \texttt{right} einen Knoten ohne Typ (auch \texttt{NODE_NONE}),
-welcher wiederrum die Ausdrücke für den \emph{if}- in \texttt{left}
-und \emph{else}-Zweig in \texttt{right} enthält.
-Dieser Knoten hat den Typ \texttt{NODE_IF}.
+Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:read}}.
 
-\subsubsection{Schleifenknoten}
-Ein Schleifenknoten speichert die Schleifenbedingung in \texttt{left}
-und den Rumpfausdruck in \texttt{right}.
-Er wird durch \texttt{NODE_WHILE} gekennzeichnet.
+\item \texttt{NODE\_STATEMENTS}
+
+Da geschweifte Klammern lediglich der Gruppierung von Anweisungen dienen,
+werden sie im Parsebaum lediglich durch einen \hyperref[sec:stmtsnode]{Anweisungslistenknoten} repräsentiert.
+Da im \hyperref[sec:typecheck]{Typchecker} direkt der linke Kindknoten eines Anweisungsknotens überprüft wird,
+ergibt sich hieraus der beim Anweisungslistenknoten beschriebene Sonderfall.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:stmts}}.
+
+\item \texttt{NODE\_IF}
+
+Wenn in \texttt{left}-Feld eines Anweisungsknotens ein Verzweigungsknoten auftritt,
+dann zeigt \texttt{right} auf einen \hyperref[sec:expnode]{Ausdrucksknoten}.
+Beide Kindknoten des Verzweigungsknotens beinhalten weitere Anweisungsknoten,
+wobei in \texttt{left} die \texttt{if}-Verzweigung gespeichert ist und in \texttt{right} die \texttt{else}-Verzweigung.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:if}}.
+
+\item \texttt{NODE\_WHILE}
+
+Ein Schleifenknoten in \texttt{left} den Rumpfausdruck,
+wobei es sich um einen weiteren Anweisungsknoten handelt.
+Die Schleifenbedingung wird im \texttt{right}-Feld des Anweisungsknoten,welcher die Wiederholungsanweisung entält gespeichert,
+wobei es sich um einen \hyperref[sec:expnode]{Ausdrucksknoten} handelt.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:while}}.
+
+\end{itemize}
+
+\begin{figure}[h!]
+\label{fig:assgn}
+\centering
+\includegraphics[width=\linewidth]{STMT_ASSIGN}
+\caption{\texttt{STATEMENT}-Knoten mit einer Zuweisung}
+\end{figure}
+
+\begin{figure}[h!]
+\label{fig:stmts}
+\centering
+\includegraphics[width=0.7\linewidth]{STMT_STMTS}
+\caption{\texttt{STATEMENT}-Knoten mit einem Anweisungsblock}
+\end{figure}
+
+\begin{figure}[h!]
+\label{fig:print}
+\centering
+\includegraphics[width=\linewidth]{STMT_PRINT}
+\caption{\texttt{STATEMENT}-Knoten mit Ausgabeanweisung}
+\end{figure}
+
+\begin{figure}[h!]
+\label{fig:read}
+\centering
+\includegraphics[width=\linewidth]{STMT_READ}
+\caption{\texttt{STATEMENT}-Knoten mit Eingabeanweisung}
+\end{figure}
+
+\begin{figure}[h!]
+\label{fig:if}
+\centering
+\includegraphics[width=\linewidth]{STMT_IF}
+\caption{\texttt{STATEMENT}-Knoten mit Verzweigungsanweisung}
+\end{figure}
+
+\begin{figure}[h!]
+\label{fig:while}
+\centering
+\includegraphics[width=\linewidth]{STMT_WHILE}
+\caption{\texttt{STATEMENT}-Knoten mit Schleifenanweisung}
+\end{figure}
+
+\subsubsection{Ausdrucksknoten \texttt{NODE\_EXP}}
+\label{sec:expnode}
+Ein Ausdrucksknoten zeigt mit \texttt{left} auf einen \hyperref[sec:exp2node]{Teilausdrucksknoten} und mit \texttt{right} auf einen \hyperref[sec:opexpnode]{Operatorausdrucksknoten}.
+Dieser kann \texttt{NULL} sein, wenn kein Operatorausdruck vorliegt.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:expnode]{Abbildung~\ref{fig:expnode}}.
+
+\begin{figure}[h!]
+\label{fig:expnode}
+\centering
+\includegraphics[width=0.7\linewidth]{EXP}
+\caption{\texttt{EXP}-Knoten}
+\end{figure}
+
+\subsubsection{Teilausdrucksknoten \texttt{NODE\_EXP2}}
+\label{sec:exp2node}
+Ein Teilausdrucksknoten wird anhand des linken Kindknotens weiter differenziert.
+
+\begin{itemize}
+\item \texttt{NODE\_EXP}
+
+Ein geklammerter Ausdruck wird durch einen einzelnen \hyperref[sec:expnode]{Ausdrucksknoten} im linken Teilbaum dargestellt.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:exp]{Abbildung~\ref{fig:exp}}.
+
+\item \texttt{NODE\_IDENT}
+
+Eine Variable wird durch einen Knoten vom Typ \texttt{NODE\_IDENT} symbolisiert.
+Falls es sich bei der Variable um ein Array handelt,
+hat der Teilausdrucksknoten einen \hyperref[sec:indexnode]{Indexknoten} im rechten Teilbaum.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:ident]{Abbildung~\ref{fig:ident}}.
+
+\item \texttt{NODE\_INTCONST}
+
+Ein Integer enthält im Datensegment den Wert im Feld \texttt{data.val}.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:intconst]{Abbildung~\ref{fig:intconst}}.
+
+\item \texttt{NODE\_OP}
+
+Unäre Operatoren setzen sich aus einem \hyperref[sec:opnode]{Operatorknoten} im linken Kind des Teilausdruckknotens sowie einem weiteren Teilausdruck im linken Unterbaum zusammen.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:op]{Abbildung~\ref{fig:op}}.
+
+\end{itemize}
+
+\begin{figure}[h!]
+\label{fig:exp}
+\centering
+\includegraphics[width=0.7\linewidth]{EXP2_EXP}
+\caption{\texttt{EXP2}-Knoten mit geklammertem Ausdruck}
+\end{figure}
+
+\begin{figure}[h!]
+\label{fig:ident}
+\centering
+\includegraphics[width=0.7\linewidth]{EXP2_IDENT}
+\caption{\texttt{EXP2}-Knoten mit Variable}
+\end{figure}
+
+\begin{figure}[h!]
+\label{fig:intconst}
+\centering
+\includegraphics[width=0.7\linewidth]{EXP2_INTCONST}
+\caption{\texttt{EXP2}-Knoten mit Integer-Konstante}
+\end{figure}
+
+\begin{figure}[h!]
+\label{fig:op}
+\centering
+\includegraphics[width=0.7\linewidth]{EXP2_OP}
+\caption{\texttt{EXP2}-Knoten mit unärem Operator}
+\end{figure}
+
+\subsubsection{Indexknoten \texttt{NODE\_INDEX}}
+\label{sec:indexnode}
+Ein Indexknoten verfügt nur über ein einzelnen Kindknoten,
+welches in \texttt{left} gespeichert ist.
+Dabei handelt es sich um einen \hyperref[sec:expnode]{Ausdrucksknoten}.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:indexnode]{Abbildung~\ref{fig:indexnode}}.
+
+\begin{figure}[h!]
+\label{fig:indexnode}
+\centering
+\includegraphics[width=0.7\linewidth]{INDEX}
+\caption{\texttt{INDEX}-Knoten}
+\end{figure}
+
+\subsubsection{Operatorausdrucksknoten \texttt{NODE\_OPEXP}}
+\label{sec:opexpnode}
+Die Kindknoten eines Operatorausdrucksknotens sind links ein \hyperref[sec:opnode]{Operatorknoten} und rechts ein \hyperref[sec:expnode]{Ausdrucksknoten}.
+Er enthält keine weiteren Daten.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:opexpnode]{Abbildung~\ref{fig:opexpnode}}.
+
+\begin{figure}[h!]
+\label{fig:opexpnode}
+\centering
+\includegraphics[width=0.7\linewidth]{OP_EXP}
+\caption{\texttt{OP\_EXP}-Knoten}
+\end{figure}
+
+\subsubsection{Operatorknoden \texttt{NODE\_OP}}
+\label{sec:opnode}
+Ein Operatorknoten enthält lediglich einen Operator in \texttt{data.op}.
+
+Eine schematische Darstellung findet sich in \hyperref[fig:opnode]{Abbildung~\ref{fig:opnode}}.
+
+\begin{figure}[h!]
+\label{fig:opnode}
+\centering
+\includegraphics{OP}
+\caption{\texttt{OP}-Knoten}
+\end{figure}
+
+\subsection{Funktionen}
+
+Für den Parsebaum steht nur eine einzige Funktion zur Verfügung,
+welche einen Konstruktor für die einzelnen Knoten repräsentiert
+
+\begin{lstlisting}
+Node *makenode(Nodetype type, uint row, uint col);
+\end{lstlisting}
+
+Als Argumente akzeptiert sie den Knotentyp sowie die Zeile und Spalte des ersten Tokens,
+welche durch den Knoten repräsentiert werden.
+
+\section{Parser}
