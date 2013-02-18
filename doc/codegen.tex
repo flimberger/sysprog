@@ -1,0 +1,19 @@
+\chapter{Typchecker}
+\label{chap:typcheck}
+
+\section{Übersicht}
+\label{sec:typcheck_overview}
+Der Typchecker, welcher in der Datei \texttt{typcheck.c} implementiert ist,
+überprüft die korrekte Typisierung des Programmes. 
+Aufgerufen wird der Typchecker mit der Funktion \texttt{checkprog}, welche dann rekursiv die
+anderen Funktion aufruft.
+
+\section{Funktionsweise}
+\label{sec:typcheck_func}
+
+Der Typchecker wird mit der Funktion \texttt{checkprog} aufgerufen und gestartet, diese Funktion
+ruft rekursiv die anderen Funktionen auf.
+
+Für jeden Knotentyp im Parse-Baum gibt es eine Funktion welche die Kinder des Knotents überprüft und dementsprechend deren Funktionen rekursiv aufruft.
+
+In den Funktionen \texttt{checkdecl},\texttt{checkstatement},\texttt{checkindex} und \texttt{checkexp2} erfolgt zusätzlich und abhängig von den jeweiligen Kindsknoten die Überprüfung des Knotentypes sowie die Zuweisung des entpsrechenden Datentyps.
