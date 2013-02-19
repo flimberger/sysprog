@@ -163,13 +163,13 @@ welcher mit \texttt{left} wiederrum auf einen \hyperref[sec:indexnode]{Indexknot
 Der Indexknoten kann auch \texttt{NULL} sein,
 wenn es sich bei der durch \texttt{NODE\_IDENT->data.sym} beschriebenen Variable nicht um ein Array handelt.
 
-Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:assgn}}.
+Eine schematische Darstellung findet sich in \hyperref[fig:assgin]{Abbildung~\ref{fig:assgin}}.
 
 \item \texttt{NODE\_PRINT}
 
 Ein Ausgabeknoten enthält den auszugebenden \hyperref[sec:expnode]{Ausdruck} in \texttt{left}.
 
-Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:print}}.
+Eine schematische Darstellung findet sich in \hyperref[fig:print]{Abbildung~\ref{fig:print}}.
 
 \item \texttt{NODE\_READ}
 
@@ -178,8 +178,8 @@ in welchem die Eingabe gespeichert wird.
 Da es sich bei der Variable um ein Array handeln kann,
 befindet sich in \texttt{right} eventuell ein \hyperref[sec:indexnode]{Indexknoten}.
 
-Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:read}}.
-
+Eine schematische Darstellung findet sich in \hyperref[fig:read]{Abbildung~\ref{fig:read}}.
+https://github.com/flimberger/sysprog/tree/jvm
 \item \texttt{NODE\_STATEMENTS}
 
 Da geschweifte Klammern lediglich der Gruppierung von Anweisungen dienen,
@@ -187,7 +187,7 @@ werden sie im Parsebaum lediglich durch einen \hyperref[sec:stmtsnode]{Anweisung
 Da im \hyperref[sec:typecheck]{Typchecker} direkt der linke Kindknoten eines Anweisungsknotens überprüft wird,
 ergibt sich hieraus der beim Anweisungslistenknoten beschriebene Sonderfall.
 
-Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:stmts}}.
+Eine schematische Darstellung findet sich in \hyperref[fig:stmts]{Abbildung~\ref{fig:stmts}}.
 
 \item \texttt{NODE\_IF}
 
@@ -196,7 +196,7 @@ dann zeigt \texttt{right} auf einen \hyperref[sec:expnode]{Ausdrucksknoten}.
 Beide Kindknoten des Verzweigungsknotens beinhalten weitere Anweisungsknoten,
 wobei in \texttt{left} die \texttt{if}-Verzweigung gespeichert ist und in \texttt{right} die \texttt{else}-Verzweigung.
 
-Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:if}}.
+Eine schematische Darstellung findet sich in \hyperref[fig:if]{Abbildung~\ref{fig:if}}.
 
 \item \texttt{NODE\_WHILE}
 
@@ -205,12 +205,12 @@ wobei es sich um einen weiteren Anweisungsknoten handelt.
 Die Schleifenbedingung wird im \texttt{right}-Feld des Anweisungsknoten,welcher die Wiederholungsanweisung entält gespeichert,
 wobei es sich um einen \hyperref[sec:expnode]{Ausdrucksknoten} handelt.
 
-Eine schematische Darstellung findet sich in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:while}}.
+Eine schematische Darstellung findet sich in \hyperref[fig:while]{Abbildung~\ref{fig:while}}.
 
 \end{itemize}
 
 \begin{figure}[h!]
-\label{fig:assgn}
+\label{fig:assgin}
 \centering
 \includegraphics[width=\linewidth]{STMT_ASSIGN}
 \caption{\texttt{STATEMENT}-Knoten mit einer Zuweisung}
