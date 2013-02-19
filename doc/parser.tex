@@ -92,10 +92,10 @@ dass es sich beim linken Kindknoten um einen \hyperref[sec:declsnode]{Deklaratio
 Eine schematische Darstellung findet sich in \hyperref[fig:prognode]{Abbildung~\ref{fig:prognode}}.
 
 \begin{figure}[h!]
-\label{fig:prognode}
 \centering
 \includegraphics[width=0.7\linewidth]{PROG}
 \caption{\texttt{PROG}-Knoten}
+\label{fig:prognode}
 \end{figure}
 
 \subsubsection{Deklarationslistenknoten \texttt{NODE\_DECLS}}
@@ -107,10 +107,10 @@ dann ist der Zeiger \texttt{NULL}.
 Eine schematische Darstellung findet sich in \hyperref[fig:declsnode]{Abbildung~\ref{fig:declsnode}}.
 
 \begin{figure}[h!]
-\label{fig:declsnode}
 \centering
 \includegraphics[width=0.7\linewidth]{DECLS}
 \caption{\texttt{DECLS}-Knoten}
+\label{fig:declsnode}
 \end{figure}
 
 \subsubsection{Deklarationsknoten \texttt{NODE\_DECL}}
@@ -123,10 +123,10 @@ ansonsten sind beide Kinder \texttt{NULL}.
 Eine schematische Darstellung mitsamt einem \hyperref[sec:arraynode]{Arrayknoten} findet sich in \hyperref[fig:declnode]{Abbildung~\ref{fig:declnode}}.
 
 \begin{figure}[h!]
-\label{fig:declnode}
 \centering
 \includegraphics[width=0.7\linewidth]{DECL_ARRAY}
 \caption{\texttt{DECL}-Knoten mit einem angeschlossenen \texttt{ARRAY}-Knoten}
+\label{fig:declnode}
 \end{figure}
 
 \subsubsection{Arrayknoten \texttt{NODE\_ARRAY}}
@@ -144,10 +144,10 @@ Im Sonderfall der \texttt{\{\ldots\}}-Anweisung sind aber beide Zeiger \texttt{N
 Eine schematische Darstellung steht in \hyperref[fig:stmtsnode]{Abbildung~\ref{fig:stmtsnode}} zur Verfügung.
 
 \begin{figure}[h!]
-\label{fig:stmtsnode}
 \centering
 \includegraphics[width=0.7\linewidth]{STATEMENTS}
 \caption{\texttt{STATEMENTS}-Knoten}
+\label{fig:stmtsnode}
 \end{figure}
 
 \subsubsection{Anweisungsknoten \texttt{NODE\_STATEMENT}}
@@ -179,7 +179,6 @@ Da es sich bei der Variable um ein Array handeln kann,
 befindet sich in \texttt{right} eventuell ein \hyperref[sec:indexnode]{Indexknoten}.
 
 Eine schematische Darstellung findet sich in \hyperref[fig:read]{Abbildung~\ref{fig:read}}.
-https://github.com/flimberger/sysprog/tree/jvm
 \item \texttt{NODE\_STATEMENTS}
 
 Da geschweifte Klammern lediglich der Gruppierung von Anweisungen dienen,
@@ -210,45 +209,45 @@ Eine schematische Darstellung findet sich in \hyperref[fig:while]{Abbildung~\ref
 \end{itemize}
 
 \begin{figure}[h!]
-\label{fig:assgin}
 \centering
 \includegraphics[width=\linewidth]{STMT_ASSIGN}
 \caption{\texttt{STATEMENT}-Knoten mit einer Zuweisung}
+\label{fig:assgin}
 \end{figure}
 
 \begin{figure}[h!]
-\label{fig:stmts}
 \centering
 \includegraphics[width=0.7\linewidth]{STMT_STMTS}
 \caption{\texttt{STATEMENT}-Knoten mit einem Anweisungsblock}
+\label{fig:stmts}
 \end{figure}
 
 \begin{figure}[h!]
-\label{fig:print}
 \centering
 \includegraphics[width=\linewidth]{STMT_PRINT}
 \caption{\texttt{STATEMENT}-Knoten mit Ausgabeanweisung}
+\label{fig:print}
 \end{figure}
 
 \begin{figure}[h!]
-\label{fig:read}
 \centering
 \includegraphics[width=\linewidth]{STMT_READ}
 \caption{\texttt{STATEMENT}-Knoten mit Eingabeanweisung}
+\label{fig:read}
 \end{figure}
 
 \begin{figure}[h!]
-\label{fig:if}
 \centering
 \includegraphics[width=\linewidth]{STMT_IF}
 \caption{\texttt{STATEMENT}-Knoten mit Verzweigungsanweisung}
+\label{fig:if}
 \end{figure}
 
 \begin{figure}[h!]
-\label{fig:while}
 \centering
 \includegraphics[width=\linewidth]{STMT_WHILE}
 \caption{\texttt{STATEMENT}-Knoten mit Schleifenanweisung}
+\label{fig:while}
 \end{figure}
 
 \subsubsection{Ausdrucksknoten \texttt{NODE\_EXP}}
@@ -259,10 +258,10 @@ Dieser kann \texttt{NULL} sein, wenn kein Operatorausdruck vorliegt.
 Eine schematische Darstellung findet sich in \hyperref[fig:expnode]{Abbildung~\ref{fig:expnode}}.
 
 \begin{figure}[h!]
-\label{fig:expnode}
 \centering
 \includegraphics[width=0.7\linewidth]{EXP}
 \caption{\texttt{EXP}-Knoten}
+\label{fig:expnode}
 \end{figure}
 
 \subsubsection{Teilausdrucksknoten \texttt{NODE\_EXP2}}
@@ -299,31 +298,31 @@ Eine schematische Darstellung findet sich in \hyperref[fig:op]{Abbildung~\ref{fi
 \end{itemize}
 
 \begin{figure}[h!]
-\label{fig:exp}
 \centering
 \includegraphics[width=0.7\linewidth]{EXP2_EXP}
 \caption{\texttt{EXP2}-Knoten mit geklammertem Ausdruck}
+\label{fig:exp}
 \end{figure}
 
 \begin{figure}[h!]
-\label{fig:ident}
 \centering
 \includegraphics[width=0.7\linewidth]{EXP2_IDENT}
 \caption{\texttt{EXP2}-Knoten mit Variable}
+\label{fig:ident}
 \end{figure}
 
 \begin{figure}[h!]
-\label{fig:intconst}
 \centering
 \includegraphics[width=0.7\linewidth]{EXP2_INTCONST}
 \caption{\texttt{EXP2}-Knoten mit Integer-Konstante}
+\label{fig:intconst}
 \end{figure}
 
 \begin{figure}[h!]
-\label{fig:op}
 \centering
 \includegraphics[width=0.7\linewidth]{EXP2_OP}
 \caption{\texttt{EXP2}-Knoten mit unärem Operator}
+\label{fig:op}
 \end{figure}
 
 \subsubsection{Indexknoten \texttt{NODE\_INDEX}}
@@ -335,10 +334,10 @@ Dabei handelt es sich um einen \hyperref[sec:expnode]{Ausdrucksknoten}.
 Eine schematische Darstellung findet sich in \hyperref[fig:indexnode]{Abbildung~\ref{fig:indexnode}}.
 
 \begin{figure}[h!]
-\label{fig:indexnode}
 \centering
 \includegraphics[width=0.7\linewidth]{INDEX}
 \caption{\texttt{INDEX}-Knoten}
+\label{fig:indexnode}
 \end{figure}
 
 \subsubsection{Operatorausdrucksknoten \texttt{NODE\_OPEXP}}
@@ -349,10 +348,10 @@ Er enthält keine weiteren Daten.
 Eine schematische Darstellung findet sich in \hyperref[fig:opexpnode]{Abbildung~\ref{fig:opexpnode}}.
 
 \begin{figure}[h!]
-\label{fig:opexpnode}
 \centering
 \includegraphics[width=0.7\linewidth]{OP_EXP}
 \caption{\texttt{OP\_EXP}-Knoten}
+\label{fig:opexpnode}
 \end{figure}
 
 \subsubsection{Operatorknoden \texttt{NODE\_OP}}
@@ -362,10 +361,10 @@ Ein Operatorknoten enthält lediglich einen Operator in \texttt{data.op}.
 Eine schematische Darstellung findet sich in \hyperref[fig:opnode]{Abbildung~\ref{fig:opnode}}.
 
 \begin{figure}[h!]
-\label{fig:opnode}
 \centering
 \includegraphics{OP}
 \caption{\texttt{OP}-Knoten}
+\label{fig:opnode}
 \end{figure}
 
 \subsection{Funktionen}
